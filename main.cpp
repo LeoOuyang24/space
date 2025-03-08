@@ -150,7 +150,7 @@ int main(void)
                                             },obj->pos,searchRad);
                     if (nearby)
                     {
-                        terrain.forEachPos([obj,&terrain](const Vector2& pos){
+                        terrain.forEachPosTest([obj,&terrain](const Vector2& pos){
                             if (terrain.blockExists(pos))
                             {
                                 float mag = (obj->radius)/pow(Vector2Length(pos - obj->pos),2);

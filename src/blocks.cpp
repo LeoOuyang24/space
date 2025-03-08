@@ -54,6 +54,19 @@ void GlobalTerrain::generatePlanets()
 
 void GlobalTerrain::forEachPos(std::function<void(const Vector2&)> func, const Vector2& pos, int radius)
 {
+    for (int i = pos.x - radius; i <= pos.x + radius; i+= Block::BLOCK_DIMEN)
+    {
+        for (int j = pos.y - radius; j <= pos.y + radius; j+=Block::BLOCK_DIMEN)
+        {
+            Vector2 point = roundPos({i,j});
+
+            func(point);
+        }
+    }
+}
+
+void GlobalTerrain::forEachPosTest(std::function<void(const Vector2&)> func, const Vector2& pos, int radius)
+{
     int units = radius/Block::BLOCK_DIMEN;
     Vector2 center = roundPos(pos);
 
@@ -74,8 +87,8 @@ void GlobalTerrain::forEachPos(std::function<void(const Vector2&)> func, const V
                 //and if x and y == 0, only do one quadrant, (botLeft, arbitrary though), since that is the center
                 Vector2 point = center + Vector2(x*(1 - i/2*2), y*(1 - i%2*2)) * Block::BLOCK_DIMEN;
                 func(point);
-                func(point);
-                func(point);
+                //func(point);
+                //func(point);
                 //func(point);
             }
         }
