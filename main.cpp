@@ -2,9 +2,9 @@
 #include <unordered_map>
 #include <iostream>
 #include <vector>
+
 #define _USE_MATH_DEFINES
 #include <math.h>
-
 
 #include "headers/blocks.h"
 #include "headers/objects.h"
@@ -57,8 +57,7 @@ int main(void)
 
    terrain.generatePlanet(Vector2(0,0),200);
    terrain.generatePlanet(Vector2(1000,500),100);
-   terrain.generatePlanet(Vector2(1000,-500),250);
-
+   //terrain.generatePlanet(Vector2(1000,-500),250);
 
     Camera2D camera;
 
@@ -66,8 +65,18 @@ int main(void)
     camera.offset = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
-    // Main game loop
 
+    //terrain.terrain[Vector2(980,400)].reset(new Block{Vector2(980,400),Color{255,0,0,128}});
+
+
+    /*terrain.forEachPos([&terrain](const Vector2& vec){
+                       if (!terrain.blockExists(vec))
+                       {
+                           std::cout << vec.x << " " << vec.y << " " << Vector2Distance(Vector2(1000,500),Vector2(980,400)) << "\n";
+                       }
+                       terrain.terrain[vec]->color.a += 50;
+                       },Vector2(1000,500),100,100.0f);*/
+    // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         float deltaTime = GetFrameTime();
@@ -117,17 +126,18 @@ int main(void)
 
 
                 /*Vector2 testCenter = Vector2(0,0);
-                int testRadius = 1000;
+                int testRadius = 100;
                 int amount = 0;
 
                 Rectangle cameraRect = {camera.target.x - camera.offset.x/camera.zoom,camera.target.y - camera.offset.y/camera.zoom, camera.offset.x*2/camera.zoom,camera.offset.y*2/camera.zoom};
-                terrain.forEachPosTest([&testCenter,testRadius,&amount](const Vector2& pos){
+                terrain.forEachPos([&testCenter,testRadius,&amount](const Vector2& pos){
                                                                        amount ++;
 
-                                        DrawCircle(pos.x,pos.y,5,Color(0,255,0,100));
-                                   },testCenter,testRadius);
+                                        DrawCircle(pos.x,pos.y,2,Color(0,255,0,100));
+                                   },testCenter,testRadius);*/
 
-                int newAmount = 0;
+
+               /* int newAmount = 0;
                 int noIf = 0;
                 terrain.forEachPosPerim([&testCenter,testRadius, &newAmount,&noIf,&cameraRect](const Vector2& pos){
                                             newAmount ++;
@@ -138,36 +148,42 @@ int main(void)
                 terrain.render();
               for (Object* obj : objs)
                 {
-
                     int searchRad = 300;
                     bool nearby = false;
-
-                    terrain.forEachPosPerim([&nearby,&terrain](const Vector2& pos){
-                            if (terrain.blockExists(pos))
-                            {
-                                nearby = true;
-                            }
-                                            },obj->pos,searchRad);
-                    if (nearby)
+                    if (Vector2Length(obj->force) != 0)
                     {
-                        terrain.forEachPos([obj,&terrain](const Vector2& pos){
-                            if (terrain.blockExists(pos))
-                            {
-                                float mag = (obj->radius)/pow(Vector2Length(pos - obj->pos),2);
-                                obj->force += (pos - obj->pos)*mag;
-                            }
-                                   },obj->pos,searchRad);
+                        terrain.forEachPos([&nearby,&terrain](const Vector2& pos){
+                                if (terrain.blockExists(pos))
+                                {
+                                    nearby = true;
+                                    return true;
+                                }
+                                return false;
+                                                },obj->pos,searchRad,true);
+                        if (nearby)
+                        {
+                            int amount = 0;
+                            terrain.forEachPosSample([obj,&terrain, &amount](const Vector2& pos){
+                                               amount ++;
+                                if (terrain.blockExists(pos))
+                                {
+                                    float mag = (obj->radius)/pow(std::max(1.0f,Vector2Length(pos - obj->pos)),2);
+                                    obj->force += (pos - obj->pos)*mag*10;
+                                }
+                                       },obj->pos,searchRad,.1f);
+                            //std::cout << amount << "\n";
+                        }
                     }
 
-            float mag = Vector2Length(obj->force);
-            if (mag >= 1000.0f)
-            {
-                obj->force = Vector2Normalize(obj->force)*1000.0f;
-            }
-            //std::cout << mag << "\n";
-            obj->force *= .99;
+                    float mag = Vector2Length(obj->force);
+                    if (mag >= 1000.0f)
+                    {
+                        obj->force = Vector2Normalize(obj->force)*1000.0f;
+                    }
+                    //std::cout << mag << "\n";
+                    obj->force *= .99;
 
-            obj->pos += obj->force*deltaTime;
+                    obj->pos += obj->force*deltaTime;
                     obj->render();
                    // DrawCircleLines(obj->pos.x,obj->pos.y,300,RED);
                 }
