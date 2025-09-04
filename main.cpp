@@ -8,7 +8,13 @@
 
 #include "headers/blocks.h"
 #include "headers/objects.h"
+#include "headers/player.h"
+#include "headers/resources_math.h"
+#include "headers/debug.h"
+
+#include <rlgl.h>
 #include <raymath.h>
+
 
 #if defined(PLATFORM_DESKTOP)
     #define GLSL_VERSION            330
@@ -16,15 +22,15 @@
     #define GLSL_VERSION            100
 #endif
 
-const int planetRadius = 100;
 
-Vector2 getRandDistFrom(Vector2 center, int distanceFrom = 500)
+enum Spawns
 {
-    float distance = rand()%distanceFrom + planetRadius*1.1;
-    float radians = M_PI/180*(rand()%360);
-    Vector2 pos = center + Vector2(cos(radians),sin(radians))*distance;
-    return pos;
-}
+    PLANETS,
+    OBJECTS,
+    PLAYER,
+    ENDPOINT,
+    SIZE
+};
 
 int main(void)
 {
@@ -34,34 +40,36 @@ int main(void)
     const int screenHeight = 1080;
 
     InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
-    ToggleFullscreen();
+   // ToggleFullscreen();
+    rlDisableBackfaceCulling();
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
-    Vector2 center = Vector2(screenWidth/2,screenHeight/2);
-
-    std::vector<Object*> objs;
+    std::vector<PhysicsBody*> objs;
 
     const int minRadius = 10;
     const int maxRadius = 50;
-    for (int i = 0; i < 5000; i ++)
-    {
-        Object* obj = new Object{Vector2(rand()%1000-500,rand()%1000 - 500),rand()%10 + 1};
-        objs.push_back(obj);
-       obj->force = Vector2(100,0);
-    }
+
+    Vector2 planetCenter = Vector2(0,0);
 
     GlobalTerrain terrain;
     //terrain.generatePlanets();
 
-   terrain.generatePlanet(Vector2(0,0),200);
-   terrain.generatePlanet(Vector2(1000,500),100);
+   //terrain.generatePlanet(planetCenter,radius);
+   /*terrain.terrain[Vector2(0,0)].reset(new Block(Vector2(0,0),RED));
+    terrain.terrain[Vector2(10,0)].reset(new Block(Vector2(10,0),RED));
+    terrain.terrain[Vector2(0,10)].reset(new Block(Vector2(0,10),RED));
+    terrain.terrain[Vector2(10,10)].reset(new Block(Vector2(10,10),RED));*/
+
+    //terrain.generateRightTriangle({-100,0},100,RED);
+    //terrain.generateRect({100,100,100,100},RED);
+   //terrain.generatePlanet(Vector2(1000,500),100);
    //terrain.generatePlanet(Vector2(1000,-500),250);
 
     Camera2D camera;
 
-    camera.target = Vector2(0,0);
+    camera.target = Vector2(screenWidth/2,screenHeight/2);
     camera.offset = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
@@ -77,45 +85,103 @@ int main(void)
                        terrain.terrain[vec]->color.a += 50;
                        },Vector2(1000,500),100,100.0f);*/
     // Main game loop
+
+    Player::PlayerSprite = LoadTexture("sprites/guy.png");
+    Player player(Vector2(0,150));
+
+
+   Spawns spawns = PLANETS;
+    int a = 0;
+
+    float accum = 0;
+    float tick = 0.016;
+    float speed = 1;
+
+
+    Vector2 endpoint = {};
+
+    //player.force = Vector2(100,0);
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
+
         float deltaTime = GetFrameTime();
+        if (!Debug::isPaused() || IsKeyPressed(KEY_RIGHT_BRACKET))
+        {
+        accum += deltaTime;
+        Debug::clearRenderDefers();
+        }
+
+        while (accum >= tick/speed )
+        {
+            player.update(terrain);
+            accum -= tick/speed;
+        }
+
         //std::cout << 1/deltaTime << "\n";
         // Update
         //----------------------------------------------------------------------------------
         // TODO: Update your variables here
         //----------------------------------------------------------------------------------
 
-        if (IsKeyDown(KEY_A))
+        if (IsKeyPressed(KEY_ONE))
         {
-            camera.target.x -= 100*deltaTime;
+            spawns = static_cast<Spawns>(((int)spawns + 1)%Spawns::SIZE);
+            a = 255;
         }
-        if (IsKeyDown(KEY_D))
-        {
-            camera.target.x += 100*deltaTime;
-        }
-        if (IsKeyDown(KEY_W))
-        {
-            camera.target.y -= 100*deltaTime;
-        }
-        if (IsKeyDown(KEY_S))
-        {
-            camera.target.y += 100*deltaTime;
-        }
-        camera.zoom += ((float)GetMouseWheelMove()*0.05f);
 
+        if (GetMouseWheelMove())
+        {
+                    camera.target += Vector2Normalize(GetMousePosition() - Vector2{screenWidth/2,screenHeight/2});
+
+            camera.zoom += ((float)GetMouseWheelMove()*0.05f);
+        }
         Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(),camera);
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+
+
+        if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON))
+        {
+            switch (spawns)
+            {
+            case PLANETS:
+                terrain.generatePlanet(mousePos,50,Color(255,0,0,100 ));
+                break;
+            case OBJECTS:
+                {
+                    Color color = {255,255,255,100};
+                    if (rand()%2)
+                        objs.push_back(new Object<RectCollider,ShapeRenderer<ShapeType::RECT>>({mousePos,0},color,10,10));
+                    else
+                        objs.push_back(new Object<CircleCollider,ShapeRenderer<ShapeType::CIRCLE>>({mousePos,0},color,10));
+                    break;
+                }
+            case PLAYER:
+                player.orient.pos = mousePos;
+                break;
+            case ENDPOINT:
+                endpoint = mousePos;
+                break;
+
+            }
+        }
+        else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
         {
             terrain.remove(mousePos,50);
         }
-        else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON))
-        {
-            terrain.generatePlanet(mousePos,50);
-        }
 
 
-
+            for (int i = 0; i < objs.size(); i ++)
+            {
+                objs[i]->update(terrain);
+                for (int j = i + 1; j < objs.size(); j ++)
+                {
+                    if (CheckCollision(objs[i]->getShape(), objs[j]->getShape()))
+                    {
+                        Vector2 force = Vector2Normalize(objs[i]->getPos() - objs[j]->getPos() )*10;
+                        objs[i]->addForce(force);
+                        objs[j]->addForce(force*-1);
+                    }
+                }
+            }
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
@@ -123,76 +189,42 @@ int main(void)
             BeginMode2D(camera);
 
                 ClearBackground(BLACK);
+                player.render();
 
 
-                /*Vector2 testCenter = Vector2(0,0);
-                int testRadius = 100;
-                int amount = 0;
-
-                Rectangle cameraRect = {camera.target.x - camera.offset.x/camera.zoom,camera.target.y - camera.offset.y/camera.zoom, camera.offset.x*2/camera.zoom,camera.offset.y*2/camera.zoom};
-                terrain.forEachPos([&testCenter,testRadius,&amount](const Vector2& pos){
-                                                                       amount ++;
-
-                                        DrawCircle(pos.x,pos.y,2,Color(0,255,0,100));
-                                   },testCenter,testRadius);*/
-
-
-               /* int newAmount = 0;
-                int noIf = 0;
-                terrain.forEachPosPerim([&testCenter,testRadius, &newAmount,&noIf,&cameraRect](const Vector2& pos){
-                                            newAmount ++;
-                                            DrawCircle(pos.x,pos.y,5,Color(255,0,0,100));
-
-                                                                   },testCenter,testRadius);*/
-               // std::cout << amount << " " << newAmount << " " << noIf << "\n";
-                terrain.render();
-              for (Object* obj : objs)
+                for (int i = 0; i < objs.size(); i ++)
                 {
-                    int searchRad = 300;
-                    bool nearby = false;
-                    if (Vector2Length(obj->force) != 0)
-                    {
-                        terrain.forEachPosSample([&nearby,&terrain](const Vector2& pos){
-                                if (terrain.blockExists(pos))
-                                {
-                                    nearby = true;
-                                    return true;
-                                }
-                                return false;
-                                                },obj->pos,searchRad,.001f);
-                        if (nearby)
-                        {
-                            int amount = 0;
-                            terrain.forEachPosSample([obj,&terrain, &amount](const Vector2& pos){
-                                               amount ++;
-                                if (terrain.blockExists(pos))
-                                {
-                                    float mag = (obj->radius)/pow(std::max(1.0f,Vector2Length(pos - obj->pos)),2);
-                                    obj->force += (pos - obj->pos)*mag*10;
-                                }
-                                       },obj->pos,searchRad,.1f);
-                            //std::cout << amount << "\n";
-                        }
-                    }
-
-                    float mag = Vector2Length(obj->force);
-                    if (mag >= 1000.0f)
-                    {
-                        obj->force = Vector2Normalize(obj->force)*1000.0f;
-                    }
-                    //std::cout << mag << "\n";
-                    obj->force *= .99;
-
-                    obj->pos += obj->force*deltaTime;
-                    obj->render();
-                   // DrawCircleLines(obj->pos.x,obj->pos.y,300,RED);
+                    objs[i]->render();
                 }
-                DrawPoly(mousePos,8,10,0,RED);
+
+
+
+                terrain.render();
+            if (spawns == ENDPOINT)
+            {
+                DrawCircle(endpoint.x,endpoint.y,3,PURPLE);
+                DrawLine(mousePos.x,mousePos.y,endpoint.x,endpoint.y,PURPLE);
+
+                Vector2 onTerrain = terrain.lineTerrainIntersect(mousePos,endpoint).pos;
+                DrawCircle(onTerrain.x,onTerrain.y,3,PURPLE);
+            }
+
+
+            Debug::renderDefers();
 
             EndMode2D();
+                                  //DrawPoly({100,100},10,10,0,PURPLE);
+
+            DrawText(spawns == PLANETS ? "planets" : spawns == OBJECTS ?  "objects"  : spawns == ENDPOINT ? "endpoint" : "player" ,10,50,30,WHITE);
+
             DrawFPS(10, 10);
 
         EndDrawing();
+
+        if (IsKeyPressed(KEY_BACKSLASH))
+        {
+            Debug::togglePaused();
+        }
         //----------------------------------------------------------------------------------
     }
 

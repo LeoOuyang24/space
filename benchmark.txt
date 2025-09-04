@@ -9,6 +9,8 @@ So .001 for "nearby" means only sampling .1% of nearby points to see if we even 
 - When sampling .001 for nearby and .1 for apply":
 	21-23 FPS
 
+	- 21 FPS if objects check for nearby even when their netforce is 0
+
 - When .1 for apply, no nearby:
 	13 FPS
 	

@@ -1,13 +1,16 @@
 # depslib dependency file v1.0
 0 <<<<<<< HEAD
 
-1741550202 source:c:\users\leoou\onedrive\documents\projects\helloworld\main.cpp
+1743461931 source:c:\users\leoou\onedrive\documents\projects\helloworld\main.cpp
 	<unordered_map>
 	<iostream>
 	<vector>
 	<math.h>
 	"headers/blocks.h"
 	"headers/objects.h"
+	"headers/player.h"
+	"headers/resources_math.h"
+	<rlgl.h>
 	<raymath.h>
 
 1741547082 tingForEAch
@@ -1013,23 +1016,161 @@
 1741317565 c:\users\leoou\onedrive\documents\projects\raylib-5.5_win64_mingw-w64\include\raymath.h
 	<math.h>
 
-1741409890 source:c:\users\leoou\onedrive\documents\projects\helloworld\src\objects.cpp
+1742442629 source:c:\users\leoou\onedrive\documents\projects\helloworld\src\objects.cpp
+	<iostream>
 	"../headers/objects.h"
 
-1741422351 c:\users\leoou\onedrive\documents\projects\helloworld\headers\objects.h
+1742442284 c:\users\leoou\onedrive\documents\projects\helloworld\headers\objects.h
 	<raylib.h>
+	"blocks.h"
 
 1741547076 D
 
-1741550182 c:\users\leoou\onedrive\documents\projects\helloworld\headers\blocks.h
+1743587520 c:\users\leoou\onedrive\documents\projects\helloworld\headers\blocks.h
 	<math.h>
 	<memory>
 	<functional>
 	<raylib.h>
 	<raymath.h>
+	"../headers/resources_math.h"
 
-1741550225 source:c:\users\leoou\onedrive\documents\projects\helloworld\src\blocks.cpp
+1743589946 source:c:\users\leoou\onedrive\documents\projects\helloworld\src\blocks.cpp
 	<iostream>
 	<math.h>
 	"../headers/blocks.h"
+	"../headers/resources_math.h"
+
+1744535399 source:c:\users\leoou\onedrive\documents\projects\helloworld\src\player.cpp
+	<iostream>
+	"../headers/player.h"
+
+1743591978 c:\users\leoou\onedrive\documents\projects\helloworld\headers\player.h
+	"objects.h"
+
+1741317565 c:\users\leoou\onedrive\documents\projects\raylib-5.5_win64_mingw-w64\include\rlgl.h
+	<stdbool.h>
+	<OpenGL/gl.h>
+	<OpenGL/glext.h>
+	<GL/gl.h>
+	"external/glad.h"
+	<GLES3/gl3.h>
+	<GLES2/gl2ext.h>
+	"external/glad_gles2.h"
+	<GLES2/gl2.h>
+	<GLES2/gl2ext.h>
+	<stdlib.h>
+	<string.h>
+	<math.h>
+
+1743587039 source:c:\users\leoou\onedrive\documents\projects\helloworld\src\resources_math.cpp
+	<iostream>
+	<cmath>
+	"../headers/resources_math.h"
+
+1742270837 c:\users\leoou\onedrive\documents\projects\helloworld\headers\resources_math.h
+	<utility>
+	<raylib.h>
+	"raymath.h"
+
+1756612690 source:c:\users\leoou\documents\projects\helloworld\main.cpp
+	<unordered_map>
+	<iostream>
+	<vector>
+	<math.h>
+	"headers/blocks.h"
+	"headers/objects.h"
+	"headers/player.h"
+	"headers/resources_math.h"
+	"headers/debug.h"
+	<rlgl.h>
+	<raymath.h>
+
+1756878426 c:\users\leoou\documents\projects\helloworld\headers\blocks.h
+	<math.h>
+	<memory>
+	<functional>
+	<raylib.h>
+	<raymath.h>
+	"../headers/resources_math.h"
+
+1756878363 c:\users\leoou\documents\projects\helloworld\headers\resources_math.h
+	<utility>
+	<raylib.h>
+	"raymath.h"
+
+1756955334 c:\users\leoou\documents\projects\helloworld\headers\objects.h
+	<raylib.h>
+	"blocks.h"
+	"shape.h"
+
+1756956019 c:\users\leoou\documents\projects\helloworld\headers\player.h
+	<tuple>
+	"objects.h"
+	"render.h"
+
+1756908428 source:c:\users\leoou\documents\projects\helloworld\src\blocks.cpp
+	<iostream>
+	<math.h>
+	"../headers/debug.h"
+	"../headers/blocks.h"
+	"../headers/resources_math.h"
+
+1756603455 source:c:\users\leoou\documents\projects\helloworld\src\objects.cpp
+	<iostream>
+	"../headers/objects.h"
+
+1756956616 source:c:\users\leoou\documents\projects\helloworld\src\player.cpp
+	<iostream>
+	"../headers/player.h"
+	"../headers/debug.h"
+
+1741313965 c:\users\leoou\documents\projects\raylib-5.5_win64_mingw-w64\include\raylib.h
+	<stdarg.h>
+	<stdbool.h>
+
+1741313965 c:\users\leoou\documents\projects\raylib-5.5_win64_mingw-w64\include\raymath.h
+	<math.h>
+
+1741313965 c:\users\leoou\documents\projects\raylib-5.5_win64_mingw-w64\include\rlgl.h
+	<stdbool.h>
+	<OpenGL/gl.h>
+	<OpenGL/glext.h>
+	<GL/gl.h>
+	"external/glad.h"
+	<GLES3/gl3.h>
+	<GLES2/gl2ext.h>
+	"external/glad_gles2.h"
+	<GLES2/gl2.h>
+	<GLES2/gl2ext.h>
+	<stdlib.h>
+	<string.h>
+	<math.h>
+
+1756878363 source:c:\users\leoou\documents\projects\helloworld\src\resources_math.cpp
+	<iostream>
+	<math.h>
+	"../headers/resources_math.h"
+
+1754765759 c:\users\leoou\documents\projects\helloworld\headers\shape.h
+	<functional>
+
+1754765769 source:c:\users\leoou\documents\projects\helloworld\src\shape.cpp
+	<iostream>
+	"../headers/shape.h"
+	"../headers/objects.h"
+
+1756504062 c:\users\leoou\documents\projects\helloworld\headers\render.h
+	<iostream>
+	"shape.h"
+	"objects.h"
+
+1756881115 source:c:\users\leoou\documents\projects\helloworld\src\render.cpp
+	"../headers/render.h"
+
+1756612720 c:\users\leoou\documents\projects\helloworld\headers\debug.h
+	<functional>
+	<list>
+
+1756612712 source:c:\users\leoou\documents\projects\helloworld\src\debug.cpp
+	"../headers/debug.h"
 

@@ -38,7 +38,7 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
-			<Add directory="C:/Users/leoou/OneDrive/Documents/projects/raylib-5.5_win64_mingw-w64/include" />
+			<Add directory="../raylib-5.5_win64_mingw-w64/include" />
 		</Compiler>
 		<Linker>
 			<Add library="raylib" />
@@ -46,7 +46,7 @@
 			<Add library="winmm" />
 			<Add library="gdi32" />
 			<Add library="pthread" />
-			<Add directory="C:/Users/leoou/OneDrive/Documents/projects/raylib-5.5_win64_mingw-w64/lib" />
+			<Add directory="../raylib-5.5_win64_mingw-w64/lib" />
 		</Linker>
 		<Unit filename="blocks.cpp">
 			<Option target="&lt;{~None~}&gt;" />
@@ -55,10 +55,20 @@
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="headers/blocks.h" />
+		<Unit filename="headers/debug.h" />
 		<Unit filename="headers/objects.h" />
+		<Unit filename="headers/player.h" />
+		<Unit filename="headers/render.h" />
+		<Unit filename="headers/resources_math.h" />
+		<Unit filename="headers/shape.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="src/blocks.cpp" />
+		<Unit filename="src/debug.cpp" />
 		<Unit filename="src/objects.cpp" />
+		<Unit filename="src/player.cpp" />
+		<Unit filename="src/render.cpp" />
+		<Unit filename="src/resources_math.cpp" />
+		<Unit filename="src/shape.cpp" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>

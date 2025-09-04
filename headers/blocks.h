@@ -1,6 +1,7 @@
 #ifndef BLOCKS_H_INCLUDED
 #define BLOCKS_H_INCLUDED
 
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include <memory>
 #include <functional>
@@ -8,12 +9,12 @@
 
 #include <raylib.h>
 #include <raymath.h>
+#include "../headers/resources_math.h"
 
 struct Block
 {
-    constexpr static int BLOCK_DIMEN=10;
+    constexpr static int BLOCK_DIMEN=3;
 
-    Vector2 pos;
     Color color;
 
     void render();
@@ -26,6 +27,17 @@ struct Particle
 };
 
 Vector2 roundPos(const Vector2& vec);
+Vector2 nearestPos(const Vector2& vec);
+
+class GlobalTerrain;
+
+const int FOUR_CORNERS = 15; //number for 4 corners
+const int MISSING_TOP_LEFT = 14; //number for triangle where the top left corner is missing
+const int MISSING_TOP_RIGHT = 13; //top right is missing
+const int MISSING_BOTTOM_LEFT = 11; //bottom left is missing
+const int MISSING_BOTTOM_RIGHT = 7;//bottom right is missing
+
+
 
 template<>
 struct std::hash<Vector2>
@@ -41,23 +53,32 @@ struct std::hash<Vector2>
     }
 };
 
-template<>
-struct std::equal_to<Vector2>
-{
-    bool operator()(const Vector2& v1, const Vector2& v2) const
-    {
-        return std::hash<Vector2>{}(v1) == std::hash<Vector2>{}(v2);
-    }
-};
-
 struct GlobalTerrain
 {
-    typedef std::unordered_map<Vector2,std::unique_ptr<Block>> TerrainMap;
+    static constexpr int MAX_WIDTH = 2000; //maximum number of blocks in the width direction
+
+    typedef std::vector<Block> TerrainMap;
     TerrainMap terrain;
 
-    void generatePlanet(const Vector2& center, int radius );
+    void addBlock(const Vector2& pos, Block block);
+
+
+    void generatePlanet(const Vector2& center, int radius, const Color& color );
     void generatePlanets();
 
+    void generateRect(const Rectangle& r, const Color& color);
+
+    void generateRightTriangle(const Vector2& corner, float height, const Color& color); //creates an isoscles right triangle
+
+    PossiblePoint lineIntersectWithTerrain(const Vector2& a, const Vector2& b); //return the point closest to "a" that intersects with the terrain
+    PossiblePoint lineBlockIntersect(const Vector2& a, const Vector2& b); //return the point of intersection between the line a-b and the block closest to b as well as whether there even was a collision
+    PossiblePoint lineTerrainIntersect(const Vector2& a, const Vector2& b); //same as above except it'll loop until it can return a point that is out of terrain
+    float lineTerrainEdgePoint(const Vector2& a, const Vector2& b); //returns the interpolation between "a" and "b" that is the last point that intersects with terrain
+
+    size_t pointToIndex(const Vector2& vec);
+    Vector2 indexToPoint(size_t index);
+    Rectangle getBlockRect(const Vector2& vec); //returns the rectangle of a block at that position
+    Vector2 pointBoxEdgeIntersect(const Vector2& a, const Vector2& dir, int dimens);
     //run a function ( (const Vector2&) -> void or bool) for each position within a distance
     //"edge" = true if we only care points along the edge
     //if the function returns true, terminate early
@@ -144,6 +165,7 @@ struct GlobalTerrain
     //remove all blocks in area
     void remove(const Vector2& pos, int radius);
     bool blockExists(const Vector2& pos); //true if block is at position
+    bool isSolid(const Vector2& pos); //returns true if there is terrain at position, not whether or not the pos is in the terrain
 
     void render();
 };
