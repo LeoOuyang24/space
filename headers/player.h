@@ -6,18 +6,11 @@
 #include "objects.h"
 #include "render.h"
 
-//literally the same thing as a rect collider but we store which points collided with terrain
+//a bit more accurate rect collider that checks if a side is in terrain
 struct PlayerCollider : public RectCollider
 {
-    bool inTerrain = false;
-
     PlayerCollider(int width, int height);
-    bool isOnGround(Orient& orient, GlobalTerrain& terrain); //just returns inTerrain
-
-     //returns true and an angle if we are in terrain, or false and 0 if not.
-     // use the bool to set inTerrain so we don't have to call this calculation every time
-     //also makes it so that we don't have to redo this calculation in Object::update to check if we are in the ground and again to update our angle
-    std::pair<bool,float>checkIfInTerrain(Orient& orient, GlobalTerrain& terrain);
+    bool isOnGround(Orient& orient, GlobalTerrain& terrain);
 };
 
 struct PlayerRenderer : public TextureRenderer

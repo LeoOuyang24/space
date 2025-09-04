@@ -12,7 +12,7 @@ PlayerCollider::PlayerCollider(int width, int height) : RectCollider{width,heigh
 
 }
 
-bool PlayerCollider::isOnGround(Orient&, GlobalTerrain&)
+bool PlayerCollider::isOnGround(Orient& o, GlobalTerrain& t)
 {
     float angle = 0; //atan2 can not return 4, so this represents if there was no angle change
     Vector2 last = o.pos;
