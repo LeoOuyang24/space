@@ -21,6 +21,7 @@ struct Shape
 };
 
 //runs a function depending on what shape "shape" is
+//doing this instead of just writing the if statements standardizes the static cast we have to do
 void ifShapeType(const Shape& shape, std::function<void(CircleCollider*)> circleFunc, std::function<void(RectCollider*)> rectFunc);
 
 //same as above but which function to run is determined at compile time

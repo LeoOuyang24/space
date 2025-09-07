@@ -1,6 +1,8 @@
 #ifndef OBJECTS_H_INCLUDED
 #define OBJECTS_H_INCLUDED
 
+#include <tuple>
+
 #include <raylib.h>
 
 #include "blocks.h"
@@ -61,11 +63,12 @@ struct Forces
     enum ForceSource
     {
         GRAVITY = 0,
-        JUMP
+        JUMP,
+        MOVE
     };
 
     std::unordered_map<ForceSource,Vector2> forces; //mapping force source to a force
-    Vector2 totalForce; //total forces
+    Vector2 totalForce = {0,0}; //total forces
 
     void addForce( Vector2 force, ForceSource source);
     void addFriction(float friction);
@@ -86,6 +89,15 @@ struct Object : public PhysicsBody
     Vector2 force = {0,0};
 
     Forces forces;
+
+
+    template<typename... CollArgs, typename... RenderArgs>
+    Object(const Vector2& pos, std::tuple<CollArgs...> colliderArgs, std::tuple<RenderArgs...> renderArgs) : orient({pos}),tint(WHITE),
+                                                                        collider(std::make_from_tuple<Collider>(colliderArgs)),
+                                                                        renderer(std::make_from_tuple<Renderer>(renderArgs))
+    {
+
+    }
 
     template<typename... Args>
     Object(const Orient& o, const Color& color,  Args... args) : orient(o), tint(color), collider(args...)
@@ -129,7 +141,7 @@ struct Object : public PhysicsBody
                     }
                            },orient.pos,searchRad);
 
-            orient.rotation = (atan2(forces.getTotalForce().y,forces.getTotalForce().x));
+           // orient.rotation = (atan2(forces.getTotalForce().y,forces.getTotalForce().x));
 
         }
         /*Vector2 normal = Vector2Normalize(force);

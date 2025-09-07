@@ -6,7 +6,7 @@
 
 float trunc(float x, int places)
 {
-    return floor(x*pow(10,places))/pow(10,places);
+    return static_cast<int>(x*pow(10,places))/pow(10,places);
 }
 
 Vector2 trunc(const Vector2& p, int places)

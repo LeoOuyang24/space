@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include <iostream>
 #include <vector>
+#include <tuple>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -32,6 +33,15 @@ enum Spawns
     SIZE
 };
 
+struct A
+{
+    int x; int y; int z;
+    A(int x_,int y_, int z_) : x(x_),y(y_),z(z_)
+    {
+
+    }
+};
+
 int main(void)
 {
     // Initialization
@@ -45,6 +55,10 @@ int main(void)
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
+
+    std::tuple balls = {1,2,3};
+    std::make_from_tuple<A>(balls);
+
 
     std::vector<PhysicsBody*> objs;
 
