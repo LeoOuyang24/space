@@ -14,6 +14,13 @@ Vector2 trunc(const Vector2& p, int places)
     return {trunc(p.x,places),trunc(p.y,places)};
 }
 
+std::ostream& operator<<(std::ostream &os,const Vector2& vec)
+{
+    os << vec.x << " " << vec.y;
+    return os;
+}
+
+
 Vector2 rotatePoint(const Vector2& p, const Vector2& rotateAround, float angle)
 {
     Vector2 point = {p.x - rotateAround.x,p.y-rotateAround.y};//distances between target and pivot point

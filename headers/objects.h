@@ -74,6 +74,11 @@ struct Forces
     void addFriction(float friction);
     void addFriction(float friction, ForceSource source);
     Vector2 getTotalForce();
+
+    Vector2 operator[](ForceSource source) //read-only, get force from a source
+    {
+        return forces[source];
+    }
 };
 
 
@@ -128,7 +133,6 @@ struct Object : public PhysicsBody
     {
         int searchRad = 100;
 
-        onGround = collider.isOnGround(orient,terrain);
 
         if (!onGround)
         {
@@ -156,6 +160,7 @@ struct Object : public PhysicsBody
         orient.pos += forces.getTotalForce();
         //force = force*(onGround ? 0.5 : .99);
         forces.addFriction(onGround ? 0.5 : .99);
+        onGround = collider.isOnGround(orient,terrain);
 
     }
 };

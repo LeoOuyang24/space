@@ -7,7 +7,7 @@
 Texture2D Player::PlayerSprite;
 
 
-PlayerCollider::PlayerCollider(int width, int height) : RectCollider{width,height}
+PlayerCollider::PlayerCollider(int width, int height, Player& owner_) : RectCollider{width,height}, owner(owner_)
 {
 
 }
@@ -62,7 +62,7 @@ void PlayerRenderer::render(const Shape& shape,const Color& color)
     }
 }
 
-Player::Player(const Vector2& pos_) : Object(pos_,std::make_tuple(PLAYER_DIMEN,PLAYER_DIMEN),std::make_tuple(std::ref(*this)))
+Player::Player(const Vector2& pos_) : Object(pos_,std::make_tuple(PLAYER_DIMEN,PLAYER_DIMEN,std::ref(*this)),std::make_tuple(std::ref(*this)))
 {
     renderer.setSprite(PlayerSprite);
 }
@@ -70,10 +70,10 @@ Player::Player(const Vector2& pos_) : Object(pos_,std::make_tuple(PLAYER_DIMEN,P
 
 void Player::update(GlobalTerrain& terrain)
 {
-        Object::update(terrain);
+    Object::update(terrain);
 
-        tint = onGround ? WHITE : RED;
-        Vector2 normal = orient.getNormal();
+    tint = onGround ? WHITE : RED;
+    Vector2 normal = orient.getNormal();
 
     //if on ground, adjust our angle based on the angle of the terrain
     if (onGround)
@@ -84,11 +84,11 @@ void Player::update(GlobalTerrain& terrain)
         botLeft = terrain.lineTerrainIntersect(botLeft - normal, botLeft).pos;
         botRight = terrain.lineTerrainIntersect(botRight - normal,botRight).pos;
 
-        float newAngle = atan2(botRight.y - botLeft.y, botRight.x - botLeft.x);
+        float newAngle = trunc(atan2(botRight.y - botLeft.y, botRight.x - botLeft.x),3);
 
         if (trunc(abs(newAngle - orient.rotation),2) > .001)
         {
-            orient.rotation = atan2(botRight.y - botLeft.y, botRight.x - botLeft.x);
+            orient.rotation = newAngle;
 
         }
         Debug::addDeferRender([angle=orient.rotation,pos=orient.pos](){
@@ -112,7 +112,7 @@ void Player::update(GlobalTerrain& terrain)
         }
         else
         {
-            speed = trunc(speed*0.9,3);
+            speed = trunc(speed*0.85,3);
         }
 
         Debug::addDeferRender([speed=this->speed,pos=orient.pos](){
@@ -129,14 +129,11 @@ void Player::update(GlobalTerrain& terrain)
                 forces.addForce(orient.getNormal()*-6,Forces::JUMP);
             }
 
+
             Vector2 bruh = terrain.lineTerrainIntersect(orient.pos,orient.pos + orient.getNormal()*collider.height/2).pos; //- normal*(collider.height)/2;
             Vector2 newPos = bruh - orient.getNormal()*(collider.height/2  - 1);
 
             orient.pos = newPos;
-
         }
-        //Vector2 newA =
-
-        //pos += move;
 
     }

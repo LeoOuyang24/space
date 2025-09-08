@@ -33,14 +33,6 @@ enum Spawns
     SIZE
 };
 
-struct A
-{
-    int x; int y; int z;
-    A(int x_,int y_, int z_) : x(x_),y(y_),z(z_)
-    {
-
-    }
-};
 
 int main(void)
 {
@@ -56,8 +48,6 @@ int main(void)
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
-    std::tuple balls = {1,2,3};
-    std::make_from_tuple<A>(balls);
 
 
     std::vector<PhysicsBody*> objs;
@@ -68,18 +58,6 @@ int main(void)
     Vector2 planetCenter = Vector2(0,0);
 
     GlobalTerrain terrain;
-    //terrain.generatePlanets();
-
-   //terrain.generatePlanet(planetCenter,radius);
-   /*terrain.terrain[Vector2(0,0)].reset(new Block(Vector2(0,0),RED));
-    terrain.terrain[Vector2(10,0)].reset(new Block(Vector2(10,0),RED));
-    terrain.terrain[Vector2(0,10)].reset(new Block(Vector2(0,10),RED));
-    terrain.terrain[Vector2(10,10)].reset(new Block(Vector2(10,10),RED));*/
-
-    //terrain.generateRightTriangle({-100,0},100,RED);
-    //terrain.generateRect({100,100,100,100},RED);
-   //terrain.generatePlanet(Vector2(1000,500),100);
-   //terrain.generatePlanet(Vector2(1000,-500),250);
 
     Camera2D camera;
 
@@ -87,18 +65,6 @@ int main(void)
     camera.offset = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
-
-    //terrain.terrain[Vector2(980,400)].reset(new Block{Vector2(980,400),Color{255,0,0,128}});
-
-
-    /*terrain.forEachPos([&terrain](const Vector2& vec){
-                       if (!terrain.blockExists(vec))
-                       {
-                           std::cout << vec.x << " " << vec.y << " " << Vector2Distance(Vector2(1000,500),Vector2(980,400)) << "\n";
-                       }
-                       terrain.terrain[vec]->color.a += 50;
-                       },Vector2(1000,500),100,100.0f);*/
-    // Main game loop
 
     Player::PlayerSprite = LoadTexture("sprites/guy.png");
     Player player(Vector2(0,150));
@@ -113,6 +79,19 @@ int main(void)
 
 
     Vector2 endpoint = {};
+    Vector2 screenDimen = {screenWidth*10,screenHeight*10};
+
+    RenderTexture2D target = LoadRenderTexture(screenDimen.x,screenDimen.y);
+    Shader shader = LoadShader(0, TextFormat("shaders/fragments/stars.h", GLSL_VERSION));
+    Shader sun = LoadShader(0,TextFormat("shaders/fragments/sun.h",GLSL_VERSION));
+
+    SetShaderValue(shader, GetShaderLocation(shader,"screenDimen"), &screenDimen, SHADER_UNIFORM_VEC2);
+    Vector4 sunCenter = {1,1,1,1};
+    Vector4 sunEdge = {0,0.8,1,0};
+    SetShaderValue(sun,GetShaderLocation(sun,"centerColor"),&sunCenter,SHADER_UNIFORM_VEC4);
+    SetShaderValue(sun,GetShaderLocation(sun,"borderColor"),&sunEdge,SHADER_UNIFORM_VEC4);
+
+
 
     //player.force = Vector2(100,0);
     while (!WindowShouldClose())    // Detect window close button or ESC key
@@ -130,7 +109,6 @@ int main(void)
             player.update(terrain);
             accum -= tick/speed;
         }
-
         //std::cout << 1/deltaTime << "\n";
         // Update
         //----------------------------------------------------------------------------------
@@ -145,7 +123,6 @@ int main(void)
 
         if (GetMouseWheelMove())
         {
-                    camera.target += Vector2Normalize(GetMousePosition() - Vector2{screenWidth/2,screenHeight/2});
 
             camera.zoom += ((float)GetMouseWheelMove()*0.05f);
         }
@@ -182,6 +159,23 @@ int main(void)
             terrain.remove(mousePos,50);
         }
 
+        if (GetMousePosition().x >= 0.9*screenWidth)
+        {
+            camera.target.x += 50;
+        }
+        else if (GetMousePosition().x <= 0.1*screenWidth)
+        {
+            camera.target.x -= 50;
+        }
+
+        if (GetMousePosition().y >= 0.9*screenHeight)
+        {
+            camera.target.y += 50;
+        }
+        else if (GetMousePosition().y <= 0.1*screenHeight)
+        {
+            camera.target.y -= 50;
+        }
 
             for (int i = 0; i < objs.size(); i ++)
             {
@@ -202,10 +196,19 @@ int main(void)
 
             BeginMode2D(camera);
 
+
+
                 ClearBackground(BLACK);
                 player.render();
 
-
+                BeginShaderMode(shader);
+                    // NOTE: Render texture must be y-flipped due to default OpenGL coordinates (left-bottom)
+                    DrawTextureRec(target.texture, Rectangle{ 0, 0, (float)target.texture.width, (float)-target.texture.height }, (Vector2){ 0.0f, 0.0f }, WHITE);
+                EndShaderMode();
+               BeginShaderMode(sun);
+                    // NOTE: Render texture must be y-flipped due to default OpenGL coordinates (left-bottom)
+                    DrawTextureRec(target.texture, Rectangle{ 0, 0, (float)target.texture.width, (float)-target.texture.height }, (Vector2){ 0.0f, 0.0f }, WHITE);
+                EndShaderMode();
                 for (int i = 0; i < objs.size(); i ++)
                 {
                     objs[i]->render();

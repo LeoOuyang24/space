@@ -6,14 +6,17 @@
 #include "objects.h"
 #include "render.h"
 
+class Player;
 //a bit more accurate rect collider that checks if a side is in terrain
+//also considered "not on ground" if user is jumped
 struct PlayerCollider : public RectCollider
 {
-    PlayerCollider(int width, int height);
+    PlayerCollider(int width, int height, Player& owner_);
     bool isOnGround(Orient& orient, GlobalTerrain& terrain);
+private:
+    Player& owner;
 };
 
-class Player;
 struct PlayerRenderer : public TextureRenderer
 {
     PlayerRenderer(Player& owner_);
@@ -35,6 +38,7 @@ struct Player : public Object<PlayerCollider,PlayerRenderer>
     float speed = 0;
 
     bool facing = true;
+
 
     Player(const Vector2& pos);
     void update(GlobalTerrain&);
