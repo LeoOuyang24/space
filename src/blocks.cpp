@@ -6,7 +6,7 @@
 #include "../headers/debug.h"
 #include "../headers/blocks.h"
 #include "../headers/resources_math.h"
-
+#include "../headers/game.h"
 
 
 void Block::render()
@@ -31,28 +31,63 @@ Vector2 nearestPos(const Vector2& vec)
                     vec.y - remainY + (remainY >= Block::BLOCK_DIMEN/2)*Block::BLOCK_DIMEN);
 }
 
-Rectangle GlobalTerrain::getBlockRect(const Vector2& pos)
+Terrain::Terrain(int width, int height)
+{
+    blocksTexture = LoadRenderTexture(width,height);
+    BeginTextureMode(blocksTexture);
+        ClearBackground(BLANK);
+    EndTextureMode();
+}
+
+Rectangle Terrain::getBlockRect(const Vector2& pos)
 {
     Vector2 rounded = roundPos(pos);
     return {rounded.x,rounded.y,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN};
 }
 
-void GlobalTerrain::addBlock(const Vector2& pos, Block block)
+void Terrain::addBlock(const Vector2& pos, Block block)
 {
     int index = pointToIndex(pos);
+    //std::cout << index << "\n";
+
+    if (index < 0 || index >= pointToIndex({MAX_WIDTH,MAX_WIDTH}))
+    {
+        return;
+    }
     if (index >= terrain.size())
     {
         terrain.resize(index + 1);
     }
-    else if (index < 0)
-    {
-        return;
-    }
     terrain[index] = block;
+
+    Vector2 rounded = roundPos(pos);
+    BeginTextureMode(blocksTexture);
+        DrawRectangle(rounded.x,blocksTexture.texture.height -rounded.y,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,block.color);
+    EndTextureMode();
+}
+
+void Terrain::remove(const Vector2& pos, int radius)
+{
+    std::vector<Vector2> blocks;
+    forEachPos([this,&blocks](const Vector2& pos){
+               //DrawCircle(pos.x,pos.y,10,GREEN);
+               if (blockExists(pos))
+               {
+                   blocks.push_back(pos);
+                  terrain[pointToIndex(pos)] = {Color(0,0,0,0)};
+
+               }
+               },pos,radius);
+    BeginTextureMode(blocksTexture);
+        for (int i = 0; i < blocks.size(); i ++)
+        {
+            DrawRectangle(pos.x,blocksTexture.texture.height - pos.y,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,BLANK);
+        }
+    EndTextureMode();
 }
 
 
-Vector2 GlobalTerrain::pointBoxEdgeIntersect(const Vector2& a, const Vector2& dir,int dimens)
+Vector2 Terrain::pointBoxEdgeIntersect(const Vector2& a, const Vector2& dir,int dimens)
 {
     //std::cout << dir.x << " " << dir.y << "\n";
     Vector2 rounded = roundPos(a);
@@ -89,7 +124,7 @@ Vector2 GlobalTerrain::pointBoxEdgeIntersect(const Vector2& a, const Vector2& di
     }
 }
 
-PossiblePoint GlobalTerrain::lineIntersectWithTerrain(const Vector2& a, const Vector2& b) //return the point closest to "a" that intersects with the terrain
+PossiblePoint Terrain::lineIntersectWithTerrain(const Vector2& a, const Vector2& b) //return the point closest to "a" that intersects with the terrain
 {
     Vector2 current = a;
     while (current != b)
@@ -110,7 +145,7 @@ PossiblePoint GlobalTerrain::lineIntersectWithTerrain(const Vector2& a, const Ve
     return {false};
 }
 
-PossiblePoint GlobalTerrain::lineTerrainIntersect(const Vector2& a, const Vector2& b)
+PossiblePoint Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b)
 {
 
     Vector2 newA = a;
@@ -135,7 +170,7 @@ PossiblePoint GlobalTerrain::lineTerrainIntersect(const Vector2& a, const Vector
     return lineBlockIntersect(newA,b);
 }
 
-PossiblePoint GlobalTerrain::lineBlockIntersect(const Vector2& a, const Vector2& b)
+PossiblePoint Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b)
 {
 
     if (pointToIndex(a) == pointToIndex(b)) //if a and b are in teh same box, it comes down to whether or not there's empty space there
@@ -170,7 +205,7 @@ PossiblePoint GlobalTerrain::lineBlockIntersect(const Vector2& a, const Vector2&
 
 }
 
-float GlobalTerrain::lineTerrainEdgePoint(const Vector2& a, const Vector2& b)
+float Terrain::lineTerrainEdgePoint(const Vector2& a, const Vector2& b)
 {
     /*
     Given points "a" and "b" this function returns the float such that "a" + float*(b - a) is the last point that intersects with terrain.
@@ -197,18 +232,18 @@ float GlobalTerrain::lineTerrainEdgePoint(const Vector2& a, const Vector2& b)
     return a.x != b.x ? (pos.pos.x - a.x)/(b.x - a.x) : (pos.pos.y - a.y)/(b.y - a.y);
 }
 
-size_t GlobalTerrain::pointToIndex(const Vector2& vec)
+size_t Terrain::pointToIndex(const Vector2& vec)
 {
     //std::cout <<static_cast<int>(vec.y)/Block::BLOCK_DIMEN*MAX_WIDTH + static_cast<int>(vec.x)/Block::BLOCK_DIMEN << "\n";
     return static_cast<int>(vec.y)/Block::BLOCK_DIMEN*MAX_WIDTH + static_cast<int>(vec.x)/Block::BLOCK_DIMEN;
 }
 
-Vector2 GlobalTerrain::indexToPoint(size_t index)
+Vector2 Terrain::indexToPoint(size_t index)
 {
     return {index%MAX_WIDTH*Block::BLOCK_DIMEN,index/MAX_WIDTH*Block::BLOCK_DIMEN};
 }
 
-void GlobalTerrain::generatePlanet(const Vector2& center, int radius, const Color& color )
+void Terrain::generatePlanet(const Vector2& center, int radius, const Color& color )
 {
 
     forEachPos([this,&center,radius,color](const Vector2& pos){
@@ -220,7 +255,7 @@ void GlobalTerrain::generatePlanet(const Vector2& center, int radius, const Colo
 }
 
 
-void GlobalTerrain::generatePlanets()
+void Terrain::generatePlanets()
 {
     const int range = 1000;
 
@@ -243,7 +278,7 @@ void GlobalTerrain::generatePlanets()
     }
 }
 
-void GlobalTerrain::generateRect(const Rectangle& rect, const Color& color)
+void Terrain::generateRect(const Rectangle& rect, const Color& color)
 {
     Vector2 origin = roundPos({rect.x,rect.y});
 
@@ -256,7 +291,7 @@ void GlobalTerrain::generateRect(const Rectangle& rect, const Color& color)
     }
 }
 
-void GlobalTerrain::generateRightTriangle(const Vector2& corner, float height, const Color& color)
+void Terrain::generateRightTriangle(const Vector2& corner, float height, const Color& color)
 {
     Vector2 origin = roundPos({corner.x,corner.y - height});
     int modHeight = height/Block::BLOCK_DIMEN;
@@ -272,34 +307,33 @@ void GlobalTerrain::generateRightTriangle(const Vector2& corner, float height, c
     }
 }
 
-bool GlobalTerrain::blockExists(const Vector2& pos)
+bool Terrain::blockExists(const Vector2& pos)
 {
     return pointToIndex(pos) < terrain.size() && terrain[pointToIndex(pos)].color.a != 0;
 }
 
-void GlobalTerrain::remove(const Vector2& pos, int radius)
-{
-    forEachPos([this](const Vector2& pos){
-               //DrawCircle(pos.x,pos.y,10,GREEN);
-               if (blockExists(pos))
-               {
-                  terrain[pointToIndex(pos)] = {Color(0,0,0,0)};
-               }
-               },pos,radius);
-}
 
-void GlobalTerrain::render()
+
+void Terrain::render(int z)
 {
-    for (int i = 0; i < terrain.size(); i++)
+    /*for (int i = 0; i < terrain.size(); i++)
     {
         if (terrain[i].color.a != 0)
         {
             Vector2 pos = indexToPoint(i);
             DrawRectangle(pos.x,pos.y,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,terrain[i].color);
+            //DrawPlane({pos.x,pos.y,0},{Block::BLOCK_DIMEN,Block::BLOCK_DIMEN},terrain[i].color);
+            //DrawCube({pos.x,pos.y,0},Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,terrain[i].color);
         }
 
 
         //DrawPoly(it->first,6,2,0,BLUE);
-    }
+    }*/
+    //DrawTexture(blocksTexture.texture,0,0,WHITE);
+    //DrawBillboard(Globals::Game.camera,blocksTexture.texture,{blocksTexture.texture.width/2,blocksTexture.texture.height/2,z},blocksTexture.texture.height,WHITE);
+   DrawBillboardPro(Globals::Game.camera,blocksTexture.texture,Rectangle(0,0,blocksTexture.texture.width,blocksTexture.texture.height)
+                    ,Vector3(blocksTexture.texture.width/2,blocksTexture.texture.height/2,Globals::Game.currentZ),Vector3(0,-1,0),
+                    Vector2(blocksTexture.texture.width,blocksTexture.texture.height),Vector2(blocksTexture.texture.width/2,blocksTexture.texture.height/2),
+                    0,WHITE);
 
 }

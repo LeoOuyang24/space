@@ -70,6 +70,12 @@ float pointInRectAngle(const Vector2& p1, const Rectangle& rect)
     }
 }
 
+Vector2 screenToWorld(const Vector2& screenPoint, Camera3D& camera, const Vector2& screenDimen, float z)
+{
+    float ratio = tan(camera.fovy/2*DEG2RAD)*(z - camera.position.z)*2/(std::min(screenDimen.x,screenDimen.y));
+   return (screenPoint - Vector2(screenDimen.x/2,screenDimen.y/2))*Vector2(ratio,ratio) + Vector2(camera.position.x,camera.position.y);
+}
+
 PossiblePoint segmentIntersect(const Vector2& a1, const Vector2& a2, const Vector2& b1, const Vector2& b2)
 {
 

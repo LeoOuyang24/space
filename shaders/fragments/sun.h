@@ -13,16 +13,22 @@ in vec4 fragColor;
 uniform vec4 centerColor;
 uniform vec4 borderColor;
 
+uniform int time;
+
 
 void main()
 {
 
 
+    float sunRadius = 0.1;
 
-    float dist = length(fragTexCoord - vec2(0.5,0.5))/0.5; //find the distance between interpolated pixel and center
+
+
+    float dist = (length(fragTexCoord - vec2(0.5,0.5)) - 0.05)/(0.2); //find the distance between interpolated pixel and center
     //float angle = atan(fragTexCoord.y - 0.5, fragTexCoord.x - 0.5) / M_PI * 180;
 
-    FragColor = mix(centerColor,borderColor,dist);
+    FragColor = mix(centerColor,borderColor,min(1.0,max(0.0,dist)));
+    //FragColor = mix(centerColor,borderColor,dist);
 
 
 

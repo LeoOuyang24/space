@@ -12,6 +12,7 @@
 #include "headers/player.h"
 #include "headers/resources_math.h"
 #include "headers/debug.h"
+#include "headers/game.h"
 
 #include <rlgl.h>
 #include <raymath.h>
@@ -38,10 +39,9 @@ int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const int screenWidth = 1920;
-    const int screenHeight = 1080;
+    const Vector2 screenDimen = {1920,1080};
 
-    InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
+    InitWindow(screenDimen.x, screenDimen.y, "raylib [core] example - basic window");
    // ToggleFullscreen();
     rlDisableBackfaceCulling();
 
@@ -57,14 +57,18 @@ int main(void)
 
     Vector2 planetCenter = Vector2(0,0);
 
-    GlobalTerrain terrain;
+    Terrain terrain(Terrain::MAX_WIDTH,Terrain::MAX_WIDTH);
 
-    Camera2D camera;
+    Camera3D& camera = Globals::Game.camera;
 
-    camera.target = Vector2(screenWidth/2,screenHeight/2);
-    camera.offset = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
-    camera.rotation = 0.0f;
-    camera.zoom = 1.0f;
+    camera.position = Vector3(0,0,0);
+    camera.target = Vector3(0,0,Globals::BACKGROUND_Z);
+    //camera.offset = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
+    //camera.rotation = 0.0f;
+    //camera.zoom = 1.0f;
+    camera.up = {0,-1,0};
+    camera.fovy = 90;
+    camera.projection = CAMERA_PERSPECTIVE;
 
     Player::PlayerSprite = LoadTexture("sprites/guy.png");
     Player player(Vector2(0,150));
@@ -79,20 +83,28 @@ int main(void)
 
 
     Vector2 endpoint = {};
-    Vector2 screenDimen = {screenWidth*10,screenHeight*10};
-
-    RenderTexture2D target = LoadRenderTexture(screenDimen.x,screenDimen.y);
-    Shader shader = LoadShader(0, TextFormat("shaders/fragments/stars.h", GLSL_VERSION));
+    Shader stars= LoadShader(0, TextFormat("shaders/fragments/stars.h", GLSL_VERSION));
     Shader sun = LoadShader(0,TextFormat("shaders/fragments/sun.h",GLSL_VERSION));
 
-    SetShaderValue(shader, GetShaderLocation(shader,"screenDimen"), &screenDimen, SHADER_UNIFORM_VEC2);
+    SetShaderValue(stars, GetShaderLocation(stars,"screenDimen"), &screenDimen, SHADER_UNIFORM_VEC2);
     Vector4 sunCenter = {1,1,1,1};
-    Vector4 sunEdge = {0,0.8,1,0};
+    Vector4 sunEdge = {0,0.8,1,0.0};
     SetShaderValue(sun,GetShaderLocation(sun,"centerColor"),&sunCenter,SHADER_UNIFORM_VEC4);
     SetShaderValue(sun,GetShaderLocation(sun,"borderColor"),&sunEdge,SHADER_UNIFORM_VEC4);
+    auto timeLocation = GetShaderLocation(sun,"time");
 
+    RenderTexture2D bg = LoadRenderTexture(Terrain::MAX_WIDTH*screenDimen.x/screenDimen.y,Terrain::MAX_WIDTH);
+    BeginTextureMode(bg);
+        ClearBackground(BLACK);
+        BeginShaderMode(stars);
+            DrawTexture(bg.texture,0,0,WHITE);
+        EndShaderMode();
+        BeginShaderMode(sun);
+            DrawTexture(bg.texture,0,0,WHITE);
+        EndShaderMode();
+    EndTextureMode();
 
-
+    int frames = 0;
     //player.force = Vector2(100,0);
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
@@ -108,6 +120,7 @@ int main(void)
         {
             player.update(terrain);
             accum -= tick/speed;
+            frames ++;
         }
         //std::cout << 1/deltaTime << "\n";
         // Update
@@ -124,17 +137,18 @@ int main(void)
         if (GetMouseWheelMove())
         {
 
-            camera.zoom += ((float)GetMouseWheelMove()*0.05f);
+            //camera.zoom += ((float)GetMouseWheelMove()*0.05f);
+            camera.position.z += GetMouseWheelMove()*5;
+            camera.target.z += GetMouseWheelMove()*5;
         }
-        Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(),camera);
-
-
+        //Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(),camera);
+        Vector2 mousePos = screenToWorld(GetMousePosition(),camera,screenDimen,Globals::Game.currentZ);
         if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON))
         {
             switch (spawns)
             {
             case PLANETS:
-                terrain.generatePlanet(mousePos,50,Color(255,0,0,100 ));
+                terrain.generatePlanet(mousePos,50,Color(100,255,100,255 ));
                 break;
             case OBJECTS:
                 {
@@ -159,22 +173,26 @@ int main(void)
             terrain.remove(mousePos,50);
         }
 
-        if (GetMousePosition().x >= 0.9*screenWidth)
+        if (GetMousePosition().x >= 0.9*screenDimen.x)
         {
-            camera.target.x += 50;
+            camera.position.x += 10;
+            camera.target.x += 10;
         }
-        else if (GetMousePosition().x <= 0.1*screenWidth)
+        else if (GetMousePosition().x <= 0.1*screenDimen.x)
         {
-            camera.target.x -= 50;
+            camera.position.x -= 10;
+            camera.target.x -= 10;
         }
 
-        if (GetMousePosition().y >= 0.9*screenHeight)
+        if (GetMousePosition().y >= 0.9*screenDimen.y)
         {
-            camera.target.y += 50;
+            camera.position.y += 10;
+            camera.target.y += 10;
         }
-        else if (GetMousePosition().y <= 0.1*screenHeight)
+        else if (GetMousePosition().y <= 0.1*screenDimen.y)
         {
-            camera.target.y -= 50;
+            camera.position.y -= 10;
+            camera.target.y -= 10;
         }
 
             for (int i = 0; i < objs.size(); i ++)
@@ -190,33 +208,41 @@ int main(void)
                     }
                 }
             }
+
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
 
-            BeginMode2D(camera);
-
+            BeginMode3D(camera);
 
 
                 ClearBackground(BLACK);
-                player.render();
 
-                BeginShaderMode(shader);
-                    // NOTE: Render texture must be y-flipped due to default OpenGL coordinates (left-bottom)
-                    DrawTextureRec(target.texture, Rectangle{ 0, 0, (float)target.texture.width, (float)-target.texture.height }, (Vector2){ 0.0f, 0.0f }, WHITE);
+                SetShaderValue(sun,timeLocation,&frames,SHADER_UNIFORM_INT);
+
+                BeginShaderMode(stars);
+                    DrawTexture(bg.texture,0,0,WHITE);
                 EndShaderMode();
                BeginShaderMode(sun);
-                    // NOTE: Render texture must be y-flipped due to default OpenGL coordinates (left-bottom)
-                    DrawTextureRec(target.texture, Rectangle{ 0, 0, (float)target.texture.width, (float)-target.texture.height }, (Vector2){ 0.0f, 0.0f }, WHITE);
+                    DrawTexture(bg.texture,0,0,WHITE);
                 EndShaderMode();
+
+                //DrawSphere({mousePos.x,mousePos.y,z},10,BLUE);
+                DrawBillboardRec(camera,bg.texture,Rectangle(0,0,bg.texture.width,bg.texture.height),
+                                 Vector3(Terrain::MAX_WIDTH/2,Terrain::MAX_WIDTH/2,Globals::BACKGROUND_Z),
+                                 Vector2(bg.texture.width,bg.texture.height),WHITE);
+                //DrawBillboard(camera,Player::PlayerSprite,Vector3(-10,-10,0),1,WHITE);
+            //DrawTexture(bg.texture,0,0,WHITE);
+
+                player.render();
+
                 for (int i = 0; i < objs.size(); i ++)
                 {
                     objs[i]->render();
                 }
 
 
-
-                terrain.render();
+                terrain.render(-500);
             if (spawns == ENDPOINT)
             {
                 DrawCircle(endpoint.x,endpoint.y,3,PURPLE);
@@ -229,8 +255,7 @@ int main(void)
 
             Debug::renderDefers();
 
-            EndMode2D();
-                                  //DrawPoly({100,100},10,10,0,PURPLE);
+            EndMode3D();
 
             DrawText(spawns == PLANETS ? "planets" : spawns == OBJECTS ?  "objects"  : spawns == ENDPOINT ? "endpoint" : "player" ,10,50,30,WHITE);
 

@@ -53,15 +53,21 @@ struct std::hash<Vector2>
     }
 };
 
-struct GlobalTerrain
+struct Terrain
 {
     static constexpr int MAX_WIDTH = 2000; //maximum number of blocks in the width direction
 
     typedef std::vector<Block> TerrainMap;
     TerrainMap terrain;
 
-    void addBlock(const Vector2& pos, Block block);
+    RenderTexture blocksTexture;
 
+    Terrain(int width, int height);
+
+
+    void addBlock(const Vector2& pos, Block block);
+    //remove all blocks in area
+    void remove(const Vector2& pos, int radius);
 
     void generatePlanet(const Vector2& center, int radius, const Color& color );
     void generatePlanets();
@@ -162,12 +168,12 @@ struct GlobalTerrain
         }
     }
 
-    //remove all blocks in area
-    void remove(const Vector2& pos, int radius);
     bool blockExists(const Vector2& pos); //true if block is at position
     bool isSolid(const Vector2& pos); //returns true if there is terrain at position, not whether or not the pos is in the terrain
 
-    void render();
+    void render(int z = 0);
 };
+
+
 
 #endif // BLOCKS_H_INCLUDED

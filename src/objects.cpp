@@ -2,7 +2,7 @@
 
 #include "../headers/objects.h"
 
-bool CircleCollider::isOnGround(const Orient& orient, GlobalTerrain& terrain)
+bool CircleCollider::isOnGround(const Orient& orient, Terrain& terrain)
 {
 
     return  terrain.blockExists(orient.pos + Vector2Rotate(orient.getFacing(),+ M_PI/4)*radius) ||
@@ -11,7 +11,7 @@ bool CircleCollider::isOnGround(const Orient& orient, GlobalTerrain& terrain)
 }
 
 
-bool RectCollider::isOnGround(const Orient& orient, GlobalTerrain& terrain)
+bool RectCollider::isOnGround(const Orient& orient, Terrain& terrain)
 {
     return  terrain.blockExists(rotatePoint(orient.pos + Vector2(width/2,  height/2),orient.pos,orient.rotation)) ||
             terrain.blockExists(rotatePoint(orient.pos + Vector2(-width/2,  -height/2),orient.pos,orient.rotation)) ||

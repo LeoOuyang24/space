@@ -1072,7 +1072,7 @@
 	<raylib.h>
 	"raymath.h"
 
-1757312417 source:c:\users\leoou\documents\projects\helloworld\main.cpp
+1757694615 source:c:\users\leoou\documents\projects\helloworld\main.cpp
 	<unordered_map>
 	<iostream>
 	<vector>
@@ -1083,10 +1083,11 @@
 	"headers/player.h"
 	"headers/resources_math.h"
 	"headers/debug.h"
+	"headers/game.h"
 	<rlgl.h>
 	<raymath.h>
 
-1756878426 c:\users\leoou\documents\projects\helloworld\headers\blocks.h
+1757694207 c:\users\leoou\documents\projects\helloworld\headers\blocks.h
 	<math.h>
 	<memory>
 	<functional>
@@ -1094,37 +1095,39 @@
 	<raymath.h>
 	"../headers/resources_math.h"
 
-1757274392 c:\users\leoou\documents\projects\helloworld\headers\resources_math.h
+1757561660 c:\users\leoou\documents\projects\helloworld\headers\resources_math.h
 	<utility>
 	<raylib.h>
 	"raymath.h"
 
-1757280555 c:\users\leoou\documents\projects\helloworld\headers\objects.h
+1757694351 c:\users\leoou\documents\projects\helloworld\headers\objects.h
 	<tuple>
 	<raylib.h>
 	"blocks.h"
 	"shape.h"
 
-1757280622 c:\users\leoou\documents\projects\helloworld\headers\player.h
+1757694254 c:\users\leoou\documents\projects\helloworld\headers\player.h
 	<tuple>
 	"objects.h"
 	"render.h"
 
-1756908428 source:c:\users\leoou\documents\projects\helloworld\src\blocks.cpp
+1757694234 source:c:\users\leoou\documents\projects\helloworld\src\blocks.cpp
 	<iostream>
 	<math.h>
 	"../headers/debug.h"
 	"../headers/blocks.h"
 	"../headers/resources_math.h"
+	"../headers/game.h"
 
-1756603455 source:c:\users\leoou\documents\projects\helloworld\src\objects.cpp
+1757694297 source:c:\users\leoou\documents\projects\helloworld\src\objects.cpp
 	<iostream>
 	"../headers/objects.h"
 
-1757280623 source:c:\users\leoou\documents\projects\helloworld\src\player.cpp
+1757694268 source:c:\users\leoou\documents\projects\helloworld\src\player.cpp
 	<iostream>
 	"../headers/player.h"
 	"../headers/debug.h"
+	"../headers/game.h"
 
 1741313965 c:\users\leoou\documents\projects\raylib-5.5_win64_mingw-w64\include\raylib.h
 	<stdarg.h>
@@ -1148,7 +1151,7 @@
 	<string.h>
 	<math.h>
 
-1757274408 source:c:\users\leoou\documents\projects\helloworld\src\resources_math.cpp
+1757561665 source:c:\users\leoou\documents\projects\helloworld\src\resources_math.cpp
 	<iostream>
 	<math.h>
 	"../headers/resources_math.h"
@@ -1175,4 +1178,10 @@
 
 1756612712 source:c:\users\leoou\documents\projects\helloworld\src\debug.cpp
 	"../headers/debug.h"
+
+1757694142 c:\users\leoou\documents\projects\helloworld\headers\game.h
+	<raylib.h>
+
+1757651761 source:c:\users\leoou\documents\projects\helloworld\src\game.cpp
+	"../headers/game.h"
 

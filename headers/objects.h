@@ -31,7 +31,7 @@ struct CircleCollider
     int radius = 0;
 
 
-    bool isOnGround(const Orient& orient, GlobalTerrain& t);
+    bool isOnGround(const Orient& orient, Terrain& t);
 
     GET_SHAPE_TYPE(ShapeType::CIRCLE);
 };
@@ -41,7 +41,7 @@ struct RectCollider
     //orient.pos is considered to be the center of the rectangle
     float width = 0, height = 0;
 
-    bool isOnGround(const Orient& orient, GlobalTerrain& t);
+    bool isOnGround(const Orient& orient, Terrain& t);
     Rectangle getRect(const Orient& orient);
 
     GET_SHAPE_TYPE(ShapeType::RECT);
@@ -51,7 +51,7 @@ struct PhysicsBody
 {
     virtual Shape getShape() = 0;
     virtual void render() = 0;
-    virtual void update(GlobalTerrain&) = 0;
+    virtual void update(Terrain&) = 0;
     virtual void addForce( const Vector2& force) = 0;
     virtual Vector2 getPos() = 0;
 };
@@ -129,7 +129,7 @@ struct Object : public PhysicsBody
         //collider.render(orient);
         renderer.render(getShape(),tint);
     }
-    void update(GlobalTerrain& terrain)
+    void update(Terrain& terrain)
     {
         int searchRad = 100;
 

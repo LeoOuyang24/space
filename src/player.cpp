@@ -3,6 +3,7 @@
 #include "../headers/player.h"
 
 #include "../headers/debug.h"
+#include "../headers/game.h"
 
 Texture2D Player::PlayerSprite;
 
@@ -12,7 +13,7 @@ PlayerCollider::PlayerCollider(int width, int height, Player& owner_) : RectColl
 
 }
 
-bool PlayerCollider::isOnGround(Orient& o, GlobalTerrain& t)
+bool PlayerCollider::isOnGround(Orient& o, Terrain& t)
 {
     float angle = 0; //atan2 can not return 4, so this represents if there was no angle change
     Vector2 last = o.pos;
@@ -53,12 +54,15 @@ void PlayerRenderer::render(const Shape& shape,const Color& color)
     {
         RectCollider* rect = static_cast<RectCollider*>(shape.collider);
         int flip = (owner.facing)*2 - 1;
-        DrawTexturePro(*sprite,{0,0,sprite->width*flip,sprite->height},
+        /*DrawTexturePro(*sprite,{0,0,sprite->width*flip,sprite->height},
                        {shape.orient.pos.x,shape.orient.pos.y,rect->width,rect->height},
                        {rect->width/2,rect->height/2},
                        shape.orient.rotation*RAD2DEG,
                        color
-                       );
+                       );*/
+        DrawBillboardPro(Globals::Game.camera,*sprite,Rectangle(0,0,sprite->width*flip,sprite->height),
+                         Vector3(shape.orient.pos.x,shape.orient.pos.y,Globals::Game.currentZ),Vector3(0,-1,0),Vector2(rect->width,rect->height),
+                         Vector2(rect->width/2,rect->height/2),shape.orient.rotation*RAD2DEG*-1,color);
     }
 }
 
@@ -68,7 +72,7 @@ Player::Player(const Vector2& pos_) : Object(pos_,std::make_tuple(PLAYER_DIMEN,P
 }
 
 
-void Player::update(GlobalTerrain& terrain)
+void Player::update(Terrain& terrain)
 {
     Object::update(terrain);
 

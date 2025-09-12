@@ -56,6 +56,7 @@
 		</Unit>
 		<Unit filename="headers/blocks.h" />
 		<Unit filename="headers/debug.h" />
+		<Unit filename="headers/game.h" />
 		<Unit filename="headers/objects.h" />
 		<Unit filename="headers/player.h" />
 		<Unit filename="headers/render.h" />
@@ -64,6 +65,7 @@
 		<Unit filename="main.cpp" />
 		<Unit filename="src/blocks.cpp" />
 		<Unit filename="src/debug.cpp" />
+		<Unit filename="src/game.cpp" />
 		<Unit filename="src/objects.cpp" />
 		<Unit filename="src/player.cpp" />
 		<Unit filename="src/render.cpp" />

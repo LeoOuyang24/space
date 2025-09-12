@@ -12,7 +12,7 @@ class Player;
 struct PlayerCollider : public RectCollider
 {
     PlayerCollider(int width, int height, Player& owner_);
-    bool isOnGround(Orient& orient, GlobalTerrain& terrain);
+    bool isOnGround(Orient& orient, Terrain& terrain);
 private:
     Player& owner;
 };
@@ -41,7 +41,7 @@ struct Player : public Object<PlayerCollider,PlayerRenderer>
 
 
     Player(const Vector2& pos);
-    void update(GlobalTerrain&);
+    void update(Terrain&);
 };
 
 #endif // PLAYER_H_INCLUDED
