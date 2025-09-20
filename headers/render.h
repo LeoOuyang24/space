@@ -5,6 +5,7 @@
 
 #include "shape.h"
 #include "objects.h"
+#include "game.h"
 
 template<ShapeType shapeType>
 struct ShapeRenderer
@@ -14,12 +15,16 @@ struct ShapeRenderer
         ifShapeType<shapeType>(shape,
                                [&color,&shape](CircleCollider* circle){
 
-                            DrawCircle(shape.orient.pos.x,shape.orient.pos.y,circle->radius,color);
+                            //DrawCircle(shape.orient.pos.x,shape.orient.pos.y,circle->radius,color);
+                            DrawCircle3D({shape.orient.pos.x,shape.orient.pos.y,Globals::Game.terrain.getZOfLayer(shape.orient.layer)},circle->radius,{0,0,0},0,WHITE);
 
                     },
                                 [&color,&shape](RectCollider* rect){
+                            DrawCube(Vector3(shape.orient.pos.x,shape.orient.pos.y,Globals::Game.terrain.getZOfLayer(shape.orient.layer)),
+                                     rect->width,rect->height,1,color);
 
-                            DrawRectanglePro({shape.orient.pos.x,shape.orient.pos.y,rect->width,rect->height},{rect->width/2,rect->height/2},shape.orient.rotation*RAD2DEG,color);
+                            //DrawPlane({shape.orient.pos.x,shape.orient.pos.y,Globals::Game.terrain.getZOfLayer(shape.orient.layer)},{rect->width,rect->height},color);
+                            //DrawRectanglePro({shape.orient.pos.x,shape.orient.pos.y,rect->width,rect->height},{rect->width/2,rect->height/2},shape.orient.rotation*RAD2DEG,color);
 
                     }
 

@@ -7,11 +7,16 @@
 
 #include "blocks.h"
 #include "shape.h"
+#include "terrain.h"
 
 struct Orient
 {
     Vector2 pos = {0,0};
+
+    LayerType layer = 0;
+
     float rotation = 0; // IN RADIANS
+
 
     inline Vector2 getFacing() const
     {
@@ -47,13 +52,20 @@ struct RectCollider
     GET_SHAPE_TYPE(ShapeType::RECT);
 };
 
+
 struct PhysicsBody
 {
+    Orient orient;
+
     virtual Shape getShape() = 0;
     virtual void render() = 0;
     virtual void update(Terrain&) = 0;
     virtual void addForce( const Vector2& force) = 0;
     virtual Vector2 getPos() = 0;
+    virtual void collideWith(PhysicsBody& other)
+    {
+
+    }
 };
 
 
@@ -88,26 +100,27 @@ struct Object : public PhysicsBody
     Collider collider;
     Renderer renderer;
     Color tint;
-    Orient orient;
     bool onGround = false;
-
-    Vector2 force = {0,0};
 
     Forces forces;
 
 
     template<typename... CollArgs, typename... RenderArgs>
-    Object(const Vector2& pos, std::tuple<CollArgs...> colliderArgs, std::tuple<RenderArgs...> renderArgs) : orient({pos}),tint(WHITE),
+    Object(const Vector2& pos, std::tuple<CollArgs...> colliderArgs, std::tuple<RenderArgs...> renderArgs) : tint(WHITE),
                                                                         collider(std::make_from_tuple<Collider>(colliderArgs)),
                                                                         renderer(std::make_from_tuple<Renderer>(renderArgs))
     {
-
+        orient = {pos};
     }
 
     template<typename... Args>
-    Object(const Orient& o, const Color& color,  Args... args) : orient(o), tint(color), collider(args...)
+    Object(const Orient& o, const Color& color,  Args... args) : tint(color), collider(args...)
     {
-
+        orient = o;
+    }
+    void addForce(const Vector2& force)
+    {
+        forces.addForce(force,Forces::GRAVITY);
     }
 
     Vector2 getPos()
@@ -118,18 +131,11 @@ struct Object : public PhysicsBody
     {
         return {collider.getShapeType(),orient,&collider};
     }
-
-    void addForce(const Vector2& force_)
+    virtual void render()
     {
-        force += force_;
-    }
-
-    void render()
-    {
-        //collider.render(orient);
         renderer.render(getShape(),tint);
     }
-    void update(Terrain& terrain)
+    virtual void update(Terrain& terrain)
     {
         int searchRad = 100;
 

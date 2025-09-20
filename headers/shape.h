@@ -2,6 +2,9 @@
 #define SHAPE_H_INCLUDED
 
 #include <functional>
+#include <iostream>
+
+#include "raylib.h"
 
 enum ShapeType
 {
@@ -45,6 +48,7 @@ void ifShapeType(const Shape& shape, std::function<void(CircleCollider*)> circle
 }
 
 bool CheckCollision(const Shape& shape1, const Shape& shape2);
+Vector2 GetDimen(const Shape& shape1);
 
 
 #endif // SHAPE_H_INCLUDED

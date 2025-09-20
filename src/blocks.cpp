@@ -3,10 +3,12 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+
 #include "../headers/debug.h"
 #include "../headers/blocks.h"
 #include "../headers/resources_math.h"
 #include "../headers/game.h"
+#include "rlgl.h"
 
 
 void Block::render()
@@ -31,9 +33,9 @@ Vector2 nearestPos(const Vector2& vec)
                     vec.y - remainY + (remainY >= Block::BLOCK_DIMEN/2)*Block::BLOCK_DIMEN);
 }
 
-Terrain::Terrain(int width, int height)
+Terrain::Terrain()
 {
-    blocksTexture = LoadRenderTexture(width,height);
+    blocksTexture = LoadRenderTexture(MAX_WIDTH*Block::BLOCK_DIMEN,MAX_WIDTH*Block::BLOCK_DIMEN);
     BeginTextureMode(blocksTexture);
         ClearBackground(BLANK);
     EndTextureMode();
@@ -50,7 +52,7 @@ void Terrain::addBlock(const Vector2& pos, Block block)
     int index = pointToIndex(pos);
     //std::cout << index << "\n";
 
-    if (index < 0 || index >= pointToIndex({MAX_WIDTH,MAX_WIDTH}))
+    if (index < 0 || index >= pointToIndex({MAX_WIDTH*Block::BLOCK_DIMEN,MAX_WIDTH*Block::BLOCK_DIMEN}))
     {
         return;
     }
@@ -79,10 +81,20 @@ void Terrain::remove(const Vector2& pos, int radius)
                }
                },pos,radius);
     BeginTextureMode(blocksTexture);
+        rlSetBlendMode(BLEND_CUSTOM);
         for (int i = 0; i < blocks.size(); i ++)
         {
-            DrawRectangle(pos.x,blocksTexture.texture.height - pos.y,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,BLANK);
+            DrawRectangle(blocks[i].x,blocksTexture.texture.height - blocks[i].y,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,Fade(BLACK, 0.0f));
         }
+        rlSetBlendMode(BLEND_ALPHA);
+    EndTextureMode();
+}
+
+void Terrain::clear()
+{
+    terrain.clear();
+    BeginTextureMode(blocksTexture);
+        ClearBackground(BLANK);
     EndTextureMode();
 }
 
@@ -204,34 +216,6 @@ PossiblePoint Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b)
     return {!past,past ? b : current};
 
 }
-
-float Terrain::lineTerrainEdgePoint(const Vector2& a, const Vector2& b)
-{
-    /*
-    Given points "a" and "b" this function returns the float such that "a" + float*(b - a) is the last point that intersects with terrain.
-    This is helpful for entities rounding a corner, where one edge of the entity is hanging off terrain.
-    If both "a" and "b" are in terrain, 0 is returned
-    If neither are in terrain, -1 is returned
-    */
-
-    if (a.x == b.x && b.y == a.y) [[unlikely]]
-    {
-        return 0;
-    }
-
-    PossiblePoint pos = lineTerrainIntersect(a,b);
-    if (!pos.exists)
-    {
-        pos = lineTerrainIntersect(b,a);
-        if (!pos.exists)
-        {
-            return -1; //no terrain collision
-        }
-    }
-
-    return a.x != b.x ? (pos.pos.x - a.x)/(b.x - a.x) : (pos.pos.y - a.y)/(b.y - a.y);
-}
-
 size_t Terrain::pointToIndex(const Vector2& vec)
 {
     //std::cout <<static_cast<int>(vec.y)/Block::BLOCK_DIMEN*MAX_WIDTH + static_cast<int>(vec.x)/Block::BLOCK_DIMEN << "\n";
@@ -265,13 +249,7 @@ void Terrain::generatePlanets()
 
     for (int i = 0; i < numPlanets; i++)
     {
-        Vector2 randomCenter = Vector2(0,0); //first planet is always at 0,0
-
-        while (blockExists(randomCenter))
-        {
-            randomCenter = Vector2(rand()%range - range/2,rand()%range - range/2);
-        }
-
+        Vector2 randomCenter = Vector2(rand()%MAX_WIDTH,rand()%MAX_WIDTH);
         int radius = rand()%(100) + 100;
 
         generatePlanet(randomCenter,radius,RED);
@@ -316,24 +294,14 @@ bool Terrain::blockExists(const Vector2& pos)
 
 void Terrain::render(int z)
 {
-    /*for (int i = 0; i < terrain.size(); i++)
-    {
-        if (terrain[i].color.a != 0)
-        {
-            Vector2 pos = indexToPoint(i);
-            DrawRectangle(pos.x,pos.y,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,terrain[i].color);
-            //DrawPlane({pos.x,pos.y,0},{Block::BLOCK_DIMEN,Block::BLOCK_DIMEN},terrain[i].color);
-            //DrawCube({pos.x,pos.y,0},Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,terrain[i].color);
-        }
 
+   Vector3 white = Vector3{255,255,255}*std::max(0.0f,std::min(1.0f,(1 - static_cast<float>(z - Globals::Game.camera.position.z)/Globals::MAX_Z)));
+   //std::cout << (1 - static_cast<float>(z - Globals::Game.currentZ)/Globals::MAX_Z) << "\n";
 
-        //DrawPoly(it->first,6,2,0,BLUE);
-    }*/
-    //DrawTexture(blocksTexture.texture,0,0,WHITE);
-    //DrawBillboard(Globals::Game.camera,blocksTexture.texture,{blocksTexture.texture.width/2,blocksTexture.texture.height/2,z},blocksTexture.texture.height,WHITE);
+   Color balls = {white.x,white.y,white.z,255}; //breaking_bad_crawl_space.gif
    DrawBillboardPro(Globals::Game.camera,blocksTexture.texture,Rectangle(0,0,blocksTexture.texture.width,blocksTexture.texture.height)
-                    ,Vector3(blocksTexture.texture.width/2,blocksTexture.texture.height/2,Globals::Game.currentZ),Vector3(0,-1,0),
+                    ,Vector3(blocksTexture.texture.width/2,blocksTexture.texture.height/2,z),Vector3(0,-1,0),
                     Vector2(blocksTexture.texture.width,blocksTexture.texture.height),Vector2(blocksTexture.texture.width/2,blocksTexture.texture.height/2),
-                    0,WHITE);
+                    0,balls);
 
 }

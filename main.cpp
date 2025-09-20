@@ -13,6 +13,10 @@
 #include "headers/resources_math.h"
 #include "headers/debug.h"
 #include "headers/game.h"
+#include "headers/terrain.h"
+#include "headers/sequencer.h"
+
+#include "headers/portal.h"
 
 #include <rlgl.h>
 #include <raymath.h>
@@ -57,11 +61,25 @@ int main(void)
 
     Vector2 planetCenter = Vector2(0,0);
 
-    Terrain terrain(Terrain::MAX_WIDTH,Terrain::MAX_WIDTH);
+    //Terrain terrain(Terrain::MAX_WIDTH,Terrain::MAX_WIDTH);
+
+    /*Globals::Game.terrain.pushBackTerrain();
+
+    for (int i = 1; i <2; i ++)
+    {
+        Globals::Game.terrain.pushBackTerrain();
+        Globals::Game.terrain.getTerrain(i)->generatePlanets();
+    }*/
+    Globals::Game.terrain.pushBackTerrain();
+    //Globals::Game.terrain.loadTerrain("sprites/layers/green_lines.png");
+    Globals::Game.terrain.loadTerrain("sprites/layers/green_lines.png");
+
+    Terrain& terrain = *Globals::Game.terrain.getTerrain(0);
+    //Globals::Game.terrain.getTerrain(1)->generatePlanet({500,500},100,RED);
 
     Camera3D& camera = Globals::Game.camera;
 
-    camera.position = Vector3(0,0,0);
+    camera.position = Vector3(0,0,Globals::Game.getCurrentZ() - Globals::CAMERA_Z_DISP);
     camera.target = Vector3(0,0,Globals::BACKGROUND_Z);
     //camera.offset = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
     //camera.rotation = 0.0f;
@@ -71,8 +89,16 @@ int main(void)
     camera.projection = CAMERA_PERSPECTIVE;
 
     Player::PlayerSprite = LoadTexture("sprites/guy.png");
-    Player player(Vector2(0,150));
 
+    Globals::Game.player.reset(new Player(Vector2(0,150)));
+    Player& player = *Globals::Game.player;
+    player.orient.layer = 0;
+
+    Object<RectCollider,TextureRenderer> key = Object<RectCollider,TextureRenderer>({{100,100},0},WHITE,10,10);
+    Texture2D keySprite = LoadTexture("sprites/key.png");
+    key.renderer.setSprite(keySprite);
+
+    //Globals::Game.terrain.addObject(key,0);
 
    Spawns spawns = PLANETS;
     int a = 0;
@@ -104,6 +130,10 @@ int main(void)
         EndShaderMode();
     EndTextureMode();
 
+    Portal portal(200,100,0,100,{500,350,1});
+
+    Globals::Game.terrain.addObject(portal,0);
+
     int frames = 0;
     //player.force = Vector2(100,0);
     while (!WindowShouldClose())    // Detect window close button or ESC key
@@ -118,9 +148,17 @@ int main(void)
 
         while (accum >= tick/speed )
         {
-            player.update(terrain);
+            player.update(*Globals::Game.getCurrentTerrain());
+            Globals::Game.terrain.update(Globals::Game.getCurrentLayer());
+
+
+
+
+            Sequences::runPhysics();
+
             accum -= tick/speed;
             frames ++;
+
         }
         //std::cout << 1/deltaTime << "\n";
         // Update
@@ -138,11 +176,12 @@ int main(void)
         {
 
             //camera.zoom += ((float)GetMouseWheelMove()*0.05f);
-            camera.position.z += GetMouseWheelMove()*5;
-            camera.target.z += GetMouseWheelMove()*5;
+            float move = GetMouseWheelMove()*5;
+            camera.position.z += move;
+            camera.target.z += move;
         }
         //Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(),camera);
-        Vector2 mousePos = screenToWorld(GetMousePosition(),camera,screenDimen,Globals::Game.currentZ);
+        Vector2 mousePos = screenToWorld(GetMousePosition(),camera,screenDimen,Globals::Game.getCurrentZ());
         if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON))
         {
             switch (spawns)
@@ -154,13 +193,18 @@ int main(void)
                 {
                     Color color = {255,255,255,100};
                     if (rand()%2)
-                        objs.push_back(new Object<RectCollider,ShapeRenderer<ShapeType::RECT>>({mousePos,0},color,10,10));
+                        Globals::Game.terrain.addObject(*(new Object<RectCollider,ShapeRenderer<ShapeType::RECT>>({mousePos,Globals::Game.getCurrentLayer()},color,10,10)),
+                                                        Globals::Game.getCurrentLayer());
                     else
-                        objs.push_back(new Object<CircleCollider,ShapeRenderer<ShapeType::CIRCLE>>({mousePos,0},color,10));
+                        Globals::Game.terrain.addObject(*(new Object<CircleCollider,ShapeRenderer<ShapeType::CIRCLE>>({mousePos,Globals::Game.getCurrentLayer()},color,10)),
+                                                        Globals::Game.getCurrentLayer());
                     break;
                 }
             case PLAYER:
-                player.orient.pos = mousePos;
+                if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
+                {
+                    player.orient.pos = mousePos;
+                }
                 break;
             case ENDPOINT:
                 endpoint = mousePos;
@@ -195,19 +239,6 @@ int main(void)
             camera.target.y -= 10;
         }
 
-            for (int i = 0; i < objs.size(); i ++)
-            {
-                objs[i]->update(terrain);
-                for (int j = i + 1; j < objs.size(); j ++)
-                {
-                    if (CheckCollision(objs[i]->getShape(), objs[j]->getShape()))
-                    {
-                        Vector2 force = Vector2Normalize(objs[i]->getPos() - objs[j]->getPos() )*10;
-                        objs[i]->addForce(force);
-                        objs[j]->addForce(force*-1);
-                    }
-                }
-            }
 
         // Draw
         //----------------------------------------------------------------------------------
@@ -218,7 +249,6 @@ int main(void)
 
                 ClearBackground(BLACK);
 
-                SetShaderValue(sun,timeLocation,&frames,SHADER_UNIFORM_INT);
 
                 BeginShaderMode(stars);
                     DrawTexture(bg.texture,0,0,WHITE);
@@ -227,22 +257,25 @@ int main(void)
                     DrawTexture(bg.texture,0,0,WHITE);
                 EndShaderMode();
 
+
                 //DrawSphere({mousePos.x,mousePos.y,z},10,BLUE);
+                //DrawSphere({500,500,Globals::Game.terrain.getZOfLayer(1)},10,BLUE);
                 DrawBillboardRec(camera,bg.texture,Rectangle(0,0,bg.texture.width,bg.texture.height),
                                  Vector3(Terrain::MAX_WIDTH/2,Terrain::MAX_WIDTH/2,Globals::BACKGROUND_Z),
                                  Vector2(bg.texture.width,bg.texture.height),WHITE);
                 //DrawBillboard(camera,Player::PlayerSprite,Vector3(-10,-10,0),1,WHITE);
             //DrawTexture(bg.texture,0,0,WHITE);
 
+
+                //camera.target = {player.orient.pos.x,player.orient.pos.y,camera.target.z};
+                //camera.position = {player.orient.pos.x,player.orient.pos.y,camera.position.z};
+
+                Globals::Game.terrain.render();
+
                 player.render();
+                portal.render();
+                key.render();
 
-                for (int i = 0; i < objs.size(); i ++)
-                {
-                    objs[i]->render();
-                }
-
-
-                terrain.render(-500);
             if (spawns == ENDPOINT)
             {
                 DrawCircle(endpoint.x,endpoint.y,3,PURPLE);
@@ -252,7 +285,7 @@ int main(void)
                 DrawCircle(onTerrain.x,onTerrain.y,3,PURPLE);
             }
 
-
+            Sequences::runRenders();
             Debug::renderDefers();
 
             EndMode3D();

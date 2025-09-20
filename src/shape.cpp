@@ -61,3 +61,18 @@ bool CheckCollision(const Shape& shape1, const Shape& shape2)
         }
     }
 }
+
+Vector2 GetDimen(const Shape& shape)
+{
+    Vector2 answer;
+    ifShapeType(shape,[&answer](CircleCollider* coll){
+
+                answer = {coll->radius*2,coll->radius*2};
+
+                },[&answer](RectCollider* rect){
+
+                answer = {rect->width,rect->height};
+
+                });
+    return answer;
+}

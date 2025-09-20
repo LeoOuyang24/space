@@ -13,6 +13,8 @@ struct PlayerCollider : public RectCollider
 {
     PlayerCollider(int width, int height, Player& owner_);
     bool isOnGround(Orient& orient, Terrain& terrain);
+    float getLandingAngle(Orient& orient, Terrain& terrain);
+
 private:
     Player& owner;
 };
@@ -38,6 +40,7 @@ struct Player : public Object<PlayerCollider,PlayerRenderer>
     float speed = 0;
 
     bool facing = true;
+    PhysicsBody* holding = nullptr;
 
 
     Player(const Vector2& pos);

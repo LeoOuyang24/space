@@ -15,11 +15,9 @@ PlayerCollider::PlayerCollider(int width, int height, Player& owner_) : RectColl
 
 bool PlayerCollider::isOnGround(Orient& o, Terrain& t)
 {
-    float angle = 0; //atan2 can not return 4, so this represents if there was no angle change
     Vector2 last = o.pos;
     Vector2 prevCorner = o.pos + Vector2Rotate(Vector2(-width/2,-height/2),o.rotation); //top left
 
-    Vector2 ground = {}; //vector towrads the ground, calculated by adding all intersections
     for (int i = 0; i < 4; i ++) //top right, bot right, bot left, top left
     {
         int index =(i + 1)%4;
@@ -43,6 +41,35 @@ bool PlayerCollider::isOnGround(Orient& o, Terrain& t)
 
 }
 
+float PlayerCollider::getLandingAngle(Orient& o, Terrain& terrain)
+{
+    Vector2 prevCorner = o.pos + Vector2Rotate(Vector2(-width/2,-height/2),o.rotation); //top left
+
+
+    Vector2 ground = {}; //vector towrads the ground, calculated by adding all intersections
+    for (int i = 0; i < 4; i ++) //top right, bot right, bot left, top left
+    {
+        int index =(i + 1)%4;
+        Vector2 corner = o.pos + Vector2Rotate(Vector2(width/2,height/2)*Vector2(index/2*2 - 1,((index%3) != 0)*2 - 1),o.rotation);
+
+        PossiblePoint intersect = terrain.lineIntersectWithTerrain(prevCorner,corner);
+
+        if (intersect.exists)
+        {
+            ground += o.pos - intersect.pos;
+        }
+
+        prevCorner = corner;
+    }
+
+    if (Vector2Equals(ground,{0,0}))
+        {
+            return o.rotation;
+        }
+
+    return atan2(ground.y,ground.x) + M_PI/2;
+    }
+
 PlayerRenderer::PlayerRenderer(Player& owner_) : owner(owner_)
 {
 
@@ -54,15 +81,10 @@ void PlayerRenderer::render(const Shape& shape,const Color& color)
     {
         RectCollider* rect = static_cast<RectCollider*>(shape.collider);
         int flip = (owner.facing)*2 - 1;
-        /*DrawTexturePro(*sprite,{0,0,sprite->width*flip,sprite->height},
-                       {shape.orient.pos.x,shape.orient.pos.y,rect->width,rect->height},
-                       {rect->width/2,rect->height/2},
-                       shape.orient.rotation*RAD2DEG,
-                       color
-                       );*/
         DrawBillboardPro(Globals::Game.camera,*sprite,Rectangle(0,0,sprite->width*flip,sprite->height),
-                         Vector3(shape.orient.pos.x,shape.orient.pos.y,Globals::Game.currentZ),Vector3(0,-1,0),Vector2(rect->width,rect->height),
+                         Vector3(shape.orient.pos.x,shape.orient.pos.y,Globals::Game.terrain.getZOfLayer(shape.orient.layer)),Vector3(0,-1,0),Vector2(rect->width,rect->height),
                          Vector2(rect->width/2,rect->height/2),shape.orient.rotation*RAD2DEG*-1,color);
+
     }
 }
 
@@ -71,13 +93,20 @@ Player::Player(const Vector2& pos_) : Object(pos_,std::make_tuple(PLAYER_DIMEN,P
     renderer.setSprite(PlayerSprite);
 }
 
-
 void Player::update(Terrain& terrain)
 {
+    //if (!onGround)
+
+    bool wasOnGround = onGround;
     Object::update(terrain);
 
     tint = onGround ? WHITE : RED;
     Vector2 normal = orient.getNormal();
+
+    if (onGround && !wasOnGround) //just landed
+    {
+        orient.rotation = collider.getLandingAngle(orient,terrain);
+    }
 
     //if on ground, adjust our angle based on the angle of the terrain
     if (onGround)
@@ -96,10 +125,10 @@ void Player::update(Terrain& terrain)
 
         }
         Debug::addDeferRender([angle=orient.rotation,pos=orient.pos](){
-          DrawLine(pos.x,pos.y,pos.x + cos(angle)*100, pos.y+sin(angle)*100,WHITE);
-          DrawText((std::string("ANGLE: ") + std::to_string(angle)).c_str(),pos.x,pos.y - 10,5,WHITE);
+        DrawLine(pos.x,pos.y,pos.x + cos(angle)*100, pos.y+sin(angle)*100,WHITE);
+        DrawText((std::string("ANGLE: ") + std::to_string(angle)).c_str(),pos.x,pos.y - 10,5,WHITE);
           //DrawText(std::to_string(old).c_str(),pos.x - 10, pos.y - 20, 5, WHITE);
-          });
+        });
     }
 
         if (IsKeyDown(KEY_A) || IsKeyDown(KEY_D))
@@ -139,5 +168,12 @@ void Player::update(Terrain& terrain)
 
             orient.pos = newPos;
         }
+
+    if (holding)
+    {
+        holding->orient.pos = orient.pos + orient.getFacing()*(GetDimen(holding->getShape()).x/2 + collider.width/2)*(facing*2 - 1);
+        holding->orient.layer = orient.layer;
+        holding->orient.rotation = orient.rotation;
+    }
 
     }

@@ -25,7 +25,6 @@ Rectangle RectCollider::getRect(const Orient& orient)
     return Rectangle(orient.pos.x - width/2, orient.pos.y - height/2, width,height);
 }
 
-
 void Forces::addForce(Vector2 force, Forces::ForceSource source)
 {
     if (forces.find(source) != forces.end())

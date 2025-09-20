@@ -20,54 +20,25 @@ struct Block
     void render();
 };
 
-struct Particle
-{
-    Color color;
-    Vector2 pos;
-};
-
 Vector2 roundPos(const Vector2& vec);
 Vector2 nearestPos(const Vector2& vec);
 
-class GlobalTerrain;
-
-const int FOUR_CORNERS = 15; //number for 4 corners
-const int MISSING_TOP_LEFT = 14; //number for triangle where the top left corner is missing
-const int MISSING_TOP_RIGHT = 13; //top right is missing
-const int MISSING_BOTTOM_LEFT = 11; //bottom left is missing
-const int MISSING_BOTTOM_RIGHT = 7;//bottom right is missing
-
-
-
-template<>
-struct std::hash<Vector2>
-{
-    size_t operator()(const Vector2& vec) const
-    {
-
-        Vector2 round = roundPos(vec);
-
-        int a = (round.x >= 0 ? 2*round.x : -2*round.x-1);
-        int b = (round.y >= 0 ? 2*round.y : -2*round.y-1);
-        return (a + b) * (a + b + 1) / 2 + a;
-    }
-};
-
 struct Terrain
 {
-    static constexpr int MAX_WIDTH = 2000; //maximum number of blocks in the width direction
+    static constexpr int MAX_WIDTH = 1000; //maximum number of blocks in the width direction
 
     typedef std::vector<Block> TerrainMap;
     TerrainMap terrain;
 
     RenderTexture blocksTexture;
 
-    Terrain(int width, int height);
+    Terrain();
 
 
     void addBlock(const Vector2& pos, Block block);
     //remove all blocks in area
     void remove(const Vector2& pos, int radius);
+    void clear();
 
     void generatePlanet(const Vector2& center, int radius, const Color& color );
     void generatePlanets();
@@ -79,7 +50,6 @@ struct Terrain
     PossiblePoint lineIntersectWithTerrain(const Vector2& a, const Vector2& b); //return the point closest to "a" that intersects with the terrain
     PossiblePoint lineBlockIntersect(const Vector2& a, const Vector2& b); //return the point of intersection between the line a-b and the block closest to b as well as whether there even was a collision
     PossiblePoint lineTerrainIntersect(const Vector2& a, const Vector2& b); //same as above except it'll loop until it can return a point that is out of terrain
-    float lineTerrainEdgePoint(const Vector2& a, const Vector2& b); //returns the interpolation between "a" and "b" that is the last point that intersects with terrain
 
     size_t pointToIndex(const Vector2& vec);
     Vector2 indexToPoint(size_t index);

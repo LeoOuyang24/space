@@ -57,20 +57,27 @@
 		<Unit filename="headers/blocks.h" />
 		<Unit filename="headers/debug.h" />
 		<Unit filename="headers/game.h" />
+		<Unit filename="headers/item.h" />
 		<Unit filename="headers/objects.h" />
 		<Unit filename="headers/player.h" />
+		<Unit filename="headers/portal.h" />
 		<Unit filename="headers/render.h" />
 		<Unit filename="headers/resources_math.h" />
+		<Unit filename="headers/sequencer.h" />
 		<Unit filename="headers/shape.h" />
+		<Unit filename="headers/terrain.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="src/blocks.cpp" />
 		<Unit filename="src/debug.cpp" />
 		<Unit filename="src/game.cpp" />
 		<Unit filename="src/objects.cpp" />
 		<Unit filename="src/player.cpp" />
+		<Unit filename="src/portals.cpp" />
 		<Unit filename="src/render.cpp" />
 		<Unit filename="src/resources_math.cpp" />
+		<Unit filename="src/sequencer.cpp" />
 		<Unit filename="src/shape.cpp" />
+		<Unit filename="src/terrain.cpp" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>
