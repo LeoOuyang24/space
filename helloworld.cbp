@@ -54,7 +54,10 @@
 		<Unit filename="blocks.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="headers/blackMagic.h" />
 		<Unit filename="headers/blocks.h" />
+		<Unit filename="headers/checkFunctions.h" />
+		<Unit filename="headers/collideTriggers.h" />
 		<Unit filename="headers/debug.h" />
 		<Unit filename="headers/game.h" />
 		<Unit filename="headers/item.h" />
@@ -67,9 +70,14 @@
 		<Unit filename="headers/shape.h" />
 		<Unit filename="headers/terrain.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="shaders/fragments/portal.h" />
+		<Unit filename="shaders/fragments/stars.h" />
+		<Unit filename="shaders/fragments/sun.h" />
 		<Unit filename="src/blocks.cpp" />
+		<Unit filename="src/collideTriggers.cpp" />
 		<Unit filename="src/debug.cpp" />
 		<Unit filename="src/game.cpp" />
+		<Unit filename="src/item.cpp" />
 		<Unit filename="src/objects.cpp" />
 		<Unit filename="src/player.cpp" />
 		<Unit filename="src/portals.cpp" />

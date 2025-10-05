@@ -1072,7 +1072,7 @@
 	<raylib.h>
 	"raymath.h"
 
-1758260953 source:c:\users\leoou\documents\projects\helloworld\main.cpp
+1759704095 source:c:\users\leoou\documents\projects\helloworld\main.cpp
 	<unordered_map>
 	<iostream>
 	<vector>
@@ -1087,10 +1087,12 @@
 	"headers/terrain.h"
 	"headers/sequencer.h"
 	"headers/portal.h"
+	"headers/collideTriggers.h"
+	"headers/item.h"
 	<rlgl.h>
 	<raymath.h>
 
-1758119919 c:\users\leoou\documents\projects\helloworld\headers\blocks.h
+1759702112 c:\users\leoou\documents\projects\helloworld\headers\blocks.h
 	<math.h>
 	<memory>
 	<functional>
@@ -1103,19 +1105,21 @@
 	<raylib.h>
 	"raymath.h"
 
-1758258613 c:\users\leoou\documents\projects\helloworld\headers\objects.h
+1759687975 c:\users\leoou\documents\projects\helloworld\headers\objects.h
 	<tuple>
 	<raylib.h>
 	"blocks.h"
 	"shape.h"
 	"terrain.h"
+	"checkFunctions.h"
+	"collideTriggers.h"
 
-1758153777 c:\users\leoou\documents\projects\helloworld\headers\player.h
+1759024585 c:\users\leoou\documents\projects\helloworld\headers\player.h
 	<tuple>
 	"objects.h"
 	"render.h"
 
-1758120733 source:c:\users\leoou\documents\projects\helloworld\src\blocks.cpp
+1759702927 source:c:\users\leoou\documents\projects\helloworld\src\blocks.cpp
 	<iostream>
 	<math.h>
 	"../headers/debug.h"
@@ -1128,11 +1132,12 @@
 	<iostream>
 	"../headers/objects.h"
 
-1758256587 source:c:\users\leoou\documents\projects\helloworld\src\player.cpp
+1759688136 source:c:\users\leoou\documents\projects\helloworld\src\player.cpp
 	<iostream>
 	"../headers/player.h"
 	"../headers/debug.h"
 	"../headers/game.h"
+	"../headers/item.h"
 
 1741313965 c:\users\leoou\documents\projects\raylib-5.5_win64_mingw-w64\include\raylib.h
 	<stdarg.h>
@@ -1171,13 +1176,13 @@
 	"../headers/shape.h"
 	"../headers/objects.h"
 
-1758151920 c:\users\leoou\documents\projects\helloworld\headers\render.h
+1759008547 c:\users\leoou\documents\projects\helloworld\headers\render.h
 	<iostream>
 	"shape.h"
 	"objects.h"
 	"game.h"
 
-1758155419 source:c:\users\leoou\documents\projects\helloworld\src\render.cpp
+1759032903 source:c:\users\leoou\documents\projects\helloworld\src\render.cpp
 	"../headers/render.h"
 
 1756612720 c:\users\leoou\documents\projects\helloworld\headers\debug.h
@@ -1187,24 +1192,25 @@
 1756612712 source:c:\users\leoou\documents\projects\helloworld\src\debug.cpp
 	"../headers/debug.h"
 
-1758260722 c:\users\leoou\documents\projects\helloworld\headers\game.h
+1759030686 c:\users\leoou\documents\projects\helloworld\headers\game.h
 	<memory>
 	<raylib.h>
 	"terrain.h"
 
-1758260759 source:c:\users\leoou\documents\projects\helloworld\src\game.cpp
+1759703817 source:c:\users\leoou\documents\projects\helloworld\src\game.cpp
 	<iostream>
 	"../headers/game.h"
 	"../headers/sequencer.h"
 	"../headers/player.h"
 
-1758258603 source:c:\users\leoou\documents\projects\helloworld\src\terrain.cpp
+1758999793 source:c:\users\leoou\documents\projects\helloworld\src\terrain.cpp
 	"../headers/terrain.h"
 	"../headers/game.h"
 	"../headers/objects.h"
 
-1758346289 c:\users\leoou\documents\projects\helloworld\headers\terrain.h
+1758695140 c:\users\leoou\documents\projects\helloworld\headers\terrain.h
 	"blocks.h"
+	<list>
 
 1757779610 source:c:\users\leoou\documents\projects\helloworld\src\sequencer.cpp
 	"../headers/sequencer.h"
@@ -1213,12 +1219,38 @@
 	<functional>
 	<list>
 
-1758260345 c:\users\leoou\documents\projects\helloworld\headers\portal.h
+1759688330 c:\users\leoou\documents\projects\helloworld\headers\portal.h
 	"objects.h"
 	"shape.h"
 	"render.h"
 	"player.h"
+	"collideTriggers.h"
+	"item.h"
 
-1758260492 source:c:\users\leoou\documents\projects\helloworld\src\portals.cpp
+1759688368 source:c:\users\leoou\documents\projects\helloworld\src\portals.cpp
 	"../headers/portal.h"
+
+1759681266 c:\users\leoou\documents\projects\helloworld\headers\collidetriggers.h
+	<functional>
+	"raylib.h"
+	<iostream>
+
+1758998460 c:\users\leoou\documents\projects\helloworld\headers\checkfunctions.h
+	"blackMagic.h"
+
+1759636914 c:\users\leoou\documents\projects\helloworld\headers\blackmagic.h
+
+1759685233 c:\users\leoou\documents\projects\helloworld\headers\item.h
+	"objects.h"
+	"render.h"
+	"player.h"
+
+1759024751 source:c:\users\leoou\documents\projects\helloworld\src\collidetriggers.cpp
+	"../headers/collideTriggers.h"
+	"../headers/item.h"
+	"../headers/objects.h"
+
+1759685184 source:c:\users\leoou\documents\projects\helloworld\src\item.cpp
+	"../headers/item.h"
+	"../headers/collideTriggers.h"
 

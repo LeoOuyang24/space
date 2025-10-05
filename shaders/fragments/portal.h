@@ -26,6 +26,7 @@ void main()
 
     finalColor.a = min(1,max(0,finalColor.a)); //the alpha value needs to be either 0 or 1
     finalColor = finalColor*mix(vec4(1,1,1,1),vec4(1,1,0,0),dist*2); //blend the colors
+
     //finalColor += vec4(1,0,0,0.1);
 
 }

@@ -8,6 +8,9 @@
 #include "blocks.h"
 #include "shape.h"
 #include "terrain.h"
+#include "checkFunctions.h"
+#include "collideTriggers.h"
+
 
 struct Orient
 {
@@ -52,6 +55,13 @@ struct RectCollider
     GET_SHAPE_TYPE(ShapeType::RECT);
 };
 
+struct DefaultCollideTrigger
+{
+    void collideWith(PhysicsBody& other)
+    {
+
+    }
+};
 
 struct PhysicsBody
 {
@@ -92,35 +102,56 @@ struct Forces
         return forces[source];
     }
 };
-
-
-template<typename Collider, typename Renderer>
+template<typename Collider, typename Renderer, typename... More>
 struct Object : public PhysicsBody
 {
+
     Collider collider;
     Renderer renderer;
+
+    GET_TYPE_WITH_collideWith<More...>::type collideTrigger;
+
     Color tint;
     bool onGround = false;
 
+    bool followGravity = true;
     Forces forces;
 
 
     template<typename... CollArgs, typename... RenderArgs>
-    Object(const Vector2& pos, std::tuple<CollArgs...> colliderArgs, std::tuple<RenderArgs...> renderArgs) : tint(WHITE),
+    Object(const Orient& pos, std::tuple<CollArgs...> colliderArgs, std::tuple<RenderArgs...> renderArgs, std::tuple<More...> tup) : tint(WHITE),
                                                                         collider(std::make_from_tuple<Collider>(colliderArgs)),
-                                                                        renderer(std::make_from_tuple<Renderer>(renderArgs))
+                                                                        renderer(std::make_from_tuple<Renderer>(renderArgs)),
+                                                                        collideTrigger(std::move(std::get<decltype(collideTrigger)>(tup)))
     {
-        orient = {pos};
+        orient = pos;
     }
-
     template<typename... Args>
     Object(const Orient& o, const Color& color,  Args... args) : tint(color), collider(args...)
     {
         orient = o;
     }
+
+    template<typename... CollArgs, typename... RenderArgs, typename... Args>
+    Object(const Orient& pos, std::tuple<CollArgs...> colliderArgs, std::tuple<RenderArgs...> renderArgs, Args... conArgs) : tint(WHITE),
+                                                                        collider(std::make_from_tuple<Collider>(colliderArgs)),
+                                                                        renderer(std::make_from_tuple<Renderer>(renderArgs)),
+                                                                        collideTrigger(createFromArgs<decltype(collideTrigger)>(conArgs...))
+    {
+        orient = pos;
+    }
+
     void addForce(const Vector2& force)
     {
         forces.addForce(force,Forces::GRAVITY);
+    }
+    void collideWith(PhysicsBody& other)
+    {
+        //if there is a collide with function,
+        if constexpr (has_collideWith<decltype(collideTrigger)>)
+        {
+            collideTrigger.collideWith(*this,other);
+        }
     }
 
     Vector2 getPos()
@@ -140,7 +171,7 @@ struct Object : public PhysicsBody
         int searchRad = 100;
 
 
-        if (!onGround)
+        if (!onGround && followGravity)
         {
 
                 terrain.forEachPos([this,&terrain](const Vector2& pos){

@@ -27,6 +27,7 @@ private:
     Player& owner;
 };
 
+class Item;
 struct Player : public Object<PlayerCollider,PlayerRenderer>
 {
     static Texture2D PlayerSprite;
@@ -40,11 +41,13 @@ struct Player : public Object<PlayerCollider,PlayerRenderer>
     float speed = 0;
 
     bool facing = true;
-    PhysicsBody* holding = nullptr;
+    std::weak_ptr<Item> holding;
 
 
     Player(const Vector2& pos);
     void update(Terrain&);
+    void setHolding(Item& obj);
+    Item* getHolding();
 };
 
 #endif // PLAYER_H_INCLUDED

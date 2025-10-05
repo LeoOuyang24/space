@@ -20,16 +20,28 @@ struct Globals
     static constexpr int CAMERA_Z_DISP = START_Z; //how far the camera is at all times from getCurrentZ()
 
     LayerType currentLayer = 0; //layer player is at
-    std::unique_ptr<Player> player;
+    std::shared_ptr<Player> player;
 
-    void setLayer(LayerType layer); //set layer and mvoe the camera
+    void init();
+    void setLayer(LayerType layer); //set layer, move the player, and the camera
 
     float getCurrentZ();
     LayerType getCurrentLayer();
     Terrain* getCurrentTerrain();
 
+    void addObject(PhysicsBody& body);
+    void addObject(std::shared_ptr<PhysicsBody> ptr);
+
+    template<typename Obj, typename... Ts>
+    void addObject(Ts... stuff)
+    {
+        std::shared_ptr<PhysicsBody> made = std::make_shared<Obj>(stuff...);
+        addObject(made);
+    }
+
     Camera3D camera;
     GlobalTerrain terrain;
+    ObjectLookup objects;
 
 private:
     Globals();

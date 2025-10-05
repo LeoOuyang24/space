@@ -65,6 +65,8 @@ void Terrain::addBlock(const Vector2& pos, Block block)
     Vector2 rounded = roundPos(pos);
     BeginTextureMode(blocksTexture);
         DrawRectangle(rounded.x,blocksTexture.texture.height -rounded.y,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,block.color);
+        //DrawPoly({rounded.x + Block::BLOCK_DIMEN/2,blocksTexture.texture.height -rounded.y + Block::BLOCK_DIMEN/2},10,Block::BLOCK_DIMEN*2,0,block.color);
+        //DrawCircle(rounded.x + Block::BLOCK_DIMEN/2,blocksTexture.texture.height -rounded.y + Block::BLOCK_DIMEN/2,Block::BLOCK_DIMEN*2,block.color );
     EndTextureMode();
 }
 
@@ -84,6 +86,8 @@ void Terrain::remove(const Vector2& pos, int radius)
         rlSetBlendMode(BLEND_CUSTOM);
         for (int i = 0; i < blocks.size(); i ++)
         {
+            //DrawCircle(blocks[i].x + Block::BLOCK_DIMEN/2,blocksTexture.texture.height -blocks[i].y + Block::BLOCK_DIMEN/2,Block::BLOCK_DIMEN*2,BLANK );
+            //DrawPoly({blocks[i].x + Block::BLOCK_DIMEN/2,blocksTexture.texture.height -blocks[i].y + Block::BLOCK_DIMEN/2},10,Block::BLOCK_DIMEN*2,0,BLANK);
             DrawRectangle(blocks[i].x,blocksTexture.texture.height - blocks[i].y,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,Fade(BLACK, 0.0f));
         }
         rlSetBlendMode(BLEND_ALPHA);
@@ -295,7 +299,7 @@ bool Terrain::blockExists(const Vector2& pos)
 void Terrain::render(int z)
 {
 
-   Vector3 white = Vector3{255,255,255}*std::max(0.0f,std::min(1.0f,(1 - static_cast<float>(z - Globals::Game.camera.position.z)/Globals::MAX_Z)));
+   Vector3 white = Vector3{255,255,255}*std::max(0.0f,std::min(1.0f,(1 - static_cast<float>(z - Globals::Game.camera.position.z - Globals::Game.CAMERA_Z_DISP)/Globals::MAX_Z)));
    //std::cout << (1 - static_cast<float>(z - Globals::Game.currentZ)/Globals::MAX_Z) << "\n";
 
    Color balls = {white.x,white.y,white.z,255}; //breaking_bad_crawl_space.gif

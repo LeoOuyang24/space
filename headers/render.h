@@ -35,7 +35,12 @@ struct ShapeRenderer
 struct TextureRenderer
 {
     Texture2D* sprite = nullptr;
+    bool facing = false; //true if facing to the right
+    TextureRenderer()
+    {
 
+    }
+    TextureRenderer(Texture2D& sprite);
     void setSprite(Texture2D& sprite_);
     virtual void render(const Shape& shape, const Color& color);
 

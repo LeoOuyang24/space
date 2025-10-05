@@ -2,38 +2,38 @@
 #include "../headers/game.h"
 #include "../headers/objects.h"
 
-void Layer::update()
+
+void ObjectLookup::addObject(PhysicsBody& body)
 {
-    for (int i = 0; i < objects.size(); i ++)
+    if (objects.find(&body) == objects.end())
     {
-        for (int j = 0; j < i; j ++)
-        {
-            if (CheckCollision(objects[i]->getShape(),objects[j]->getShape()))
-            {
-                objects[i]->collideWith(*objects[j]);
-                objects[j]->collideWith(*objects[i]);
-            }
-        }
+        objects[&body].reset(&body);
     }
 }
 
-void Layer::render(float z)
+void ObjectLookup::addObject(std::shared_ptr<PhysicsBody> ptr)
 {
-    terrain.render(z);
-    for (int i = 0; i < objects.size(); i++)
+    if (ptr.get() && objects.find(ptr.get()) == objects.end())
     {
-        objects[i]->render();
+        objects[ptr.get()] = ptr;
     }
 }
-
-void GlobalTerrain::addObject(PhysicsBody& body, LayerType layer)
+std::shared_ptr<PhysicsBody> ObjectLookup::getObject(PhysicsBody& body)
 {
-    if (layer >= layers.size())
+    auto it = objects.find(&body);
+    if(it == objects.end())
     {
-        return;
+        return std::shared_ptr<PhysicsBody>();
     }
+    return it->second;
+}
 
-    layers[layer].objects.emplace_back(&body);
+void GlobalTerrain::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
+{
+    if (ptr.get() && layer < layers.size())
+    {
+        layers[layer].objects.emplace_back(ptr);
+    }
 }
 
 void GlobalTerrain::pushBackTerrain()
@@ -87,7 +87,29 @@ void GlobalTerrain::update(LayerType layer)
 {
     if (layer < layers.size())
     {
-        layers[layer].update();
+        auto& objects = layers[layer].objects;
+        for (auto it = objects.begin(); it != objects.end();)
+        {
+            PhysicsBody* obj = it->lock().get();
+            if (obj && obj->orient.layer == layer) //if object is non-null and in this layer, update it!
+            {
+                obj->update(*getTerrain(layer));
+                for (auto jt = objects.begin(); jt != it; ++jt)
+                {
+                    PhysicsBody* obj2 = jt->lock().get(); //guaranteed to be non-null and in this layer, since jt < it;
+                    if (CheckCollision(obj->getShape(),obj2->getShape()))
+                    {
+                        obj->collideWith(*obj2);
+                        obj2->collideWith(*obj);
+                    }
+                }
+                ++it;
+            }
+            else //otherwise, remove it
+            {
+                it = objects.erase(it);
+            }
+        }
     }
 }
 
@@ -100,7 +122,16 @@ void GlobalTerrain::render()
     //Alternatively, we can make both "limit" and "i" a size_t and then check if i > layers.size(), but that seems unintuitive
     for (int i = layers.size() - 1; i >= limit ;i--)
     {
-        layers[i].render(getZOfLayer(i));
+        float z = getZOfLayer(i);
+
+        layers[i].terrain.render(z);
+        for (auto it = layers[i].objects.begin(); it != layers[i].objects.end(); ++it)
+        {
+            if (PhysicsBody* obj = it->lock().get()) [[likely]] //highly likely since update removes bad pointers and it always runs first
+            {
+                obj->render();
+            }
+        }
     }
 }
 
