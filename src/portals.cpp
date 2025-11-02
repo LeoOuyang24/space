@@ -7,6 +7,7 @@ Portal::Portal(int x, int y, int z, int r, const Vector3& dest_) : dest({dest_.x
  {
     portalShader = LoadShader(0,TextFormat("shaders/fragments/portal.h",330));
     texture = LoadRenderTexture(100,100);
+    followGravity = false;
 
  }
 
@@ -39,9 +40,10 @@ Portal::Portal(int x, int y, int z, int r, const Vector3& dest_) : dest({dest_.x
  {
      return [&self,disp](PhysicsBody& owner, PhysicsBody& other)
     {
+        //if active, we have a valid portal, a player has interacted with us, and either we are already unlocked or the player has the key, spawn the portal!
         if (self.active && self.ptr.get() &&
             &other == Globals::Game.player.get() &&
-            ((self.lockVal == Key::unlocked && !Globals::Game.player->getHolding()) || (Globals::Game.player->getHolding() && Key::unlocks(Globals::Game.player->getHolding()->getKey(),self.lockVal))))
+            (self.lockVal == Key::unlocked || Key::unlocks(Globals::Game.player->keys,self.lockVal)))
         {
             self.active = false;
             self.ptr->orient.pos = owner.orient.pos + disp;

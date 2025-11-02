@@ -22,28 +22,18 @@ struct Portal : public Object<CircleCollider,ShapeRenderer<CIRCLE>>
     void render();
 };
 
-template<typename... T>
-struct Test
-{
-    std::shared_ptr<Portal> ptr;
-    Test(bool)
-    {
-
-    }
-};
-
 //spawn a portal when interacted with
 struct TriggerPortalSpawn : public InteractComponent
 {
     bool active = true;
     bool transition = false;
     std::shared_ptr<Portal> ptr;
-    size_t lockVal = Key::unlocked;
+    Key::KeyVal lockVal = Key::unlocked;
 
     static InteractAction createInteractFunc(TriggerPortalSpawn& self, const Vector2& disp);
 
     TriggerPortalSpawn(bool transition_, const Vector3& start,
-                       const Vector3& end, int radius, size_t keyVal_ = Key::unlocked) :
+                       const Vector3& end, int radius, Key::KeyVal keyVal_ = Key::unlocked) :
                                                                 transition(transition_),
                                                                 lockVal(keyVal_),
                                                                 ptr(std::make_shared<Portal>(start.x,start.y,start.z,radius,end)),
@@ -53,7 +43,7 @@ struct TriggerPortalSpawn : public InteractComponent
     }
 
     TriggerPortalSpawn(bool transition_, const Vector2& disp, float z,
-                       const Vector3& end, int radius, size_t keyVal_ = Key::unlocked) :
+                       const Vector3& end, int radius, Key::KeyVal keyVal_ = Key::unlocked) :
                                                         transition(transition_),
                                                         lockVal(keyVal_),
                                                         ptr(std::make_shared<Portal>(0,0,z,radius,end)),

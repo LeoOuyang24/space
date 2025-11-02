@@ -91,7 +91,7 @@ void GlobalTerrain::update(LayerType layer)
         for (auto it = objects.begin(); it != objects.end();)
         {
             PhysicsBody* obj = it->lock().get();
-            if (obj && obj->orient.layer == layer) //if object is non-null and in this layer, update it!
+            if (obj && obj->orient.layer == layer && !obj->isDead()) //if object is non-null and in this layer and not dead, update it!
             {
                 obj->update(*getTerrain(layer));
                 for (auto jt = objects.begin(); jt != it; ++jt)

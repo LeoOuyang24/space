@@ -7,8 +7,13 @@
 
 #include "../headers/item.h"
 
-Texture2D Player::PlayerSprite;
+size_t std::hash<Key::KeyVal>::operator()(const Key::KeyVal& val) const
+{
+    //basically colors are hashed based on their hex value
+    return val.r  << 24 + val.g << 16 + val.b << 8 + val.a;
+}
 
+Texture2D Player::PlayerSprite;
 
 PlayerCollider::PlayerCollider(int width, int height, Player& owner_) : RectCollider{width,height}, owner(owner_)
 {
@@ -43,34 +48,7 @@ bool PlayerCollider::isOnGround(Orient& o, Terrain& t)
 
 }
 
-float PlayerCollider::getLandingAngle(Orient& o, Terrain& terrain)
-{
-    Vector2 prevCorner = o.pos + Vector2Rotate(Vector2(-width/2,-height/2),o.rotation); //top left
 
-
-    Vector2 ground = {}; //vector towrads the ground, calculated by adding all intersections
-    for (int i = 0; i < 4; i ++) //top right, bot right, bot left, top left
-    {
-        int index =(i + 1)%4;
-        Vector2 corner = o.pos + Vector2Rotate(Vector2(width/2,height/2)*Vector2(index/2*2 - 1,((index%3) != 0)*2 - 1),o.rotation);
-
-        PossiblePoint intersect = terrain.lineIntersectWithTerrain(prevCorner,corner);
-
-        if (intersect.exists)
-        {
-            ground += o.pos - intersect.pos;
-        }
-
-        prevCorner = corner;
-    }
-
-    if (Vector2Equals(ground,{0,0}))
-        {
-            return o.rotation;
-        }
-
-    return atan2(ground.y,ground.x) + M_PI/2;
-    }
 
 PlayerRenderer::PlayerRenderer(Player& owner_) : owner(owner_)
 {
@@ -87,7 +65,16 @@ void PlayerRenderer::render(const Shape& shape,const Color& color)
                          dimen*0.5,shape.orient.rotation*RAD2DEG*-1,color);
 
     }*/
-    TextureRenderer::render(shape,color);
+    Shape shape2 = shape;
+    shape2.orient.rotation += owner.aimAngle;
+    TextureRenderer::render(shape2,color);
+    if (owner.state == Player::State::CHARGING)
+    {
+        DrawLine3D({shape2.orient.pos.x,shape2.orient.pos.y,Globals::Game.getCurrentZ()},
+                   {shape2.orient.pos.x + cos(shape2.orient.rotation - M_PI/2)*100,shape2.orient.pos.y + sin(shape2.orient.rotation - M_PI/2)*100,Globals::Game.getCurrentZ()},
+                   RED
+                   );
+    }
 }
 
 Player::Player(const Vector2& pos_) : Object({pos_},std::make_tuple(PLAYER_DIMEN,PLAYER_DIMEN,std::ref(*this)),std::make_tuple(std::ref(*this)))
@@ -99,69 +86,21 @@ void Player::update(Terrain& terrain)
 {
     //if (!onGround)
     bool wasOnGround = onGround;
-    Object::update(terrain);
+    Object::applyForces(terrain);
 
     tint = onGround ? WHITE : RED;
     Vector2 normal = orient.getNormal();
 
+    Object::adjustAngle(terrain);
 
-    //if on ground, adjust our angle based on the angle of the terrain
-    if (onGround)
-    {
-        if (!wasOnGround) //just landed
-        {
-            orient.rotation = collider.getLandingAngle(orient,terrain);
-        }
-        else //otherwise adjust angle based on terrain angle
-        {
-            Vector2 botLeft = orient.pos +Vector2Rotate(Vector2(-collider.width/2,collider.height/2),orient.rotation);
-            Vector2 botRight = orient.pos + Vector2Rotate(Vector2(collider.width/2,collider.height/2),orient.rotation);
+    handleControls();
 
-            botLeft = terrain.lineTerrainIntersect(botLeft - normal, botLeft).pos;
-            botRight = terrain.lineTerrainIntersect(botRight - normal,botRight).pos;
-
-            float newAngle = trunc(atan2(botRight.y - botLeft.y, botRight.x - botLeft.x),3);
-
-            if (trunc(abs(newAngle - orient.rotation),2) > .001)
-            {
-                orient.rotation = newAngle;
-            }
-        }
-    }
-
-        if (IsKeyDown(KEY_A) || IsKeyDown(KEY_D))
-        {
-            this->facing = IsKeyDown(KEY_D);
-
-            float accel = (onGround ? PLAYER_GROUND_ACCEL : PLAYER_AIR_ACCEL);
-            float accelAmount = speed == 0 ? accel*2 : std::max(accel*0.5f,abs(accel*speed));
-            float maxSpeed = IsKeyDown(KEY_LEFT_SHIFT) ? PLAYER_RUN_MAX_SPEED : PLAYER_MAX_SPEED;
-            speed += accelAmount*(facing*2 - 1);
-
-
-            speed = std::min(abs(speed),maxSpeed)*((speed > 0)*2 - 1); //prevent speed from exceeding maximum
-
-            this->renderer.facing = facing;
-        }
-        else
-        {
-            speed = trunc(speed*0.85,3);
-        }
-
-        Vector2 forwardNorm = orient.getFacing(); //perpendicular to normal vector that moves us forward on flat ground with rotation 0
-        orient.pos += forwardNorm*speed;
+    Vector2 forwardNorm = orient.getFacing(); //perpendicular to normal vector that moves us forward on flat ground with rotation 0
+    orient.pos += forwardNorm*speed;
 
     if (onGround )
     {
-        if (IsKeyPressed(KEY_SPACE))
-        {
-            forces.addForce(orient.getNormal()*-8,Forces::JUMP);
-        }
-
-        Vector2 bruh = terrain.lineTerrainIntersect(orient.pos,orient.pos + orient.getNormal()*collider.height/2).pos; //- normal*(collider.height)/2;
-        Vector2 newPos = bruh - orient.getNormal()*(collider.height/2  - 1);
-
-        orient.pos = newPos;
+        stayOnGround(terrain);
     }
 
     if (Item* held = getHolding())
@@ -184,4 +123,64 @@ void Player::setHolding(Item& body)
 Item* Player::getHolding()
 {
     return (holding.lock().get());
+}
+
+void Player::addKey(Key::KeyVal val)
+{
+    keys.insert(val);
+}
+
+void Player::handleControls()
+{
+    bool leftRight = (IsKeyDown(KEY_A) || IsKeyDown(KEY_D));
+    if (leftRight)
+    {
+        facing = IsKeyDown(KEY_D);
+    }
+
+    switch (state)
+    {
+    case WALKING:
+        {
+            if (leftRight)
+            {
+                float accel = (onGround ? PLAYER_GROUND_ACCEL : PLAYER_AIR_ACCEL);
+                float accelAmount = speed == 0 ? accel*2 : std::max(accel*0.5f,abs(accel*speed));
+                float maxSpeed = IsKeyDown(KEY_LEFT_SHIFT) ? PLAYER_RUN_MAX_SPEED : PLAYER_MAX_SPEED;
+                speed += accelAmount*(facing*2 - 1);
+
+                speed = std::min(abs(speed),maxSpeed)*((speed > 0)*2 - 1); //prevent speed from exceeding maximum
+
+                this->renderer.facing = facing;
+            }
+            if (IsKeyPressed(KEY_SPACE) && onGround)
+            {
+                forces.addForce(orient.getNormal()*-8,Forces::JUMP);
+            }
+        }
+        break;
+    case CHARGING:
+        {
+            power = Clamp(power + 1,0,PLAYER_MAX_POWER);
+            if (leftRight)
+            {
+                aimAngle = Clamp(aimAngle + 0.01*(this->facing*2 - 1),- M_PI/4, M_PI/4);
+            }
+            if (IsKeyReleased(KEY_SPACE))
+            {
+                orient.rotation += aimAngle;
+                forces.addForce(orient.getNormal()*-8*(1 + power/100.0f),Forces::JUMP);
+                power = 0;
+                aimAngle = 0;
+            }
+        }
+    break;
+    }
+
+    state = (IsKeyDown(KEY_SPACE) && !IsKeyPressed(KEY_SPACE) && onGround) ? CHARGING : WALKING;
+    if (!leftRight || state == CHARGING)
+    {
+        speed = trunc(speed*0.85,3);
+    }
+
 }

@@ -54,4 +54,6 @@ struct InteractComponent
     }
 };
 
+
+
 #endif // COLLIDETRIGGERS_H_INCLUDED

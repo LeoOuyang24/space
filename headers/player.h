@@ -2,9 +2,19 @@
 #define PLAYER_H_INCLUDED
 
 #include <tuple>
+#include <unordered_set>
 
 #include "objects.h"
+#include "colliders.h"
 #include "render.h"
+#include "item.h"
+
+
+template<>
+struct std::hash<Key::KeyVal>
+{
+    size_t operator()(const Key::KeyVal& color) const;
+};
 
 class Player;
 //a bit more accurate rect collider that checks if a side is in terrain
@@ -13,7 +23,6 @@ struct PlayerCollider : public RectCollider
 {
     PlayerCollider(int width, int height, Player& owner_);
     bool isOnGround(Orient& orient, Terrain& terrain);
-    float getLandingAngle(Orient& orient, Terrain& terrain);
 
 private:
     Player& owner;
@@ -27,6 +36,7 @@ private:
     Player& owner;
 };
 
+
 class Item;
 struct Player : public Object<PlayerCollider,PlayerRenderer>
 {
@@ -38,16 +48,37 @@ struct Player : public Object<PlayerCollider,PlayerRenderer>
 
     static constexpr float PLAYER_GROUND_ACCEL = 0.1;
     static constexpr float PLAYER_AIR_ACCEL = 0.01;
+
+    static constexpr float PLAYER_MAX_POWER = 100;
+
+    enum State
+    {
+        WALKING = 0,
+        CHARGING
+    };
+
+    State state = WALKING;
+
+
+
     float speed = 0;
 
-    bool facing = true;
-    std::weak_ptr<Item> holding;
+    float aimAngle = 0;
+    float power = 0;
 
+    bool facing = true;
+
+    std::weak_ptr<Item> holding;
+    std::unordered_set<Key::KeyVal> keys;
 
     Player(const Vector2& pos);
     void update(Terrain&);
     void setHolding(Item& obj);
     Item* getHolding();
+    void addKey(Key::KeyVal);
+
+    void handleControls(); //all player controls are handled here
+
 };
 
 #endif // PLAYER_H_INCLUDED

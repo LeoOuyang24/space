@@ -7,6 +7,8 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+#include "headers/sprites.h"
+
 #include "headers/blocks.h"
 #include "headers/objects.h"
 #include "headers/player.h"
@@ -40,12 +42,13 @@ enum Spawns
     SIZE
 };
 
+
 bool active = false;
 int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const Vector2 screenDimen = {1920,1080};
+    const Vector2 screenDimen = {900,900};
 
     InitWindow(screenDimen.x, screenDimen.y, "raylib [core] example - basic window");
    // ToggleFullscreen();
@@ -88,14 +91,16 @@ int main(void)
     //std::get<HoldThis>(tup);
 
     //auto* key = new Object<RectCollider,TextureRenderer,HoldThis>({0,200},std::make_tuple(10,10),{},std::make_tuple(HoldThis()));
-    auto* key = new Key(5,{0,200},{10,10},keySprite);
+    auto* key = new Key(RED,{0,200},{20,20},keySprite);
+    auto* key2 = new Key(BLUE,{500,850},{20,20},keySprite);
 
-    auto* locked =  new PortalSpawner({{800,800},0},std::make_tuple(100),std::make_tuple(lockedSprite),
-                                                                            createArgs<TriggerPortalSpawn>(true,Vector2(0,-100),0,Vector3(600,500,1),100,5));
+    auto* locked =  new PortalSpawner({{800,800},0},std::make_tuple(20),std::make_tuple(lockedSprite),
+                                                                            createArgs<TriggerPortalSpawn>(true,Vector2(0,-100),0,Vector3(600,500,1),100,RED));
 
     //Globals::Game.addObject(balls.ptr);
     Globals::Game.addObject(*(key));
     Globals::Game.addObject(*locked);
+    Globals::Game.addObject(*key2);
 
    // std::cout << "actual: " <<&(locked->collideTrigger) << "\n";
 
@@ -121,8 +126,8 @@ int main(void)
     SetShaderValue(sun,GetShaderLocation(sun,"borderColor"),&sunEdge,SHADER_UNIFORM_VEC4);
     auto timeLocation = GetShaderLocation(sun,"time");
 
-    RenderTexture2D bg = LoadRenderTexture(Terrain::MAX_WIDTH*screenDimen.x/screenDimen.y*2,Terrain::MAX_WIDTH*2);
-    BeginTextureMode(bg);
+    //RenderTexture2D bg = LoadRenderTexture(5000*screenDimen.x/screenDimen.y,5000);//LoadRenderTexture(Terrain::MAX_WIDTH*screenDimen.x/screenDimen.y*2,Terrain::MAX_WIDTH*2);
+    /*BeginTextureMode(bg);
         ClearBackground(BLACK);
         BeginShaderMode(stars);
             DrawTexture(bg.texture,0,0,WHITE);
@@ -132,10 +137,15 @@ int main(void)
         EndShaderMode();
     EndTextureMode();
 
-    //Globals::Game.addObject(*(new Portal(200,100,0,100,{500,350,1})),0);
+    ExportImage(LoadImageFromTexture(bg.texture),"sprites/bg.png");*/
+
+
 
     int frames = 0;
     //player.force = Vector2(100,0);
+
+    Globals::Game.Sprites.addSprite("key.png","bg.png");
+
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
 
@@ -243,19 +253,19 @@ int main(void)
 
                 ClearBackground(BLACK);
 
-               /* BeginShaderMode(stars);
+                /*BeginShaderMode(stars);
                     DrawTexture(bg.texture,0,0,WHITE);
                 EndShaderMode();
                BeginShaderMode(sun);
                     DrawTexture(bg.texture,0,0,WHITE);
                 EndShaderMode();*/
 
-                DrawBillboardRec(camera,bg.texture,Rectangle(0,0,bg.texture.width,bg.texture.height),
+                Texture2D& bg = *Globals::Game.Sprites.getSprite("bg.png");
+                DrawBillboardRec(camera,bg,Rectangle(0,0,bg.width,bg.height),
                                  Vector3(Terrain::MAX_WIDTH/2,Terrain::MAX_WIDTH/2,Globals::BACKGROUND_Z),
-                                 Vector2(bg.texture.width,bg.texture.height),WHITE);
+                                 Vector2(bg.width,bg.height),WHITE);
 
                 Globals::Game.terrain.render();
-
 
             if (spawns == ENDPOINT)
             {
@@ -270,6 +280,8 @@ int main(void)
             Debug::renderDefers();
 
             EndMode3D();
+
+            Globals::Game.interface.render();
 
             DrawText(spawns == PLANETS ? "planets" : spawns == OBJECTS ?  "objects"  : spawns == ENDPOINT ? "endpoint" : "player" ,10,50,30,WHITE);
 

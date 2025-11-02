@@ -25,7 +25,7 @@ Vector2 nearestPos(const Vector2& vec);
 
 struct Terrain
 {
-    static constexpr int MAX_WIDTH = 1000; //maximum number of blocks in the width direction
+    static constexpr int MAX_WIDTH = 5000; //maximum number of blocks in the width direction
 
     typedef std::vector<Block> TerrainMap;
     TerrainMap terrain;

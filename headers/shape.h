@@ -6,6 +6,8 @@
 
 #include "raylib.h"
 
+#include "terrain.h"
+
 enum ShapeType
 {
     CIRCLE = 0,
@@ -13,13 +15,31 @@ enum ShapeType
 };
 
 
-struct Orient;
+struct Orient
+{
+    Vector2 pos = {0,0};
+
+    LayerType layer = 0;
+
+    float rotation = 0; // IN RADIANS
+
+
+    inline Vector2 getFacing() const
+    {
+        return Vector2Rotate(Vector2(1,0),rotation);
+    }
+    inline Vector2 getNormal() const
+    {
+        return Vector2Rotate(Vector2(0,1),rotation);
+    }
+};
+
 struct CircleCollider;
 struct RectCollider;
 struct Shape
 {
     ShapeType type;
-    Orient& orient;
+    Orient orient;
     void* collider = nullptr;
 };
 

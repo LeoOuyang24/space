@@ -2,27 +2,14 @@
 
 #include "../headers/objects.h"
 
-bool CircleCollider::isOnGround(const Orient& orient, Terrain& terrain)
+void PhysicsBody::setDead(bool val)
 {
-
-    return  terrain.blockExists(orient.pos + Vector2Rotate(orient.getFacing(),+ M_PI/4)*radius) ||
-            terrain.blockExists(orient.pos + orient.getFacing()*radius) ||
-            terrain.blockExists(orient.pos + Vector2Rotate(orient.getFacing(),- M_PI/4)*radius);
+    dead = val;
 }
 
-
-bool RectCollider::isOnGround(const Orient& orient, Terrain& terrain)
+bool PhysicsBody::isDead()
 {
-    return  terrain.blockExists(rotatePoint(orient.pos + Vector2(width/2,  height/2),orient.pos,orient.rotation)) ||
-            terrain.blockExists(rotatePoint(orient.pos + Vector2(-width/2,  -height/2),orient.pos,orient.rotation)) ||
-            terrain.blockExists(rotatePoint(orient.pos + Vector2(width/2,  -height/2),orient.pos,orient.rotation)) ||
-            terrain.blockExists(rotatePoint(orient.pos + Vector2(-width/2,  height/2),orient.pos,orient.rotation));
-}
-
-
-Rectangle RectCollider::getRect(const Orient& orient)
-{
-    return Rectangle(orient.pos.x - width/2, orient.pos.y - height/2, width,height);
+    return dead;
 }
 
 void Forces::addForce(Vector2 force, Forces::ForceSource source)

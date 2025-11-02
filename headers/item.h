@@ -1,9 +1,9 @@
 #ifndef ITEM_H_INCLUDED
 #define ITEM_H_INCLUDED
 
+#include "colliders.h"
 #include "objects.h"
 #include "render.h"
-#include "player.h"
 
 class HoldThis;
 
@@ -11,26 +11,41 @@ struct Item : public Object<RectCollider,TextureRenderer,HoldThis>
 {
 public:
     Item(const Vector3& pos, const Vector2& dimen, Texture2D& sprite);
-    virtual size_t getKey() //return key value
-    {
-        return 0;
-    }
 };
 
-struct Key : public Item
+class Key;
+struct KeyCollider
 {
-    const size_t key;
-    static const size_t unlocked = 0; //value for unlocked things
-    static bool unlocks(size_t keyVal, size_t lockVal);
+    //only works if "self" is a Key
+    void collideWith(PhysicsBody& self, PhysicsBody& other);
+};
+//keys are objects with a specific key value
+//this key value is an integer that represents in
+struct Key : public Object<RectCollider,TextureRenderer,KeyCollider>
+{
+    typedef Color KeyVal;
 
-    Key(size_t key_, const Vector3& pos, const Vector2& dimen, Texture2D& sprite) : key(key_), Item(pos,dimen,sprite)
+
+    const KeyVal key;
+    static constexpr KeyVal unlocked = WHITE; //value for unlocked things
+    static bool unlocks(KeyVal keyVal, KeyVal lockVal);
+    template<typename T>
+    static bool unlocks(const T& container,KeyVal lockVal)
     {
-
+        return container.find(lockVal) != container.end();
     }
-    size_t getKey()
+
+    Key(KeyVal key_, const Vector3& pos, const Vector2& dimen, Texture2D& sprite) : key(key_), Object({Vector2(pos.x,pos.y),pos.z},std::make_tuple(dimen.x,dimen.y),std::make_tuple(std::ref(sprite)))
+    {
+        tint = key;
+    }
+    KeyVal getKey()
     {
         return key;
     }
 };
+
+bool operator==(const Key::KeyVal& left, const Key::KeyVal& right);
+
 
 #endif // ITEM_H_INCLUDED

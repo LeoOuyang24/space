@@ -58,8 +58,10 @@
 		<Unit filename="headers/blocks.h" />
 		<Unit filename="headers/checkFunctions.h" />
 		<Unit filename="headers/collideTriggers.h" />
+		<Unit filename="headers/colliders.h" />
 		<Unit filename="headers/debug.h" />
 		<Unit filename="headers/game.h" />
+		<Unit filename="headers/interface.h" />
 		<Unit filename="headers/item.h" />
 		<Unit filename="headers/objects.h" />
 		<Unit filename="headers/player.h" />
@@ -68,6 +70,7 @@
 		<Unit filename="headers/resources_math.h" />
 		<Unit filename="headers/sequencer.h" />
 		<Unit filename="headers/shape.h" />
+		<Unit filename="headers/sprites.h" />
 		<Unit filename="headers/terrain.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="shaders/fragments/portal.h" />
@@ -75,8 +78,10 @@
 		<Unit filename="shaders/fragments/sun.h" />
 		<Unit filename="src/blocks.cpp" />
 		<Unit filename="src/collideTriggers.cpp" />
+		<Unit filename="src/colliders.cpp" />
 		<Unit filename="src/debug.cpp" />
 		<Unit filename="src/game.cpp" />
+		<Unit filename="src/interface.cpp" />
 		<Unit filename="src/item.cpp" />
 		<Unit filename="src/objects.cpp" />
 		<Unit filename="src/player.cpp" />
@@ -85,6 +90,7 @@
 		<Unit filename="src/resources_math.cpp" />
 		<Unit filename="src/sequencer.cpp" />
 		<Unit filename="src/shape.cpp" />
+		<Unit filename="src/sprites.cpp" />
 		<Unit filename="src/terrain.cpp" />
 		<Extensions />
 	</Project>

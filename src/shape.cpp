@@ -2,6 +2,7 @@
 
 #include "../headers/shape.h"
 #include "../headers/objects.h"
+#include "../headers/colliders.h"
 
 void ifShapeType(const Shape& shape, std::function<void(CircleCollider*)> circleFunc, std::function<void(RectCollider*)> rectFunc)
 {

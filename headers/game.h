@@ -6,6 +6,8 @@
 #include <raylib.h>
 
 #include "terrain.h"
+#include "sprites.h"
+#include "interface.h"
 
 class Player;
 struct Globals
@@ -39,9 +41,11 @@ struct Globals
         addObject(made);
     }
 
+    SpritesGlobal Sprites;
     Camera3D camera;
     GlobalTerrain terrain;
     ObjectLookup objects;
+    Interface interface;
 
 private:
     Globals();

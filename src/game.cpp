@@ -10,8 +10,8 @@ void Globals::init()
 {
     Player::PlayerSprite = LoadTexture("sprites/guy.png");
 
-    Globals::Game.terrain.loadTerrain("sprites/layers/curve.png");
-    Globals::Game.terrain.loadTerrain("sprites/layers/circle.png");
+    Globals::Game.terrain.loadTerrain("sprites/layers/level1.png");
+    //Globals::Game.terrain.loadTerrain("sprites/layers/level2.png");
 
     Player* ptr = new Player(Vector2(0,150));
     addObject(*(ptr));

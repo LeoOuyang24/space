@@ -6,76 +6,27 @@
 #include <raylib.h>
 
 #include "blocks.h"
-#include "shape.h"
 #include "terrain.h"
 #include "checkFunctions.h"
 #include "collideTriggers.h"
+#include "shape.h"
 
-
-struct Orient
-{
-    Vector2 pos = {0,0};
-
-    LayerType layer = 0;
-
-    float rotation = 0; // IN RADIANS
-
-
-    inline Vector2 getFacing() const
-    {
-        return Vector2Rotate(Vector2(1,0),rotation);
-    }
-    inline Vector2 getNormal() const
-    {
-        return Vector2Rotate(Vector2(0,1),rotation);
-    }
-};
-
-//life is too short to have to write the getShapeType function for each collider
-#define GET_SHAPE_TYPE(type) ShapeType getShapeType() {return type;}
-
-struct CircleCollider
-{
-    int radius = 0;
-
-
-    bool isOnGround(const Orient& orient, Terrain& t);
-
-    GET_SHAPE_TYPE(ShapeType::CIRCLE);
-};
-
-struct RectCollider
-{
-    //orient.pos is considered to be the center of the rectangle
-    float width = 0, height = 0;
-
-    bool isOnGround(const Orient& orient, Terrain& t);
-    Rectangle getRect(const Orient& orient);
-
-    GET_SHAPE_TYPE(ShapeType::RECT);
-};
-
-struct DefaultCollideTrigger
-{
-    void collideWith(PhysicsBody& other)
-    {
-
-    }
-};
 
 struct PhysicsBody
 {
+    bool dead = false;
     Orient orient;
 
     virtual Shape getShape() = 0;
     virtual void render() = 0;
     virtual void update(Terrain&) = 0;
-    virtual void addForce( const Vector2& force) = 0;
     virtual Vector2 getPos() = 0;
     virtual void collideWith(PhysicsBody& other)
     {
 
     }
+    void setDead(bool val);
+    virtual bool isDead();
 };
 
 
@@ -86,6 +37,7 @@ struct Forces
     {
         GRAVITY = 0,
         JUMP,
+        GRAPPLE,
         MOVE
     };
 
@@ -113,6 +65,7 @@ struct Object : public PhysicsBody
 
     Color tint;
     bool onGround = false;
+    bool wasOnGround = false;
 
     bool followGravity = true;
     Forces forces;
@@ -141,10 +94,6 @@ struct Object : public PhysicsBody
         orient = pos;
     }
 
-    void addForce(const Vector2& force)
-    {
-        forces.addForce(force,Forces::GRAVITY);
-    }
     void collideWith(PhysicsBody& other)
     {
         //if there is a collide with function,
@@ -166,9 +115,56 @@ struct Object : public PhysicsBody
     {
         renderer.render(getShape(),tint);
     }
-    virtual void update(Terrain& terrain)
+    virtual void update(Terrain& t)
     {
-        int searchRad = 100;
+        applyForces(t);
+        if (onGround)
+        {
+            adjustAngle(t);
+            stayOnGround(t);
+        }
+    }
+protected:
+    void stayOnGround(Terrain& terrain)
+    {
+        Vector2 bruh = terrain.lineTerrainIntersect(orient.pos,orient.pos + orient.getNormal()*GetDimen(getShape()).y/2).pos; //- normal*(collider.height)/2;
+        Vector2 newPos = bruh - orient.getNormal()*(GetDimen(getShape()).y/2  - 1);
+
+        orient.pos = newPos;
+    }
+
+    void adjustAngle(Terrain& terrain)
+    {
+        //if on ground, adjust our angle based on the angle of the terrain
+        if (onGround)
+        {
+            if (!wasOnGround) //just landed
+            {
+                orient.rotation = collider.getLandingAngle(orient,terrain);
+            }
+            else //otherwise adjust angle based on terrain angle
+            {
+                Vector2 dimen = GetDimen(getShape());
+                Vector2 botLeft = orient.pos +Vector2Rotate(Vector2(-dimen.x/2,dimen.y/2),orient.rotation);
+                Vector2 botRight = orient.pos + Vector2Rotate(Vector2(dimen.x/2,dimen.y/2),orient.rotation);
+
+                Vector2 normal = orient.getNormal();
+
+                botLeft = terrain.lineTerrainIntersect(botLeft - normal, botLeft).pos;
+                botRight = terrain.lineTerrainIntersect(botRight - normal,botRight).pos;
+
+                float newAngle = trunc(atan2(botRight.y - botLeft.y, botRight.x - botLeft.x),3);
+
+                if (trunc(abs(newAngle - orient.rotation),2) > .001)
+                {
+                    orient.rotation = newAngle;
+                }
+            }
+        }
+    }
+    void applyForces(Terrain& terrain)
+    {
+        int searchRad = 200;
 
 
         if (!onGround && followGravity)
@@ -185,21 +181,15 @@ struct Object : public PhysicsBody
            // orient.rotation = (atan2(forces.getTotalForce().y,forces.getTotalForce().x));
 
         }
-        /*Vector2 normal = Vector2Normalize(force);
-        float mag = Vector2Length(force);
-        if (mag >= 1000.0f)
-        {
-            force = normal*1000.0f;
-        }*/
-
-       //
 
         orient.pos += forces.getTotalForce();
         //force = force*(onGround ? 0.5 : .99);
         forces.addFriction(onGround ? 0.5 : .99);
+        wasOnGround = onGround;
         onGround = collider.isOnGround(orient,terrain);
 
     }
+
 };
 
 

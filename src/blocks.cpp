@@ -36,6 +36,7 @@ Vector2 nearestPos(const Vector2& vec)
 Terrain::Terrain()
 {
     blocksTexture = LoadRenderTexture(MAX_WIDTH*Block::BLOCK_DIMEN,MAX_WIDTH*Block::BLOCK_DIMEN);
+
     BeginTextureMode(blocksTexture);
         ClearBackground(BLANK);
     EndTextureMode();
@@ -64,34 +65,37 @@ void Terrain::addBlock(const Vector2& pos, Block block)
 
     Vector2 rounded = roundPos(pos);
     BeginTextureMode(blocksTexture);
-        DrawRectangle(rounded.x,blocksTexture.texture.height -rounded.y,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,block.color);
-        //DrawPoly({rounded.x + Block::BLOCK_DIMEN/2,blocksTexture.texture.height -rounded.y + Block::BLOCK_DIMEN/2},10,Block::BLOCK_DIMEN*2,0,block.color);
-        //DrawCircle(rounded.x + Block::BLOCK_DIMEN/2,blocksTexture.texture.height -rounded.y + Block::BLOCK_DIMEN/2,Block::BLOCK_DIMEN*2,block.color );
+
+            for (int i = 0; i < 9; i ++)
+            {
+                Vector2 neighbor = {rounded.x + Block::BLOCK_DIMEN*(i%3 - 1),rounded.y + Block::BLOCK_DIMEN*(i/3 - 1)};
+                if (!blockExists(neighbor))
+                    {
+                        DrawRectangle(neighbor.x,blocksTexture.texture.height - neighbor.y,
+                                      Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,
+                                      Color(block.color.r*.5,block.color.g*.5,block.color.b*.5,255));
+                    }
+            }
+            DrawRectangle(rounded.x,blocksTexture.texture.height - rounded.y,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,block.color);
     EndTextureMode();
 }
 
 void Terrain::remove(const Vector2& pos, int radius)
 {
-    std::vector<Vector2> blocks;
-    forEachPos([this,&blocks](const Vector2& pos){
+    forEachPos([this](const Vector2& pos){
                //DrawCircle(pos.x,pos.y,10,GREEN);
+                //clear the texture
+                BeginTextureMode(blocksTexture);
+                    rlSetBlendMode(BLEND_CUSTOM);
+                        DrawRectangle(pos.x,blocksTexture.texture.height - pos.y,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,Fade(BLACK, 0.0f));
+                    rlSetBlendMode(BLEND_ALPHA);
+                EndTextureMode();
                if (blockExists(pos))
                {
-                   blocks.push_back(pos);
                   terrain[pointToIndex(pos)] = {Color(0,0,0,0)};
-
                }
                },pos,radius);
-    BeginTextureMode(blocksTexture);
-        rlSetBlendMode(BLEND_CUSTOM);
-        for (int i = 0; i < blocks.size(); i ++)
-        {
-            //DrawCircle(blocks[i].x + Block::BLOCK_DIMEN/2,blocksTexture.texture.height -blocks[i].y + Block::BLOCK_DIMEN/2,Block::BLOCK_DIMEN*2,BLANK );
-            //DrawPoly({blocks[i].x + Block::BLOCK_DIMEN/2,blocksTexture.texture.height -blocks[i].y + Block::BLOCK_DIMEN/2},10,Block::BLOCK_DIMEN*2,0,BLANK);
-            DrawRectangle(blocks[i].x,blocksTexture.texture.height - blocks[i].y,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,Fade(BLACK, 0.0f));
-        }
-        rlSetBlendMode(BLEND_ALPHA);
-    EndTextureMode();
+
 }
 
 void Terrain::clear()
@@ -302,7 +306,7 @@ void Terrain::render(int z)
    Vector3 white = Vector3{255,255,255}*std::max(0.0f,std::min(1.0f,(1 - static_cast<float>(z - Globals::Game.camera.position.z - Globals::Game.CAMERA_Z_DISP)/Globals::MAX_Z)));
    //std::cout << (1 - static_cast<float>(z - Globals::Game.currentZ)/Globals::MAX_Z) << "\n";
 
-   Color balls = {white.x,white.y,white.z,255}; //breaking_bad_crawl_space.gif
+   Color balls = {white.x,white.y,white.z,255}; //can't do math with raylib colors breaking_bad_crawl_space.gif
    DrawBillboardPro(Globals::Game.camera,blocksTexture.texture,Rectangle(0,0,blocksTexture.texture.width,blocksTexture.texture.height)
                     ,Vector3(blocksTexture.texture.width/2,blocksTexture.texture.height/2,z),Vector3(0,-1,0),
                     Vector2(blocksTexture.texture.width,blocksTexture.texture.height),Vector2(blocksTexture.texture.width/2,blocksTexture.texture.height/2),

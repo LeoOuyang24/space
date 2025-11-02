@@ -82,7 +82,6 @@ Class createFromArgs()
 template<typename Class, typename Head, typename... Tail>
 Class createFromArgs(Head head, Tail... t) //given a class and a list of potential ConArgs, fetch the args that are used for Class and construct a Class
 {
-    std::cout << typeid(Class).name() << " " << typeid(typename Head::type).name() << "\n";
     if constexpr (std::is_same<Class,typename Head::type>::value)
     {
         return std::make_from_tuple<Class>(head.args);
