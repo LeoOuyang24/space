@@ -4,12 +4,15 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <memory>
+#include <iostream>
 #include <functional>
 
 
 #include <raylib.h>
 #include <raymath.h>
 #include "../headers/resources_math.h"
+
+#include "debug.h"
 
 struct Block
 {
@@ -20,20 +23,81 @@ struct Block
     void render();
 };
 
-Vector2 roundPos(const Vector2& vec);
-Vector2 nearestPos(const Vector2& vec);
+
+template<typename T>
+struct TerrainMap
+{
+    const int blockDimen;
+    const int maxWidth;
+
+    std::vector<T> data;
+
+
+    void setVal(size_t index,T val)
+    {
+        data[index] = val;
+    }
+    auto& operator[] (size_t index)
+    {
+        return data[index];
+    }
+    size_t size()
+    {
+        return data.size();
+    }
+    void resize(size_t newSize)
+    {
+        data.resize(newSize);
+    }
+    void clear()
+    {
+        data.clear();
+    }
+};
+
+template<>
+struct TerrainMap<bool>
+{
+    const int blockDimen;
+    const int maxWidth;
+
+    std::vector<bool> data;
+
+    void setVal(size_t index,bool val)
+    {
+        data[index] = val;
+    }
+    bool operator[] (size_t index)
+    {
+        return data[index];
+    }
+    size_t size()
+    {
+        return data.size();
+    }
+    void resize(size_t newSize)
+    {
+        data.resize(newSize);
+    }
+    void clear()
+    {
+        data.clear();
+    }
+};
+
 
 struct Terrain
 {
-    static constexpr int MAX_WIDTH = 5000; //maximum number of blocks in the width direction
+    static constexpr int MAX_WIDTH = 2000; //maximum number of blocks in the width direction
 
-    typedef std::vector<Block> TerrainMap;
-    TerrainMap terrain;
+    static Shader GravityFieldShader;
 
+    //typedef std::vector<Block> TerrainMap;
+    //typedef std::vector<bool> TerrainMap;
+    TerrainMap<bool> terrain{Block::BLOCK_DIMEN,MAX_WIDTH};
     RenderTexture blocksTexture;
 
     Terrain();
-
 
     void addBlock(const Vector2& pos, Block block);
     //remove all blocks in area
@@ -51,10 +115,12 @@ struct Terrain
     PossiblePoint lineBlockIntersect(const Vector2& a, const Vector2& b); //return the point of intersection between the line a-b and the block closest to b as well as whether there even was a collision
     PossiblePoint lineTerrainIntersect(const Vector2& a, const Vector2& b); //same as above except it'll loop until it can return a point that is out of terrain
 
-    size_t pointToIndex(const Vector2& vec);
-    Vector2 indexToPoint(size_t index);
+    size_t pointToIndex(const Vector2& vec,int blockDimen = Block::BLOCK_DIMEN, int maxWidth = MAX_WIDTH);
+    Vector2 indexToPoint(size_t index,int blockDimen = Block::BLOCK_DIMEN, int maxWidth = MAX_WIDTH);
+    Vector2 roundPos(const Vector2& vec, int blockDimen = Block::BLOCK_DIMEN);
+    Vector2 nearestPos(const Vector2& vec);
     Rectangle getBlockRect(const Vector2& vec); //returns the rectangle of a block at that position
-    Vector2 pointBoxEdgeIntersect(const Vector2& a, const Vector2& dir, int dimens);
+    Vector2 pointBoxEdgeIntersect(const Vector2& a, const Vector2& dir, int dimens); //returns point of intersection with block that "a" is in if we move in the "dir" direction
     //run a function ( (const Vector2&) -> void or bool) for each position within a distance
     //"edge" = true if we only care points along the edge
     //if the function returns true, terminate early
@@ -96,49 +162,14 @@ struct Terrain
             }
         }
     }
-    //same as above except "func" is run on a sample of points instead.
-    //"sample" is the proportion of the population we want to sample from instead. You could put a number >= 1.0 to sample more
-    //if this function runs every frame.
-    //the same point can be selected multiple times
-
-    //the way this works is it will choose a random row or column and sample all points in that row/column
-    //so there's definitely bias, but it's an evenly distributed bias? copium
+    bool blockExists(const Vector2& pos); //true if block is at position
     template<typename T>
-    void forEachPosSample(T func, const Vector2& pos, int radius, float sample)
+    bool blockExists(const Vector2& pos, TerrainMap<T>& terr)
     {
-        //Approximate number of points we have in our population.
-        //We construct a square of Block::BLOCK_DIMEN dimensions. About PI/4 of those points will be in our circle.
-        //Then we multiply by the proportion we want to sample
-        int totalPoints = pow(2*radius/(Block::BLOCK_DIMEN),2)*M_PI/4 * sample;
-        int i = 0;
-
-        int units = radius/Block::BLOCK_DIMEN;
-        while (i < totalPoints)
-        {
-
-            int randX = rand()%(units*2 + 1) - units;
-            int height =  sqrt(radius*radius - pow(randX*Block::BLOCK_DIMEN,2))/Block::BLOCK_DIMEN;
-            bool flip = rand()%2;
-            for (int y = -height; y <= height; y ++)
-            {
-                Vector2 finalPos = pos + (flip ? Vector2(randX,y) : Vector2(y,randX))*Block::BLOCK_DIMEN;
-               if constexpr (std::is_same<decltype(func(std::declval<const Vector2&>())),bool>::value)
-                {
-                    if (func(finalPos))
-                    {
-                        return;
-                    }
-                }
-                else
-                {
-                    func(finalPos);
-                }
-                i ++;
-            }
-        }
+        size_t index = pointToIndex(pos,terr.blockDimen,terr.maxWidth);
+        return index < terr.size() && terr[index];
     }
 
-    bool blockExists(const Vector2& pos); //true if block is at position
     bool isSolid(const Vector2& pos); //returns true if there is terrain at position, not whether or not the pos is in the terrain
 
     void render(int z = 0);

@@ -92,20 +92,21 @@ int main(void)
 
     //auto* key = new Object<RectCollider,TextureRenderer,HoldThis>({0,200},std::make_tuple(10,10),{},std::make_tuple(HoldThis()));
     auto* key = new Key(RED,{0,200},{20,20},keySprite);
-    auto* key2 = new Key(BLUE,{500,850},{20,20},keySprite);
+    auto* key2 = new Key(YELLOW,{2439,2600},{20,20},keySprite);
 
-    auto* locked =  new PortalSpawner({{800,800},0},std::make_tuple(20),std::make_tuple(lockedSprite),
+    auto* locked =  new PortalSpawner({{1600,2800},0},std::make_tuple(20),std::make_tuple(lockedSprite),
                                                                             createArgs<TriggerPortalSpawn>(true,Vector2(0,-100),0,Vector3(600,500,1),100,RED));
 
-    //Globals::Game.addObject(balls.ptr);
     Globals::Game.addObject(*(key));
     Globals::Game.addObject(*locked);
     Globals::Game.addObject(*key2);
 
+
+
    // std::cout << "actual: " <<&(locked->collideTrigger) << "\n";
 
-   // locked->followGravity = false;
-   key->followGravity = false;
+   //locked->followGravity = false;
+   //key->followGravity = false;
 
    Spawns spawns = PLANETS;
     int a = 0;
@@ -145,6 +146,14 @@ int main(void)
     //player.force = Vector2(100,0);
 
     Globals::Game.Sprites.addSprite("key.png","bg.png");
+
+    Terrain::GravityFieldShader = LoadShader(0,TextFormat("shaders/fragments/terrain.h",GLSL_VERSION));
+    Texture& blocks = Globals::Game.getCurrentTerrain()->blocksTexture.texture;
+    Vector2 pixelSizes = {1.0/blocks.width,1.0/blocks.height};
+    SetShaderValue(Terrain::GravityFieldShader,GetShaderLocation(Terrain::GravityFieldShader,"pixelSizes"),&pixelSizes,SHADER_UNIFORM_VEC2);
+
+
+    Debug::togglePaused();
 
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
@@ -269,11 +278,12 @@ int main(void)
 
             if (spawns == ENDPOINT)
             {
-                DrawCircle(endpoint.x,endpoint.y,3,PURPLE);
-                DrawLine(mousePos.x,mousePos.y,endpoint.x,endpoint.y,PURPLE);
+                float z = Globals::Game.getCurrentZ();
+                DrawCircle3D(Vector3(endpoint.x,endpoint.y,z),3,{0,1,0},0,PURPLE);
+                DrawLine3D(Vector3(mousePos.x,mousePos.y,z),Vector3(endpoint.x,endpoint.y,z),PURPLE);
 
                 Vector2 onTerrain = Globals::Game.getCurrentTerrain()->lineTerrainIntersect(mousePos,endpoint).pos;
-                DrawCircle(onTerrain.x,onTerrain.y,3,PURPLE);
+                DrawCircle3D(Vector3(onTerrain.x,onTerrain.y,z),3,{0,1,0},0,PURPLE);
             }
 
             Sequences::runRenders();

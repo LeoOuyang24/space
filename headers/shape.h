@@ -40,7 +40,9 @@ struct Shape
 {
     ShapeType type;
     Orient orient;
+    //ShapeCollider collider;
     void* collider = nullptr;
+
 };
 
 //runs a function depending on what shape "shape" is

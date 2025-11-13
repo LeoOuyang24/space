@@ -10,7 +10,8 @@
 #include "checkFunctions.h"
 #include "collideTriggers.h"
 #include "shape.h"
-
+#include "debug.h"
+#include "game.h"
 
 struct PhysicsBody
 {
@@ -66,10 +67,13 @@ struct Object : public PhysicsBody
     Color tint;
     bool onGround = false;
     bool wasOnGround = false;
+    bool freeFall = false; //freefall is true if we have not yet experienced gravity and stays true until we land
 
     bool followGravity = true;
     Forces forces;
 
+    Vector2 nearest = {-1,-1};
+    bool balls = true;
 
     template<typename... CollArgs, typename... RenderArgs>
     Object(const Orient& pos, std::tuple<CollArgs...> colliderArgs, std::tuple<RenderArgs...> renderArgs, std::tuple<More...> tup) : tint(WHITE),
@@ -141,6 +145,7 @@ protected:
             if (!wasOnGround) //just landed
             {
                 orient.rotation = collider.getLandingAngle(orient,terrain);
+                freeFall = false;
             }
             else //otherwise adjust angle based on terrain angle
             {
@@ -164,22 +169,53 @@ protected:
     }
     void applyForces(Terrain& terrain)
     {
-        int searchRad = 200;
+        int searchRad = 100;
 
 
         if (!onGround && followGravity)
         {
 
-                terrain.forEachPos([this,&terrain](const Vector2& pos){
+
+                /*terrain.forEachPosSample([this,&terrain](const Vector2& pos, int size){
                     if (terrain.blockExists(pos))
                     {
-                        float mag = 1.0/pow(std::max(1.0f,Vector2Length(pos - orient.pos)),3);
+                        float mag = 0.001/pow(std::max(1.0f,Vector2Length(pos -orient.pos)),2);
                         this->forces.addForce((pos - orient.pos)*mag,Forces::GRAVITY);
                     }
-                           },orient.pos,searchRad);
+                    },orient.pos,searchRad);*/
+             /*Debug::addDeferRender([this](){
 
-           // orient.rotation = (atan2(forces.getTotalForce().y,forces.getTotalForce().x));
+                                   DrawLine3D({orient.pos.x,orient.pos.y,Globals::Game.getCurrentZ()},{nearest.x,nearest.y,Globals::Game.getCurrentZ()},PURPLE);
 
+                                   });*/
+            //forces.addForce(orient.getNormal()*0.1f,Forces::GRAVITY);
+            int divide = 16;
+            int upTo = freeFall ? divide : 3;
+            Vector2 grav = {0,0};
+            int count = 0;
+            for (int i = 0; i < upTo; i ++)
+            {
+                float angle =  2*M_PI/divide*i + M_PI/2-2*M_PI/divide + orient.rotation;
+                auto pos = terrain.lineBlockIntersect(orient.pos, orient.pos + Vector2(cos(angle),sin(angle))*150);
+               /* Debug::addDeferRender([pos](){
+
+                                      DrawCircle3D(Vector3(pos.pos.x,pos.pos.y,Globals::Game.getCurrentZ()),10,{0,1,0},0,BLUE);
+
+                                      });*/
+                if (pos.exists)
+                {
+                    grav +=  Vector2Normalize(pos.pos - orient.pos)*(1.0/pow(std::max(1.0f,Vector2Length(pos.pos -orient.pos)),2));
+                    count ++;
+                }
+            }
+            if (count >0)
+            {
+                forces.addForce(grav*150/count,Forces::GRAVITY);
+            }
+            else
+            {
+                freeFall = true;
+            }
         }
 
         orient.pos += forces.getTotalForce();

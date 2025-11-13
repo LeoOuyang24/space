@@ -85,10 +85,9 @@ Player::Player(const Vector2& pos_) : Object({pos_},std::make_tuple(PLAYER_DIMEN
 void Player::update(Terrain& terrain)
 {
     //if (!onGround)
-    bool wasOnGround = onGround;
     Object::applyForces(terrain);
 
-    tint = onGround ? WHITE : RED;
+    tint = onGround ? WHITE : freeFall ? BLUE : RED;
     Vector2 normal = orient.getNormal();
 
     Object::adjustAngle(terrain);
@@ -146,7 +145,10 @@ void Player::handleControls()
             {
                 float accel = (onGround ? PLAYER_GROUND_ACCEL : PLAYER_AIR_ACCEL);
                 float accelAmount = speed == 0 ? accel*2 : std::max(accel*0.5f,abs(accel*speed));
-                float maxSpeed = IsKeyDown(KEY_LEFT_SHIFT) ? PLAYER_RUN_MAX_SPEED : PLAYER_MAX_SPEED;
+                float maxSpeed = !onGround ? PLAYER_MAX_AIR_SPEED :
+                                        IsKeyDown(KEY_LEFT_SHIFT) ?
+                                            PLAYER_RUN_MAX_SPEED :
+                                            PLAYER_MAX_SPEED;
                 speed += accelAmount*(facing*2 - 1);
 
                 speed = std::min(abs(speed),maxSpeed)*((speed > 0)*2 - 1); //prevent speed from exceeding maximum
@@ -155,7 +157,7 @@ void Player::handleControls()
             }
             if (IsKeyPressed(KEY_SPACE) && onGround)
             {
-                forces.addForce(orient.getNormal()*-8,Forces::JUMP);
+                forces.addForce(orient.getNormal()*-6,Forces::JUMP);
             }
         }
         break;
@@ -169,15 +171,21 @@ void Player::handleControls()
             if (IsKeyReleased(KEY_SPACE))
             {
                 orient.rotation += aimAngle;
+                resetState.orient = orient;
+                resetState.keys = keys;
                 forces.addForce(orient.getNormal()*-8*(1 + power/100.0f),Forces::JUMP);
                 power = 0;
                 aimAngle = 0;
+            }
+            if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
+            {
+                power = 0;
             }
         }
     break;
     }
 
-    state = (IsKeyDown(KEY_SPACE) && !IsKeyPressed(KEY_SPACE) && onGround) ? CHARGING : WALKING;
+    state = (!IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && IsKeyDown(KEY_SPACE) && !IsKeyPressed(KEY_SPACE) && onGround) ? CHARGING : WALKING;
     if (!leftRight || state == CHARGING)
     {
         speed = trunc(speed*0.85,3);

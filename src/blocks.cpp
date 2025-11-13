@@ -19,13 +19,15 @@ void Block::render()
     //DrawRectangle(pos.x - BLOCK_DIMEN/2,pos.y - BLOCK_DIMEN/2,BLOCK_DIMEN,BLOCK_DIMEN,color);
 }
 
-Vector2 roundPos(const Vector2& vec)
+Shader Terrain::GravityFieldShader;
+
+Vector2 Terrain::roundPos(const Vector2& vec, int blockDimen)
 {
-    return Vector2(floor(vec.x/Block::BLOCK_DIMEN)*Block::BLOCK_DIMEN,
-                   (floor(vec.y/Block::BLOCK_DIMEN) )*Block::BLOCK_DIMEN);
+    return Vector2(floor(vec.x/blockDimen)*blockDimen,
+                   (floor(vec.y/blockDimen) )*blockDimen);
 }
 
-Vector2 nearestPos(const Vector2& vec)
+Vector2 Terrain::nearestPos(const Vector2& vec)
 {
     float remainX = fmod(vec.x,Block::BLOCK_DIMEN);
     float remainY = fmod(vec.y,Block::BLOCK_DIMEN);
@@ -36,6 +38,9 @@ Vector2 nearestPos(const Vector2& vec)
 Terrain::Terrain()
 {
     blocksTexture = LoadRenderTexture(MAX_WIDTH*Block::BLOCK_DIMEN,MAX_WIDTH*Block::BLOCK_DIMEN);
+
+//    upScaled.resize(upScaled.maxWidth*upScaled.maxWidth);
+    //gravityFields.resize(gravityFields.maxWidth*gravityFields.maxWidth);
 
     BeginTextureMode(blocksTexture);
         ClearBackground(BLANK);
@@ -61,7 +66,10 @@ void Terrain::addBlock(const Vector2& pos, Block block)
     {
         terrain.resize(index + 1);
     }
-    terrain[index] = block;
+    //terrain[index] = true;//block;
+    terrain.setVal(index,true);
+
+    //addGravity(pos + Vector2(Block::BLOCK_DIMEN/2,Block::BLOCK_DIMEN/2));
 
     Vector2 rounded = roundPos(pos);
     BeginTextureMode(blocksTexture);
@@ -92,7 +100,8 @@ void Terrain::remove(const Vector2& pos, int radius)
                 EndTextureMode();
                if (blockExists(pos))
                {
-                  terrain[pointToIndex(pos)] = {Color(0,0,0,0)};
+                  //terrain[pointToIndex(pos)] = false;//{Color(0,0,0,0)};
+                  terrain.setVal(pointToIndex(pos),false);
                }
                },pos,radius);
 
@@ -127,11 +136,6 @@ Vector2 Terrain::pointBoxEdgeIntersect(const Vector2& a, const Vector2& dir,int 
                                 rounded.y + dimens;     //if going down, it's the bottom border
 
         float x = (vertBorder - a.y)/dir.y*dir.x+ a.x; //the x coordinate if "a" continues in direction "dir" until it hits either the top or bottom edge
-        Debug::addDeferRender([dir,rounded,x,vertBorder,dimens](){
-
-                              DrawRectangle(rounded.x,vertBorder,dimens,dimens,WHITE);
-
-                              });
 
         float left = rounded.x - dimens*(rounded.x == a.x && dir.x < 0);
         float right = left + dimens;
@@ -204,11 +208,9 @@ PossiblePoint Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b)
 
     Vector2 nudge = current + dir*.001;
 
-    int i = 0;
-
     bool past = false; //true if we have gone past b and not hit a wall
     //loop until we have gone past b or we hit a wall
-    while (!blockExists(nudge) && i < 10 && !past)
+    while (!blockExists(nudge) && !past)
     {
        // i ++;
         current = pointBoxEdgeIntersect(current,dir,Block::BLOCK_DIMEN);
@@ -224,25 +226,26 @@ PossiblePoint Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b)
     return {!past,past ? b : current};
 
 }
-size_t Terrain::pointToIndex(const Vector2& vec)
+size_t Terrain::pointToIndex(const Vector2& vec,int blockDimen, int maxWidth)
 {
     //std::cout <<static_cast<int>(vec.y)/Block::BLOCK_DIMEN*MAX_WIDTH + static_cast<int>(vec.x)/Block::BLOCK_DIMEN << "\n";
-    return static_cast<int>(vec.y)/Block::BLOCK_DIMEN*MAX_WIDTH + static_cast<int>(vec.x)/Block::BLOCK_DIMEN;
+    return static_cast<int>(vec.y)/blockDimen*maxWidth + static_cast<int>(vec.x)/blockDimen;
 }
 
-Vector2 Terrain::indexToPoint(size_t index)
+Vector2 Terrain::indexToPoint(size_t index,int blockDimen, int maxWidth)
 {
-    return {index%MAX_WIDTH*Block::BLOCK_DIMEN,index/MAX_WIDTH*Block::BLOCK_DIMEN};
+    return {index%maxWidth*blockDimen,index/maxWidth*blockDimen};
 }
 
 void Terrain::generatePlanet(const Vector2& center, int radius, const Color& color )
 {
-
     forEachPos([this,&center,radius,color](const Vector2& pos){
 
                     addBlock(pos,{color});
 
                },center,radius);
+
+
 
 }
 
@@ -295,10 +298,14 @@ void Terrain::generateRightTriangle(const Vector2& corner, float height, const C
 
 bool Terrain::blockExists(const Vector2& pos)
 {
-    return pointToIndex(pos) < terrain.size() && terrain[pointToIndex(pos)].color.a != 0;
+    return pointToIndex(pos) < terrain.size() && terrain[pointToIndex(pos)];//terrain[pointToIndex(pos)].color.a != 0;
 }
 
-
+/*bool Terrain::blockExists(const Vector2& pos, TerrainMap& terr)
+{
+    size_t index = pointToIndex(pos,terr.blockDimen,terr.maxWidth);
+    return index < terr.size() && terr[index];
+}*/
 
 void Terrain::render(int z)
 {
@@ -307,9 +314,12 @@ void Terrain::render(int z)
    //std::cout << (1 - static_cast<float>(z - Globals::Game.currentZ)/Globals::MAX_Z) << "\n";
 
    Color balls = {white.x,white.y,white.z,255}; //can't do math with raylib colors breaking_bad_crawl_space.gif
+
+   //BeginShaderMode(GravityFieldShader);
+
    DrawBillboardPro(Globals::Game.camera,blocksTexture.texture,Rectangle(0,0,blocksTexture.texture.width,blocksTexture.texture.height)
                     ,Vector3(blocksTexture.texture.width/2,blocksTexture.texture.height/2,z),Vector3(0,-1,0),
                     Vector2(blocksTexture.texture.width,blocksTexture.texture.height),Vector2(blocksTexture.texture.width/2,blocksTexture.texture.height/2),
                     0,balls);
-
+    //EndShaderMode();
 }

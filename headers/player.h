@@ -36,6 +36,12 @@ private:
     Player& owner;
 };
 
+//variables that get reset upon RESET
+struct PlayerState
+{
+    std::unordered_set<Key::KeyVal> keys;
+    Orient orient;
+};
 
 class Item;
 struct Player : public Object<PlayerCollider,PlayerRenderer>
@@ -45,11 +51,12 @@ struct Player : public Object<PlayerCollider,PlayerRenderer>
 
     static constexpr float PLAYER_MAX_SPEED = 2;
     static constexpr float PLAYER_RUN_MAX_SPEED = 3;
+    static constexpr float PLAYER_MAX_AIR_SPEED = 1;
 
     static constexpr float PLAYER_GROUND_ACCEL = 0.1;
-    static constexpr float PLAYER_AIR_ACCEL = 0.01;
+    static constexpr float PLAYER_AIR_ACCEL = 0.05;
 
-    static constexpr float PLAYER_MAX_POWER = 100;
+    static constexpr float PLAYER_MAX_POWER = 50;
 
     enum State
     {
@@ -58,6 +65,7 @@ struct Player : public Object<PlayerCollider,PlayerRenderer>
     };
 
     State state = WALKING;
+    PlayerState resetState;
 
 
 
@@ -68,8 +76,8 @@ struct Player : public Object<PlayerCollider,PlayerRenderer>
 
     bool facing = true;
 
-    std::weak_ptr<Item> holding;
     std::unordered_set<Key::KeyVal> keys;
+    std::weak_ptr<Item> holding;
 
     Player(const Vector2& pos);
     void update(Terrain&);

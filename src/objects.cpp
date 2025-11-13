@@ -47,5 +47,5 @@ void Forces::addFriction(float friction, Forces::ForceSource source)
 
 Vector2 Forces::getTotalForce()
 {
-    return totalForce;
+    return Vector2LengthSqr(totalForce) > 100 ? Vector2Normalize(totalForce)*10 : totalForce;
 }
