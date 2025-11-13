@@ -11,6 +11,7 @@
 #include "collideTriggers.h"
 #include "shape.h"
 #include "debug.h"
+#include "colliders.h"
 #include "game.h"
 
 struct PhysicsBody
@@ -113,7 +114,7 @@ struct Object : public PhysicsBody
     }
     Shape getShape()
     {
-        return {collider.getShapeType(),orient,&collider};
+        return {collider.getShapeType(),orient,collider.getCollider()};
     }
     virtual void render()
     {

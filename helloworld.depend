@@ -1072,7 +1072,7 @@
 	<raylib.h>
 	"raymath.h"
 
-1762918167 source:c:\users\leoou\documents\projects\helloworld\main.cpp
+1763010556 source:c:\users\leoou\documents\projects\helloworld\main.cpp
 	<unordered_map>
 	<iostream>
 	<vector>
@@ -1108,7 +1108,7 @@
 	<raylib.h>
 	"raymath.h"
 
-1762916366 c:\users\leoou\documents\projects\helloworld\headers\objects.h
+1763011221 c:\users\leoou\documents\projects\helloworld\headers\objects.h
 	<tuple>
 	<raylib.h>
 	"blocks.h"
@@ -1117,6 +1117,7 @@
 	"collideTriggers.h"
 	"shape.h"
 	"debug.h"
+	"colliders.h"
 	"game.h"
 
 1762715914 c:\users\leoou\documents\projects\helloworld\headers\player.h
@@ -1174,25 +1175,25 @@
 	<math.h>
 	"../headers/resources_math.h"
 
-1763008612 c:\users\leoou\documents\projects\helloworld\headers\shape.h
+1763009557 c:\users\leoou\documents\projects\helloworld\headers\shape.h
 	<functional>
 	<iostream>
 	"raylib.h"
 	"terrain.h"
 
-1760907556 source:c:\users\leoou\documents\projects\helloworld\src\shape.cpp
+1763011238 source:c:\users\leoou\documents\projects\helloworld\src\shape.cpp
 	<iostream>
 	"../headers/shape.h"
 	"../headers/objects.h"
 	"../headers/colliders.h"
 
-1759008547 c:\users\leoou\documents\projects\helloworld\headers\render.h
+1763010681 c:\users\leoou\documents\projects\helloworld\headers\render.h
 	<iostream>
 	"shape.h"
 	"objects.h"
 	"game.h"
 
-1762750304 source:c:\users\leoou\documents\projects\helloworld\src\render.cpp
+1763010758 source:c:\users\leoou\documents\projects\helloworld\src\render.cpp
 	"../headers/render.h"
 
 1761196918 c:\users\leoou\documents\projects\helloworld\headers\debug.h
@@ -1269,10 +1270,10 @@
 	"../headers/sequencer.h"
 	"../headers/player.h"
 
-1761194345 source:c:\users\leoou\documents\projects\helloworld\src\colliders.cpp
+1763009564 source:c:\users\leoou\documents\projects\helloworld\src\colliders.cpp
 	"../headers/../headers/colliders.h"
 
-1760907131 c:\users\leoou\documents\projects\helloworld\headers\colliders.h
+1763011472 c:\users\leoou\documents\projects\helloworld\headers\colliders.h
 	"shape.h"
 
 1761965473 source:c:\users\leoou\documents\projects\helloworld\src\interface.cpp

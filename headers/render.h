@@ -12,23 +12,18 @@ struct ShapeRenderer
 {
     void render(const Shape& shape, const Color& color)
     {
-        ifShapeType<shapeType>(shape,
-                               [&color,&shape](CircleCollider* circle){
+        switch (shape.type)
+        {
+        case CIRCLE:
+            DrawCircle3D({shape.orient.pos.x,shape.orient.pos.y,
+                         Globals::Game.terrain.getZOfLayer(shape.orient.layer)},shape.collider.radius,{0,0,0},0,color);
+            break;
+        case RECT:
+             DrawCube(Vector3(shape.orient.pos.x,shape.orient.pos.y,Globals::Game.terrain.getZOfLayer(shape.orient.layer)),
+                                     shape.collider.dimens.x,shape.collider.dimens.y,1,color);
+            break;
+        }
 
-                            //DrawCircle(shape.orient.pos.x,shape.orient.pos.y,circle->radius,color);
-                            DrawCircle3D({shape.orient.pos.x,shape.orient.pos.y,Globals::Game.terrain.getZOfLayer(shape.orient.layer)},circle->radius,{0,0,0},0,WHITE);
-
-                    },
-                                [&color,&shape](RectCollider* rect){
-                            DrawCube(Vector3(shape.orient.pos.x,shape.orient.pos.y,Globals::Game.terrain.getZOfLayer(shape.orient.layer)),
-                                     rect->width,rect->height,1,color);
-
-                            //DrawPlane({shape.orient.pos.x,shape.orient.pos.y,Globals::Game.terrain.getZOfLayer(shape.orient.layer)},{rect->width,rect->height},color);
-                            //DrawRectanglePro({shape.orient.pos.x,shape.orient.pos.y,rect->width,rect->height},{rect->width/2,rect->height/2},shape.orient.rotation*RAD2DEG,color);
-
-                    }
-
-                    );
     }
 };
 

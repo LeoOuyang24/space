@@ -4,28 +4,6 @@
 #include "../headers/objects.h"
 #include "../headers/colliders.h"
 
-void ifShapeType(const Shape& shape, std::function<void(CircleCollider*)> circleFunc, std::function<void(RectCollider*)> rectFunc)
-{
-    switch (shape.type)
-    {
-    case ShapeType::CIRCLE:
-        {
-            CircleCollider* circle = static_cast<CircleCollider*>(shape.collider);
-            circleFunc(circle);
-            break;
-        }
-    case ShapeType::RECT:
-        {
-            RectCollider* rect = static_cast<RectCollider*>(shape.collider);
-            rectFunc(rect);
-            break;
-        }
-    default:
-        std::cerr << "ifShapeType ERROR: invalid shape: " << shape.type << "\n";
-    }
-}
-
-#define DOUBLECAST(type1, type2) type1* ptr1 = static_cast<type1*>(shape1.collider); type2* ptr2 = static_cast<type2*>(shape2.collider);
 bool CheckCollision(const Shape& shape1, const Shape& shape2)
 {
     if (shape1.type == shape2.type)
@@ -34,14 +12,13 @@ bool CheckCollision(const Shape& shape1, const Shape& shape2)
         {
             case ShapeType::CIRCLE:
                 {
-                    DOUBLECAST(CircleCollider, CircleCollider);
                     //CircleCollider* ptr1 = static_cast<CircleCollider*>(shape1.collider); CircleCollider* ptr2 = static_cast<CircleCollider*>(shape2.collider);
-                    return CheckCollisionCircles(shape1.orient.pos,ptr1->radius,shape2.orient.pos,ptr2->radius);
+                    return CheckCollisionCircles(shape1.orient.pos,shape1.collider.radius,shape2.orient.pos,shape2.collider.radius);
                 }
             case ShapeType::RECT:
                 {
-                    DOUBLECAST(RectCollider,RectCollider);
-                    return CheckCollisionRecs(ptr1->getRect(shape1.orient),ptr2->getRect(shape2.orient));
+                    return CheckCollisionRecs(shape1.orient.getRect(shape1.collider.dimens),
+                                              shape2.orient.getRect(shape2.collider.dimens));
                 }
             default:
                 std::cerr << "getCollision ERROR: unknown shapes: " << shape1.type << " " << shape2.type << "\n";
@@ -52,9 +29,8 @@ bool CheckCollision(const Shape& shape1, const Shape& shape2)
     {
         if (shape1.type == ShapeType::CIRCLE && shape2.type == ShapeType::RECT)
         {
-            DOUBLECAST(CircleCollider,RectCollider);
-            //rotate the circle around the rect so this can account for the rectangle's rotation
-            return CheckCollisionCircleRec(rotatePoint(shape1.orient.pos,shape2.orient.pos,-shape2.orient.rotation),ptr1->radius,ptr2->getRect(shape2.orient));
+            return CheckCollisionCircleRec(rotatePoint(shape1.orient.pos,shape2.orient.pos,-shape2.orient.rotation),
+                                           shape1.collider.radius,shape2.orient.getRect(shape2.collider.dimens));
         }
         else
         {
@@ -65,15 +41,14 @@ bool CheckCollision(const Shape& shape1, const Shape& shape2)
 
 Vector2 GetDimen(const Shape& shape)
 {
-    Vector2 answer;
-    ifShapeType(shape,[&answer](CircleCollider* coll){
-
-                answer = {coll->radius*2,coll->radius*2};
-
-                },[&answer](RectCollider* rect){
-
-                answer = {rect->width,rect->height};
-
-                });
-    return answer;
+    switch(shape.type)
+    {
+    case CIRCLE:
+        return {shape.collider.radius,shape.collider.radius};
+    case RECT:
+        return shape.collider.dimens;
+    default:
+        std::cerr << "GetDimen ERROR: unknown shapes: " << shape.type << "\n";
+        return {};
+    }
 }

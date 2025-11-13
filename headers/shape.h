@@ -32,43 +32,26 @@ struct Orient
     {
         return Vector2Rotate(Vector2(0,1),rotation);
     }
+    inline Rectangle getRect(const Vector2& dimens) const
+    {
+        return {pos.x - dimens.x/2, pos.y - dimens.y/2, dimens.x, dimens.y};
+    }
+
+
 };
 
-struct CircleCollider;
-struct RectCollider;
+union ShapeCollider
+{
+    Vector2 dimens;
+    int radius;
+};
 struct Shape
 {
     ShapeType type;
     Orient orient;
-    //ShapeCollider collider;
-    void* collider = nullptr;
+    ShapeCollider collider;
 
 };
-
-//runs a function depending on what shape "shape" is
-//doing this instead of just writing the if statements standardizes the static cast we have to do
-void ifShapeType(const Shape& shape, std::function<void(CircleCollider*)> circleFunc, std::function<void(RectCollider*)> rectFunc);
-
-//same as above but which function to run is determined at compile time
-template<ShapeType type>
-void ifShapeType(const Shape& shape, std::function<void(CircleCollider*)> circleFunc, std::function<void(RectCollider*)> rectFunc)
-{
-    if constexpr (type == ShapeType::CIRCLE)
-    {
-        CircleCollider* circle = static_cast<CircleCollider*>(shape.collider);
-        circleFunc(circle);
-    }
-    else if (type == ShapeType::RECT)
-    {
-        RectCollider* rect = static_cast<RectCollider*>(shape.collider);
-        rectFunc(rect);
-    }
-    else
-    {
-        std::cerr << "ifShapeType (template version) ERROR: unknown shape " << type << "\n";
-    }
-}
-
 bool CheckCollision(const Shape& shape1, const Shape& shape2);
 Vector2 GetDimen(const Shape& shape1);
 

@@ -51,8 +51,3 @@ float RectCollider::getLandingAngle(Orient& o, Terrain& terrain)
     return atan2(ground.y,ground.x) + M_PI/2;
 }
 
-
-Rectangle RectCollider::getRect(const Orient& orient)
-{
-    return Rectangle(orient.pos.x - width/2, orient.pos.y - height/2, width,height);
-}
