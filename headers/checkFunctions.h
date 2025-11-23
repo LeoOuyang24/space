@@ -1,8 +1,0 @@
-#ifndef CHECKFUNCTIONS_H_INCLUDED
-#define CHECKFUNCTIONS_H_INCLUDED
-
-#include "blackMagic.h"
-
-CHECK_FOR(collideWith);
-
-#endif // CHECKFUNCTIONS_H_INCLUDED

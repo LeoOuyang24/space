@@ -9,11 +9,10 @@ Item::Item(const Vector3& pos, const Vector2& dimen, Texture2D& sprite) : Object
                                                                                  {{pos.x,pos.y},pos.z},
                                                                                  std::make_tuple(dimen.x,dimen.y),
                                                                                  std::make_tuple(std::ref(sprite)),
-                                                                                 std::make_tuple(HoldThis()))
+                                                                                 createArgs<HoldThis>())
 {
 
 }
-
 
 bool Key::unlocks(Key::KeyVal keyVal, Key::KeyVal lockVal)
 {

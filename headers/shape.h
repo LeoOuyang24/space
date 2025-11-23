@@ -14,7 +14,6 @@ enum ShapeType
     RECT
 };
 
-
 struct Orient
 {
     Vector2 pos = {0,0};

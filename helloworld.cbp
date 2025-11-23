@@ -56,10 +56,13 @@
 		</Unit>
 		<Unit filename="headers/blackMagic.h" />
 		<Unit filename="headers/blocks.h" />
-		<Unit filename="headers/checkFunctions.h" />
+		<Unit filename="headers/checkFields.h" />
 		<Unit filename="headers/collideTriggers.h" />
 		<Unit filename="headers/colliders.h" />
+		<Unit filename="headers/conversions.h" />
 		<Unit filename="headers/debug.h" />
+		<Unit filename="headers/factories.h" />
+		<Unit filename="headers/factory.h" />
 		<Unit filename="headers/game.h" />
 		<Unit filename="headers/interface.h" />
 		<Unit filename="headers/item.h" />
@@ -73,13 +76,21 @@
 		<Unit filename="headers/sprites.h" />
 		<Unit filename="headers/terrain.h" />
 		<Unit filename="main.cpp" />
-		<Unit filename="shaders/fragments/portal.h" />
-		<Unit filename="shaders/fragments/stars.h" />
-		<Unit filename="shaders/fragments/sun.h" />
+		<Unit filename="shaders/fragments/portal.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="shaders/fragments/stars.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="shaders/fragments/sun.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
 		<Unit filename="src/blocks.cpp" />
 		<Unit filename="src/collideTriggers.cpp" />
 		<Unit filename="src/colliders.cpp" />
+		<Unit filename="src/conversions.cpp" />
 		<Unit filename="src/debug.cpp" />
+		<Unit filename="src/factory.cpp" />
 		<Unit filename="src/game.cpp" />
 		<Unit filename="src/interface.cpp" />
 		<Unit filename="src/item.cpp" />

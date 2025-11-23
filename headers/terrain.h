@@ -19,6 +19,7 @@ struct ObjectLookup
     void addObject(PhysicsBody& obj);
     void addObject(std::shared_ptr<PhysicsBody> ptr);
     std::shared_ptr<PhysicsBody> getObject(PhysicsBody& body);
+
 };
 
 class GlobalTerrain
@@ -26,11 +27,14 @@ class GlobalTerrain
     struct Layer
     {
         Terrain terrain;
+        std::string imagePath = "";
         //contains weak_ptrs that point to the shared_ptrs in ObjectLookup
         std::list<std::weak_ptr<PhysicsBody>> objects;
     };
 
     std::vector<Layer> layers;
+
+    bool isValidObject(PhysicsBody* obj, LayerType layer); //true if obj should be updated (is alive, belongs in this layer, is not null
 public:
     //adds an object to a given layer, does nothing if provided layer is out of bounds
     void addObject(std::shared_ptr<PhysicsBody> obj, LayerType layer);
@@ -47,6 +51,9 @@ public:
     void update(LayerType layer);
     void render();
     float getZOfLayer(LayerType index); //-1 if index is out of bounds
+
+    std::string serialize(LayerType index);
+
 };
 
 #endif // TERRAIN_H_INCLUDED
