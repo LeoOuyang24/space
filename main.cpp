@@ -9,7 +9,6 @@
 #include <math.h>
 
 
-#include "headers/factories.h"
 #include "headers/sprites.h"
 #include "headers/factory.h"
 

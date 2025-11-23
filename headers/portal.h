@@ -71,5 +71,20 @@ struct TriggerPortalSpawn : public InteractComponent
 
 using PortalSpawner = Object<CircleCollider,TextureRenderer,TriggerPortalSpawn>;
 
+template<>
+struct Factory<PortalSpawner>
+{
+    static constexpr std::string ObjectName = "portal_spawner";
+    using Base = FactoryBase<PortalSpawner,
+                                access<PortalSpawner,&PortalSpawner::orient,&Orient::pos>,
+                                access<PortalSpawner,&PortalSpawner::orient,&Orient::layer>,
+                                access<PortalSpawner,&PortalSpawner::collider,&CircleCollider::radius>,
+                                access<PortalSpawner,&PortalSpawner::renderer,&TextureRenderer::sprite>,
+                                access<PortalSpawner,&PortalSpawner::collideTrigger,&TriggerPortalSpawn::start>,
+                                access<PortalSpawner,&PortalSpawner::collideTrigger,&TriggerPortalSpawn::end>,
+                                access<PortalSpawner,&PortalSpawner::collideTrigger,&TriggerPortalSpawn::absolute>>;
+
+};
+
 
 #endif // PORTAL_H_INCLUDED

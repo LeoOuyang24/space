@@ -4,6 +4,7 @@
 #include "colliders.h"
 #include "objects.h"
 #include "render.h"
+#include "factory.h"
 
 class HoldThis;
 
@@ -49,6 +50,18 @@ struct Key : public Object<RectCollider,TextureRenderer,KeyCollider,Key>
     }
 };
 
+template<>
+struct Factory<Key>
+{
+  static constexpr std::string ObjectName = "key";
+  using Base = FactoryBase<Key,
+                        access<Key,&Key::key>,
+                        access<Key,&Key::orient,&Orient::pos>,
+                        access<Key,&Key::orient,&Orient::layer>,
+                        access<Key,&Key::collider,&RectCollider::width>,
+                        access<Key,&Key::collider,&RectCollider::height>,
+                        access<Key,&Key::renderer,&TextureRenderer::sprite>>;
+};
 bool operator==(const Key::KeyVal& left, const Key::KeyVal& right);
 
 
