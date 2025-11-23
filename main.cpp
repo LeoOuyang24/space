@@ -64,9 +64,6 @@ int main(void)
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
-    std::cout << typeid(GET_TYPE_WITH_dead<int,double,std::string,double,Key>::type).name() << "\n";
-    std::vector<PhysicsBody*> objs;
-
     const int minRadius = 10;
     const int maxRadius = 50;
 

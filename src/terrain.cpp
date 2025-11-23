@@ -159,19 +159,17 @@ std::string GlobalTerrain::serialize(LayerType index)
     {
         return "";
     }
-    std::stringstream river;
-    std::string cereal;
+    std::string cereal = "";
     Layer& layer = layers[index];
-    river << layer.imagePath << "\n";
+    cereal += layer.imagePath + "\n";
     for (auto it = layer.objects.begin(); it != layer.objects.end(); ++it)
     {
         PhysicsBody* obj = it->lock().get();
         if (isValidObject(obj,index))
         {
-          //  river << obj->serialize() << "\n";
+            cereal += obj->serialize() + "\n";
         }
     }
-    river >> cereal;
     return cereal;
 
 }

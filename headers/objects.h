@@ -121,9 +121,10 @@ struct Object : public PhysicsBody
         }
     }
 
+    //calls the corresponding Factory<>::Base::serialize
+    //we do this by figuring out which of our parameters is a descendant of PhysicsBody (because it has a "dead" field)
     std::string serialize()
     {
-        //std::cout << typeid(typename GET_TYPE_WITH_dead<More...>::type).name() << "\n";
         using FactoryType = typename GET_TYPE_WITH_dead<More...>::type;
         if constexpr(has_dead<FactoryType>)
         {

@@ -1024,7 +1024,7 @@
 	<raylib.h>
 	"blocks.h"
 
-1741547076 D
+1763785698 D
 
 1743587520 c:\users\leoou\onedrive\documents\projects\helloworld\headers\blocks.h
 	<math.h>
@@ -1072,11 +1072,30 @@
 	<raylib.h>
 	"raymath.h"
 
-<<<<<<< HEAD
-1763858949 source:c:\users\leoou\documents\projects\helloworld\main.cpp
-=======
-1763866452 source:c:\users\leoou\documents\projects\helloworld\main.cpp
->>>>>>> factory_new
+1763873185 source:c:\users\leoou\documents\projects\helloworld\main.cpp
+	<unordered_map>
+	<iostream>
+	<fstream>
+	<vector>
+	<tuple>
+	<math.h>
+	"headers/sprites.h"
+	"headers/factory.h"
+	"headers/blocks.h"
+	"headers/objects.h"
+	"headers/player.h"
+	"headers/resources_math.h"
+	"headers/debug.h"
+	"headers/game.h"
+	"headers/terrain.h"
+	"headers/sequencer.h"
+	"headers/portal.h"
+	"headers/collideTriggers.h"
+	"headers/item.h"
+	<rlgl.h>
+	<raymath.h>
+
+1763871640 tory_new
 	<unordered_map>
 	<iostream>
 	<fstream>
@@ -1099,6 +1118,61 @@
 	"headers/item.h"
 	<rlgl.h>
 	<raymath.h>
+	<tuple>
+	<raylib.h>
+	"blocks.h"
+	"terrain.h"
+	"factory.h"
+	"checkFields.h"
+	"collideTriggers.h"
+	"shape.h"
+	"debug.h"
+	"colliders.h"
+	"game.h"
+	<iostream>
+	"../headers/player.h"
+	"../headers/debug.h"
+	"../headers/game.h"
+	"../headers/item.h"
+	<functional>
+	<iostream>
+	"raylib.h"
+	"terrain.h"
+	<memory>
+	<raylib.h>
+	"terrain.h"
+	"sprites.h"
+	"interface.h"
+	<sstream>
+	"../headers/terrain.h"
+	"../headers/game.h"
+	"../headers/objects.h"
+	"blocks.h"
+	<list>
+	"objects.h"
+	"shape.h"
+	"render.h"
+	"player.h"
+	"collideTriggers.h"
+	"item.h"
+	<functional>
+	"raylib.h"
+	<iostream>
+	"colliders.h"
+	"objects.h"
+	"render.h"
+	"factory.h"
+	"../headers/item.h"
+	"../headers/collideTriggers.h"
+	"../headers/sequencer.h"
+	"../headers/player.h"
+	<iostream>
+	<unordered_map>
+	<raylib.h>
+	<memory>
+	<iostream>
+	<array>
+	"conversions.h"
 
 1763254162 c:\users\leoou\documents\projects\helloworld\headers\blocks.h
 	<math.h>
@@ -1115,11 +1189,7 @@
 	<raylib.h>
 	"raymath.h"
 
-<<<<<<< HEAD
-1763864280 c:\users\leoou\documents\projects\helloworld\headers\objects.h
-=======
-1763871561 c:\users\leoou\documents\projects\helloworld\headers\objects.h
->>>>>>> factory_new
+1763872717 c:\users\leoou\documents\projects\helloworld\headers\objects.h
 	<tuple>
 	<raylib.h>
 	"blocks.h"
@@ -1153,11 +1223,7 @@
 	<iostream>
 	"../headers/objects.h"
 
-<<<<<<< HEAD
-1763785277 source:c:\users\leoou\documents\projects\helloworld\src\player.cpp
-=======
-1763865633 source:c:\users\leoou\documents\projects\helloworld\src\player.cpp
->>>>>>> factory_new
+1763872099 source:c:\users\leoou\documents\projects\helloworld\src\player.cpp
 	<iostream>
 	"../headers/player.h"
 	"../headers/debug.h"
@@ -1191,11 +1257,7 @@
 	<math.h>
 	"../headers/resources_math.h"
 
-<<<<<<< HEAD
-1763261003 c:\users\leoou\documents\projects\helloworld\headers\shape.h
-=======
-1763865633 c:\users\leoou\documents\projects\helloworld\headers\shape.h
->>>>>>> factory_new
+1763872099 c:\users\leoou\documents\projects\helloworld\headers\shape.h
 	<functional>
 	<iostream>
 	"raylib.h"
@@ -1223,18 +1285,14 @@
 1756612712 source:c:\users\leoou\documents\projects\helloworld\src\debug.cpp
 	"../headers/debug.h"
 
-<<<<<<< HEAD
-1763783371 c:\users\leoou\documents\projects\helloworld\headers\game.h
-=======
-1763867066 c:\users\leoou\documents\projects\helloworld\headers\game.h
->>>>>>> factory_new
+1763872098 c:\users\leoou\documents\projects\helloworld\headers\game.h
 	<memory>
 	<raylib.h>
 	"terrain.h"
 	"sprites.h"
 	"interface.h"
 
-1763784677 source:c:\users\leoou\documents\projects\helloworld\src\game.cpp
+1763872099 source:c:\users\leoou\documents\projects\helloworld\src\game.cpp
 	<iostream>
 	<fstream>
 	"../headers/game.h"
@@ -1242,21 +1300,13 @@
 	"../headers/player.h"
 	"../headers/factory.h"
 
-<<<<<<< HEAD
-1763859754 source:c:\users\leoou\documents\projects\helloworld\src\terrain.cpp
-=======
-1763867066 source:c:\users\leoou\documents\projects\helloworld\src\terrain.cpp
->>>>>>> factory_new
+1763872604 source:c:\users\leoou\documents\projects\helloworld\src\terrain.cpp
 	<sstream>
 	"../headers/terrain.h"
 	"../headers/game.h"
 	"../headers/objects.h"
 
-<<<<<<< HEAD
-1763792408 c:\users\leoou\documents\projects\helloworld\headers\terrain.h
-=======
-1763867066 c:\users\leoou\documents\projects\helloworld\headers\terrain.h
->>>>>>> factory_new
+1763872099 c:\users\leoou\documents\projects\helloworld\headers\terrain.h
 	"blocks.h"
 	<list>
 
@@ -1267,11 +1317,7 @@
 	<functional>
 	<list>
 
-<<<<<<< HEAD
-1763857617 c:\users\leoou\documents\projects\helloworld\headers\portal.h
-=======
-1763871646 c:\users\leoou\documents\projects\helloworld\headers\portal.h
->>>>>>> factory_new
+1763872182 c:\users\leoou\documents\projects\helloworld\headers\portal.h
 	"objects.h"
 	"shape.h"
 	"render.h"
@@ -1279,17 +1325,10 @@
 	"collideTriggers.h"
 	"item.h"
 
-<<<<<<< HEAD
-1763782539 source:c:\users\leoou\documents\projects\helloworld\src\portals.cpp
+1763872099 source:c:\users\leoou\documents\projects\helloworld\src\portals.cpp
 	"../headers/portal.h"
 
-1763802201 c:\users\leoou\documents\projects\helloworld\headers\collidetriggers.h
-=======
-1763865633 source:c:\users\leoou\documents\projects\helloworld\src\portals.cpp
-	"../headers/portal.h"
-
-1763867066 c:\users\leoou\documents\projects\helloworld\headers\collidetriggers.h
->>>>>>> factory_new
+1763872098 c:\users\leoou\documents\projects\helloworld\headers\collidetriggers.h
 	<functional>
 	"raylib.h"
 	<iostream>
@@ -1297,15 +1336,9 @@
 1758998460 c:\users\leoou\documents\projects\helloworld\headers\checkfunctions.h
 	"blackMagic.h"
 
-<<<<<<< HEAD
-1763853063 c:\users\leoou\documents\projects\helloworld\headers\blackmagic.h
+1763872098 c:\users\leoou\documents\projects\helloworld\headers\blackmagic.h
 
-1763858970 c:\users\leoou\documents\projects\helloworld\headers\item.h
-=======
-1763867066 c:\users\leoou\documents\projects\helloworld\headers\blackmagic.h
-
-1763871541 c:\users\leoou\documents\projects\helloworld\headers\item.h
->>>>>>> factory_new
+1763872319 c:\users\leoou\documents\projects\helloworld\headers\item.h
 	"colliders.h"
 	"objects.h"
 	"render.h"
@@ -1317,11 +1350,7 @@
 	"../headers/objects.h"
 	"../headers/player.h"
 
-<<<<<<< HEAD
-1763802314 source:c:\users\leoou\documents\projects\helloworld\src\item.cpp
-=======
-1763867065 source:c:\users\leoou\documents\projects\helloworld\src\item.cpp
->>>>>>> factory_new
+1763872099 source:c:\users\leoou\documents\projects\helloworld\src\item.cpp
 	"../headers/item.h"
 	"../headers/collideTriggers.h"
 	"../headers/sequencer.h"
@@ -1340,35 +1369,24 @@
 
 1761190815 c:\users\leoou\documents\projects\helloworld\headers\interface.h
 
-<<<<<<< HEAD
-1763785341 source:c:\users\leoou\documents\projects\helloworld\src\sprites.cpp
+1763872415 source:c:\users\leoou\documents\projects\helloworld\src\sprites.cpp
 	<filesystem>
 	"../headers/sprites.h"
 
-1763358292 c:\users\leoou\documents\projects\helloworld\headers\sprites.h
-=======
-1763871670 source:c:\users\leoou\documents\projects\helloworld\src\sprites.cpp
-	"../headers/sprites.h"
-
-1763871996 c:\users\leoou\documents\projects\helloworld\headers\sprites.h
->>>>>>> factory_new
+1763872510 c:\users\leoou\documents\projects\helloworld\headers\sprites.h
 	<iostream>
 	<unordered_map>
 	<raylib.h>
 	<memory>
 
-<<<<<<< HEAD
-1763801448 source:c:\users\leoou\documents\projects\helloworld\src\factory.cpp
+1763873301 source:c:\users\leoou\documents\projects\helloworld\src\factory.cpp
 	"../headers/factory.h"
-	"../headers/factories.h"
 	"../headers/objects.h"
 	"../headers/conversions.h"
 	"../headers/item.h"
+	"../headers/portal.h"
 
-1763864253 c:\users\leoou\documents\projects\helloworld\headers\factory.h
-=======
-1763871524 c:\users\leoou\documents\projects\helloworld\headers\factory.h
->>>>>>> factory_new
+1763873334 c:\users\leoou\documents\projects\helloworld\headers\factory.h
 	<iostream>
 	<array>
 	"conversions.h"
@@ -1378,39 +1396,23 @@
 	<iostream>
 	"game.h"
 
-<<<<<<< HEAD
 1763253136 c:\users\leoou\documents\projects\helloworld\headers\conversions2.h
 	<vector>
 	<iostream>
 	"raylib.h"
 	"game.h"
 
-1763782971 source:c:\users\leoou\documents\projects\helloworld\src\conversions.cpp
-	"../headers/conversions.h"
-
-1763801448 c:\users\leoou\documents\projects\helloworld\headers\factories.h
-	"factory.h"
-	"portal.h"
-
-1763802616 c:\users\leoou\documents\projects\helloworld\headers\checkfields.h
-	"blackMagic.h"
-
-=======
-1763802616 c:\users\leoou\documents\projects\helloworld\headers\checkfields.h
-	"blackMagic.h"
-
 1763871627 source:c:\users\leoou\documents\projects\helloworld\src\conversions.cpp
 	"../headers/conversions.h"
-
-1763871686 source:c:\users\leoou\documents\projects\helloworld\src\factory.cpp
-	"../headers/factory.h"
-	"../headers/factories.h"
-	"../headers/objects.h"
 	"../headers/conversions.h"
-	"../headers/item.h"
 
-1763871640 c:\users\leoou\documents\projects\helloworld\headers\factories.h
+1763872182 c:\users\leoou\documents\projects\helloworld\headers\factories.h
 	"factory.h"
 	"portal.h"
 
->>>>>>> factory_new
+1763802616 c:\users\leoou\documents\projects\helloworld\headers\checkfields.h
+	"blackMagic.h"
+	"blackMagic.h"
+
+1763802616 c.h"
+

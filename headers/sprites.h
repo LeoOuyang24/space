@@ -21,7 +21,6 @@ public:
     {
 
         Texture2D* sprite = new Texture2D(LoadTexture((std::string("sprites/") + std::string(path)).c_str()));
-        std::cout << path << "\n";
         if (IsTextureValid(*sprite))
         {
             sprites[path].reset(sprite);
@@ -29,17 +28,15 @@ public:
         }
         else
         {
+            delete sprite;
             std::cerr << "ERROR SpritesGlobal::addSprite: unable to load sprite: " << path << "\n";
             return;
         }
-        sprites[path].reset(sprite);
-        this->paths[sprite] = path;
         addSprite(paths...);
     }
     void addSprites(std::string folder);
     std::string getSpritePath(Texture2D* sprite);
     Texture2D* getSprite(std::string str);
-    std::string getSpritePath(Texture2D*);
 };
 
 #endif // SPRITES_H_INCLUDED

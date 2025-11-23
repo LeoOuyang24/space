@@ -62,6 +62,7 @@ struct Factory<Key>
                         access<Key,&Key::collider,&RectCollider::height>,
                         access<Key,&Key::renderer,&TextureRenderer::sprite>>;
 };
+
 bool operator==(const Key::KeyVal& left, const Key::KeyVal& right);
 
 
