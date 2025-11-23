@@ -1,13 +1,17 @@
 
 #include <unordered_map>
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <tuple>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+
+#include "headers/factories.h"
 #include "headers/sprites.h"
+#include "headers/factory.h"
 
 #include "headers/blocks.h"
 #include "headers/objects.h"
@@ -21,6 +25,10 @@
 #include "headers/portal.h"
 #include "headers/collideTriggers.h"
 #include "headers/item.h"
+
+
+
+
 
 #include <rlgl.h>
 #include <raymath.h>
@@ -57,56 +65,22 @@ int main(void)
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
-
-
+    std::cout << typeid(GET_TYPE_WITH_dead<int,double,std::string,double,Key>::type).name() << "\n";
     std::vector<PhysicsBody*> objs;
 
     const int minRadius = 10;
     const int maxRadius = 50;
 
     Globals::Game.init();
-    //Terrain terrain(Terrain::MAX_WIDTH,Terrain::MAX_WIDTH);
-
-    /*Globals::Game.terrain.pushBackTerrain();
-
-    for (int i = 1; i <2; i ++)
-    {
-        Globals::Game.terrain.pushBackTerrain();
-        Globals::Game.terrain.getTerrain(i)->generatePlanets();
-    }*/
-
-
-
-
-    //Globals::Game.terrain.getTerrain(1)->generatePlanet({500,500},100,RED);
 
     Camera3D& camera = Globals::Game.camera;
 
 
     Player& player = *Globals::Game.player;
 
-    Texture2D keySprite = LoadTexture("sprites/key.png");
-    Texture2D lockedSprite = LoadTexture("sprites/locked.png");
-
-    //std::get<HoldThis>(tup);
-
-    //auto* key = new Object<RectCollider,TextureRenderer,HoldThis>({0,200},std::make_tuple(10,10),{},std::make_tuple(HoldThis()));
-    auto* key = new Key(RED,{0,200},{20,20},keySprite);
-    auto* key2 = new Key(YELLOW,{2439,2600},{20,20},keySprite);
-
-    auto* locked =  new PortalSpawner({{1600,2800},0},std::make_tuple(20),std::make_tuple(lockedSprite),
-                                                                            createArgs<TriggerPortalSpawn>(true,Vector2(0,-100),0,Vector3(600,500,1),100,RED));
-
-    Globals::Game.addObject(*(key));
-    Globals::Game.addObject(*locked);
-    Globals::Game.addObject(*key2);
-
-
-
-   // std::cout << "actual: " <<&(locked->collideTrigger) << "\n";
-
-   //locked->followGravity = false;
-   //key->followGravity = false;
+    Globals::Game.loadLevel("levels/layer0.txt");
+   // Globals::Game.addObject(Globals::Game.player);
+    Globals::Game.setLayer(0);
 
    Spawns spawns = PLANETS;
     int a = 0;
@@ -145,7 +119,7 @@ int main(void)
     int frames = 0;
     //player.force = Vector2(100,0);
 
-    Globals::Game.Sprites.addSprite("key.png","bg.png");
+    //Globals::Game.Sprites.addSprite("key.png","bg.png");
 
     Terrain::GravityFieldShader = LoadShader(0,TextFormat("shaders/fragments/terrain.h",GLSL_VERSION));
     Texture& blocks = Globals::Game.getCurrentTerrain()->blocksTexture.texture;
@@ -252,6 +226,16 @@ int main(void)
             camera.target.y -= 10;
         }
 
+
+        if (IsKeyPressed(KEY_S) && IsKeyDown(KEY_LEFT_CONTROL))
+        {
+            std::cout << "SAVING!\n";
+            std::ofstream file;
+            file.open("levels/custom.txt");
+            std::string cereal = Globals::Game.terrain.serialize(0);
+            file << cereal;
+            file.close();
+        }
 
         // Draw
         //----------------------------------------------------------------------------------

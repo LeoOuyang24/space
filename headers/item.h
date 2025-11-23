@@ -13,20 +13,20 @@ public:
     Item(const Vector3& pos, const Vector2& dimen, Texture2D& sprite);
 };
 
-class Key;
 struct KeyCollider
 {
     //only works if "self" is a Key
     void collideWith(PhysicsBody& self, PhysicsBody& other);
 };
+
 //keys are objects with a specific key value
 //this key value is an integer that represents in
-struct Key : public Object<RectCollider,TextureRenderer,KeyCollider>
+struct Key : public Object<RectCollider,TextureRenderer,KeyCollider,Key>
 {
     typedef Color KeyVal;
 
 
-    const KeyVal key;
+    KeyVal key;
     static constexpr KeyVal unlocked = WHITE; //value for unlocked things
     static bool unlocks(KeyVal keyVal, KeyVal lockVal);
     template<typename T>
@@ -38,6 +38,10 @@ struct Key : public Object<RectCollider,TextureRenderer,KeyCollider>
     Key(KeyVal key_, const Vector3& pos, const Vector2& dimen, Texture2D& sprite) : key(key_), Object({Vector2(pos.x,pos.y),pos.z},std::make_tuple(dimen.x,dimen.y),std::make_tuple(std::ref(sprite)))
     {
         tint = key;
+    }
+    Key() : Object()
+    {
+
     }
     KeyVal getKey()
     {

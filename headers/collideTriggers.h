@@ -12,19 +12,6 @@ class PhysicsBody;
 struct HoldThis
 {
     void collideWith(PhysicsBody& self, PhysicsBody& other);
-
-    HoldThis()
-    {
-
-    }
-    HoldThis(HoldThis&& other)
-    {
-
-    }
-    HoldThis(const HoldThis& other)
-    {
-
-    }
 };
 
 struct KeyComponent
@@ -39,17 +26,20 @@ struct KeyComponent
 struct InteractComponent
 {
     typedef std::function<void(PhysicsBody&, PhysicsBody&)> InteractAction;
-
     InteractAction func;
     InteractComponent(InteractAction func_) : func(func_)
     {
 
     }
+    virtual void interact(PhysicsBody& self, PhysicsBody& other)
+    {
+        func(self,other);
+    }
     void collideWith(PhysicsBody& self, PhysicsBody& other)
     {
         if (IsKeyPressed(KEY_E))
         {
-            func(self,other);
+            interact(self,other);
         }
     }
 };

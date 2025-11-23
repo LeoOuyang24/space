@@ -1,6 +1,6 @@
 #include "../headers/portal.h"
 
-Portal::Portal(int x, int y, int z, int r, const Vector3& dest_) : dest({dest_.x,dest_.y},dest_.z,0), Object({Vector2(x,y),z},
+Portal::Portal(const Vector3& start, int r, const Vector3& dest_) : dest({dest_.x,dest_.y},dest_.z,0), Object({Vector2(start.x,start.y),start.z},
                                      std::make_tuple(r),
                                      std::make_tuple()
                                      )
@@ -36,18 +36,17 @@ Portal::Portal(int x, int y, int z, int r, const Vector3& dest_) : dest({dest_.x
     EndShaderMode();
  }
 
- InteractComponent::InteractAction TriggerPortalSpawn::createInteractFunc(TriggerPortalSpawn& self, const Vector2& disp)
+void TriggerPortalSpawn::interact(PhysicsBody& self, PhysicsBody& other)
  {
-     return [&self,disp](PhysicsBody& owner, PhysicsBody& other)
+    //if active, a player has interacted with us, and either we are already unlocked or the player has the key, spawn the portal!
+    if (this->active &&
+        &other == Globals::Game.player.get() &&
+        (this->lockVal == Key::unlocked || Key::unlocks(Globals::Game.player->keys,this->lockVal)))
     {
-        //if active, we have a valid portal, a player has interacted with us, and either we are already unlocked or the player has the key, spawn the portal!
-        if (self.active && self.ptr.get() &&
-            &other == Globals::Game.player.get() &&
-            (self.lockVal == Key::unlocked || Key::unlocks(Globals::Game.player->keys,self.lockVal)))
-        {
-            self.active = false;
-            self.ptr->orient.pos = owner.orient.pos + disp;
-            Globals::Game.addObject(self.ptr);
-        }
-    };
+        Vector3 spawn = this->absolute ?
+                            this->start:
+                            Vector3(this->start.x + self.orient.pos.x, this->start.y + self.orient.pos.y, self.orient.layer);
+       Portal* portal = new Portal(spawn,10,this->end);
+       Globals::Game.addObject(*portal);
+    }
  }

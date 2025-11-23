@@ -79,7 +79,7 @@ void PlayerRenderer::render(const Shape& shape,const Color& color)
 
 Player::Player(const Vector2& pos_) : Object({pos_},std::make_tuple(PLAYER_DIMEN,PLAYER_DIMEN,std::ref(*this)),std::make_tuple(std::ref(*this)))
 {
-    renderer.setSprite(PlayerSprite);
+    renderer.setSprite(*Globals::Game.Sprites.getSprite("guy.png"));
 }
 
 void Player::update(Terrain& terrain)
