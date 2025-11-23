@@ -52,6 +52,9 @@ class PhysicsBody;
 //given a string, create the corresponding Object based on the name in the first part of the string.
 std::shared_ptr<PhysicsBody> construct(std::string cereal);
 
+//not actually defined here. look in factories.h for specializations. Each object we want to be able to serialize/deserialize has a specialization
+template<typename Obj>
+struct Factory;
 /***
 Workhorse class. "Obj" should be a type (probably a child of PhysicsBody) and Accessors should be a parameter pack of access<>() calls..
 Each Accessor represents a field in "Obj" that we want to access, either to set a value or to convert into a string.
@@ -86,8 +89,5 @@ struct FactoryBase
 };
 
 
-//not actually defined here. look in factories.h for specializations. Each object we want to be able to serialize/deserialize has a specialization
-template<typename Obj>
-struct Factory;
 
 #endif // FACTORY_H_INCLUDED

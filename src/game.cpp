@@ -1,24 +1,26 @@
 #include <iostream>
+#include <fstream>
 
 #include "../headers/game.h"
 #include "../headers/sequencer.h"
 #include "../headers/player.h"
+#include "../headers/factory.h"
 
 Globals Globals::Game;
 
 void Globals::init()
 {
-    Player::PlayerSprite = LoadTexture("sprites/guy.png");
 
-    Globals::Game.terrain.loadTerrain("sprites/layers/level1.png");
+    Sprites.addSprites("sprites");
+
     //Globals::Game.terrain.loadTerrain("sprites/layers/level2.png");
 
     Player* ptr = new Player(Vector2(0,150));
-    addObject(*(ptr));
-    player = static_pointer_cast<Player>(objects.getObject(*ptr));
+    player.reset(ptr);
+    objects.addObject(player);
 
 
-    setLayer(0);
+   // setLayer(0);
 
     camera.projection = CAMERA_PERSPECTIVE;
     camera.position = Vector3(0,0,getCurrentZ() - Globals::CAMERA_Z_DISP);
@@ -41,8 +43,6 @@ void Globals::setLayer(LayerType layer)
             player->orient.layer = layer;
             terrain.addObject(player,layer);
         }
-
-        RunThis runThis = {[](int){return true;}};
 
         Sequences::add({[camera=&(this->camera),endZ=getCurrentZ()  - Globals::CAMERA_Z_DISP,startZ = camera.position.z](int runTimes){
 
@@ -71,6 +71,36 @@ LayerType Globals::getCurrentLayer()
 Terrain* Globals::getCurrentTerrain()
 {
     return terrain.getTerrain(getCurrentLayer());
+}
+
+void Globals::loadLevel(std::string path)
+{
+    std::ifstream levelFile;
+    levelFile.open(path);
+
+    if (levelFile.is_open())
+    {
+        std::string line;
+        int lineNum = 0;
+        while(std::getline(levelFile,line))
+        {
+            switch (lineNum)
+            {
+            case 0: //first line is terrain image
+                terrain.loadTerrain(line,0);
+                break;
+            default:
+                addObject(construct(line));
+                break;
+            }
+            lineNum ++;
+        }
+        levelFile.close();
+    }
+    else
+    {
+        std::cerr << "ERROR Globals::loadLevel: error loading level: " << path << "\n";
+    }
 }
 
 void Globals::addObject(PhysicsBody& body)

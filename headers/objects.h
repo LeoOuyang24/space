@@ -7,7 +7,8 @@
 
 #include "blocks.h"
 #include "terrain.h"
-#include "checkFunctions.h"
+#include "factory.h"
+#include "checkFields.h"
 #include "collideTriggers.h"
 #include "shape.h"
 #include "debug.h"
@@ -16,6 +17,7 @@
 
 struct PhysicsBody
 {
+
     bool dead = false;
     Orient orient;
 
@@ -26,6 +28,10 @@ struct PhysicsBody
     virtual void collideWith(PhysicsBody& other)
     {
 
+    }
+   virtual std::string serialize()
+    {
+        return EMPTY_SERIAL;
     }
     void setDead(bool val);
     virtual bool isDead();
@@ -64,8 +70,11 @@ struct Object : public PhysicsBody
     Renderer renderer;
 
     GET_TYPE_WITH_collideWith<More...>::type collideTrigger;
+    //using FactoryType = GET_TYPE_WITH_ObjectName<More...>::type; //pass in an instance of Factory<Object> to give this object the ability to serialize
+    //FetchObject<More...>::type
 
-    Color tint;
+
+    Color tint = WHITE;
     bool onGround = false;
     bool wasOnGround = false;
     bool freeFall = false; //freefall is true if we have not yet experienced gravity and stays true until we land
@@ -74,7 +83,6 @@ struct Object : public PhysicsBody
     Forces forces;
 
     Vector2 nearest = {-1,-1};
-    bool balls = true;
 
     template<typename... CollArgs, typename... RenderArgs>
     Object(const Orient& pos, std::tuple<CollArgs...> colliderArgs, std::tuple<RenderArgs...> renderArgs, std::tuple<More...> tup) : tint(WHITE),
@@ -99,6 +107,11 @@ struct Object : public PhysicsBody
         orient = pos;
     }
 
+    Object()
+    {
+
+    }
+
     void collideWith(PhysicsBody& other)
     {
         //if there is a collide with function,
@@ -106,6 +119,17 @@ struct Object : public PhysicsBody
         {
             collideTrigger.collideWith(*this,other);
         }
+    }
+
+    std::string serialize()
+    {
+        //std::cout << typeid(typename GET_TYPE_WITH_dead<More...>::type).name() << "\n";
+        using FactoryType = typename GET_TYPE_WITH_dead<More...>::type;
+        if constexpr(has_dead<FactoryType>)
+        {
+            return Factory<FactoryType>::Base::serialize(*static_cast<FactoryType*>(this));
+        }
+        return EMPTY_SERIAL;
     }
 
     Vector2 getPos()

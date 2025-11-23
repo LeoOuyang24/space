@@ -30,6 +30,7 @@ struct Globals
     float getCurrentZ();
     LayerType getCurrentLayer();
     Terrain* getCurrentTerrain();
+    void loadLevel(std::string path);
 
     void addObject(PhysicsBody& body);
     void addObject(std::shared_ptr<PhysicsBody> ptr);

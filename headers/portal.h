@@ -13,7 +13,7 @@ struct Portal : public Object<CircleCollider,ShapeRenderer<CIRCLE>>
     Orient dest;
     Shader portalShader;
     RenderTexture2D texture;
-    Portal(int x, int y,int z, int radius, const Vector3& dest_);
+    Portal(const Vector3& start, int radius, const Vector3& dest_);
     void update()
     {
 
@@ -27,34 +27,64 @@ struct TriggerPortalSpawn : public InteractComponent
 {
     bool active = true;
     bool transition = false;
-    std::shared_ptr<Portal> ptr;
+    bool absolute = true; //true if "start" is the absolute position to spawn the portal; false if instead start is the displacement from current position
+
+    Vector3 start = {}; //portal start point
+    Vector3 end = {}; //portal end point
+
     Key::KeyVal lockVal = Key::unlocked;
 
-    static InteractAction createInteractFunc(TriggerPortalSpawn& self, const Vector2& disp);
+    static InteractAction createInteractFunc();
 
-    TriggerPortalSpawn(bool transition_, const Vector3& start,
-                       const Vector3& end, int radius, Key::KeyVal keyVal_ = Key::unlocked) :
+    TriggerPortalSpawn(bool transition_, const Vector3& start_,
+                       const Vector3& end_, int radius, Key::KeyVal keyVal_ = Key::unlocked) :
                                                                 transition(transition_),
                                                                 lockVal(keyVal_),
-                                                                ptr(std::make_shared<Portal>(start.x,start.y,start.z,radius,end)),
-                                                                InteractComponent(createInteractFunc(*this,{0,0}))
+                                                                InteractComponent({}),
+                                                                start(start_),
+                                                                end(end_)
     {
 
     }
 
-    TriggerPortalSpawn(bool transition_, const Vector2& disp, float z,
-                       const Vector3& end, int radius, Key::KeyVal keyVal_ = Key::unlocked) :
+    TriggerPortalSpawn(bool transition_, const Vector2& disp,
+                       const Vector3& end_, int radius, Key::KeyVal keyVal_ = Key::unlocked) :
                                                         transition(transition_),
                                                         lockVal(keyVal_),
-                                                        ptr(std::make_shared<Portal>(0,0,z,radius,end)),
-                                                        InteractComponent(createInteractFunc(*this,disp))
+                                                        InteractComponent({}),
+                                                        start(disp.x,disp.y,0),
+                                                        end(end_),
+                                                        absolute(false)
+
     {
 
     }
+
+    TriggerPortalSpawn() : InteractComponent({})
+    {
+
+    }
+
+    void interact(PhysicsBody&, PhysicsBody& other);
 
 };
 
 using PortalSpawner = Object<CircleCollider,TextureRenderer,TriggerPortalSpawn>;
+
+template<>
+struct Factory<PortalSpawner>
+{
+    static constexpr std::string ObjectName = "portal_spawner";
+    using Base = FactoryBase<PortalSpawner,
+                                access<PortalSpawner,&PortalSpawner::orient,&Orient::pos>,
+                                access<PortalSpawner,&PortalSpawner::orient,&Orient::layer>,
+                                access<PortalSpawner,&PortalSpawner::collider,&CircleCollider::radius>,
+                                access<PortalSpawner,&PortalSpawner::renderer,&TextureRenderer::sprite>,
+                                access<PortalSpawner,&PortalSpawner::collideTrigger,&TriggerPortalSpawn::start>,
+                                access<PortalSpawner,&PortalSpawner::collideTrigger,&TriggerPortalSpawn::end>,
+                                access<PortalSpawner,&PortalSpawner::collideTrigger,&TriggerPortalSpawn::absolute>>;
+
+};
 
 
 #endif // PORTAL_H_INCLUDED

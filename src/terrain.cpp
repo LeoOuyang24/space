@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "../headers/terrain.h"
 #include "../headers/game.h"
 #include "../headers/objects.h"
@@ -28,6 +30,11 @@ std::shared_ptr<PhysicsBody> ObjectLookup::getObject(PhysicsBody& body)
     return it->second;
 }
 
+bool GlobalTerrain::isValidObject(PhysicsBody* obj, LayerType layer)
+{
+    return obj && obj->orient.layer == layer && !obj->isDead();
+}
+
 void GlobalTerrain::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
 {
     if (ptr.get() && layer < layers.size())
@@ -53,6 +60,8 @@ void GlobalTerrain::loadTerrain(std::string imagePath, LayerType layer)
         getTerrain(layer)->clear();
     }
     Terrain* terr = getTerrain(layer);
+
+    layers[layer].imagePath = imagePath;
 
     Image img = LoadImage(imagePath.c_str());
     Color* colors = LoadImageColors(img);
@@ -91,7 +100,7 @@ void GlobalTerrain::update(LayerType layer)
         for (auto it = objects.begin(); it != objects.end();)
         {
             PhysicsBody* obj = it->lock().get();
-            if (obj && obj->orient.layer == layer && !obj->isDead()) //if object is non-null and in this layer and not dead, update it!
+            if (isValidObject(obj,layer)) //if object is non-null and in this layer and not dead, update it!
             {
                 obj->update(*getTerrain(layer));
                 for (auto jt = objects.begin(); jt != it; ++jt)
@@ -142,4 +151,27 @@ float GlobalTerrain::getZOfLayer(LayerType index)
         return -1;
     }
     return Globals::START_Z + index*static_cast<float>(Globals::BACKGROUND_Z - Globals::START_Z)/(layers.size());
+}
+
+std::string GlobalTerrain::serialize(LayerType index)
+{
+    if (index >= layers.size()) [[unlikely]]
+    {
+        return "";
+    }
+    std::stringstream river;
+    std::string cereal;
+    Layer& layer = layers[index];
+    river << layer.imagePath << "\n";
+    for (auto it = layer.objects.begin(); it != layer.objects.end(); ++it)
+    {
+        PhysicsBody* obj = it->lock().get();
+        if (isValidObject(obj,index))
+        {
+          //  river << obj->serialize() << "\n";
+        }
+    }
+    river >> cereal;
+    return cereal;
+
 }

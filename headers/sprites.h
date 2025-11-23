@@ -9,6 +9,7 @@
 class SpritesGlobal
 {
     std::unordered_map<std::string,std::unique_ptr<Texture2D>> sprites;
+    std::unordered_map<Texture2D*,std::string> spritePaths;
 
 public:
     void addSprite()
@@ -18,11 +19,12 @@ public:
     template<typename Path, typename... Paths>
     void addSprite(Path path, Paths... paths)
     {
-        Texture2D sprite = LoadTexture((std::string("sprites/") + std::string(path)).c_str());
-
-        if (IsTextureValid(sprite))
+        Texture2D* sprite = new Texture2D(LoadTexture((std::string("sprites/") + std::string(path)).c_str()));
+        std::cout << path << "\n";
+        if (IsTextureValid(*sprite))
         {
-            sprites[path] = std::make_unique<Texture2D>(std::move(sprite));
+            sprites[path].reset(sprite);
+            spritePaths[sprite] = path;
         }
         else
         {
@@ -30,7 +32,8 @@ public:
         }
         addSprite(paths...);
     }
-
+    void addSprites(std::string folder);
+    std::string getSpritePath(Texture2D* sprite);
     Texture2D* getSprite(std::string str);
 };
 

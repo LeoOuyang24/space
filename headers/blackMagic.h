@@ -4,7 +4,7 @@
 //metaprogramming? whens the last time you meta WOMAN
 
 
-//this macro defines a concept that checks if T has a member function called FUNC.
+//this macro defines a concept that checks if T has a member (function or field) called FUNC.
 //will be false if T has multiple functions named FUNC
 #define CHECK_FUNCTION(FUNC)                                 \
 template <typename T>                                              \
@@ -33,10 +33,7 @@ struct GET_TYPE_WITH_##FUNC<A,Args...>\
 {\
     using type = std::conditional<has_##FUNC<A>,\
                         A,\
-                        typename std::conditional<has_##FUNC<typename A::type>,\
-                            typename A::type,\
                             typename GET_TYPE_WITH_##FUNC<Args...>::type>\
-                        ::type>\
                     ::type;\
 };\
 \
@@ -59,6 +56,24 @@ struct GET_TYPE_WITH_##FUNC<T>\
 #define CHECK_FOR(FUNC)\
 CHECK_FUNCTION(FUNC)\
 CHECK_FUNCTION_LOOP(FUNC)
+
+template<typename T>
+concept IsObject = std::is_base_of_v<PhysicsBody,T>;
+
+template<typename...>
+struct FetchObject
+{
+    using type = EMPTY_TYPE;
+};
+
+
+template<typename T, typename... Args>
+struct FetchObject<T,Args...>
+{
+    using type = std::conditional<std::is_base_of_v<PhysicsBody,T>,
+                        T,
+                        typename FetchObject<Args...>::type>;
+};
 
 template<typename Class, typename... Args>
 struct ConArgs //represents the arguments of a classes' constructor
