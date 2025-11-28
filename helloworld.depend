@@ -1072,7 +1072,7 @@
 	<raylib.h>
 	"raymath.h"
 
-1763873185 source:c:\users\leoou\documents\projects\helloworld\main.cpp
+1764311291 source:c:\users\leoou\documents\projects\helloworld\main.cpp
 	<unordered_map>
 	<iostream>
 	<fstream>
@@ -1092,6 +1092,7 @@
 	"headers/portal.h"
 	"headers/collideTriggers.h"
 	"headers/item.h"
+	"headers/editor.h"
 	<rlgl.h>
 	<raymath.h>
 
@@ -1189,7 +1190,7 @@
 	<raylib.h>
 	"raymath.h"
 
-1763872717 c:\users\leoou\documents\projects\helloworld\headers\objects.h
+1763915644 c:\users\leoou\documents\projects\helloworld\headers\objects.h
 	<tuple>
 	<raylib.h>
 	"blocks.h"
@@ -1223,7 +1224,7 @@
 	<iostream>
 	"../headers/objects.h"
 
-1763872099 source:c:\users\leoou\documents\projects\helloworld\src\player.cpp
+1763915644 source:c:\users\leoou\documents\projects\helloworld\src\player.cpp
 	<iostream>
 	"../headers/player.h"
 	"../headers/debug.h"
@@ -1257,7 +1258,7 @@
 	<math.h>
 	"../headers/resources_math.h"
 
-1763872099 c:\users\leoou\documents\projects\helloworld\headers\shape.h
+1763915644 c:\users\leoou\documents\projects\helloworld\headers\shape.h
 	<functional>
 	<iostream>
 	"raylib.h"
@@ -1278,21 +1279,28 @@
 1763011543 source:c:\users\leoou\documents\projects\helloworld\src\render.cpp
 	"../headers/render.h"
 
-1761196918 c:\users\leoou\documents\projects\helloworld\headers\debug.h
+1764224496 c:\users\leoou\documents\projects\helloworld\headers\debug.h
 	<functional>
 	<list>
+	<iostream>
+	"raylib.h"
 
-1756612712 source:c:\users\leoou\documents\projects\helloworld\src\debug.cpp
+1764224784 source:c:\users\leoou\documents\projects\helloworld\src\debug.cpp
 	"../headers/debug.h"
+	"../headers/game.h"
+	"../headers/factory.h"
+	"../headers/objects.h"
+	"../headers/render.h"
+	"../headers/player.h"
 
-1763872098 c:\users\leoou\documents\projects\helloworld\headers\game.h
+1763915644 c:\users\leoou\documents\projects\helloworld\headers\game.h
 	<memory>
 	<raylib.h>
 	"terrain.h"
 	"sprites.h"
 	"interface.h"
 
-1763872099 source:c:\users\leoou\documents\projects\helloworld\src\game.cpp
+1764026686 source:c:\users\leoou\documents\projects\helloworld\src\game.cpp
 	<iostream>
 	<fstream>
 	"../headers/game.h"
@@ -1300,13 +1308,13 @@
 	"../headers/player.h"
 	"../headers/factory.h"
 
-1763872604 source:c:\users\leoou\documents\projects\helloworld\src\terrain.cpp
+1763915644 source:c:\users\leoou\documents\projects\helloworld\src\terrain.cpp
 	<sstream>
 	"../headers/terrain.h"
 	"../headers/game.h"
 	"../headers/objects.h"
 
-1763872099 c:\users\leoou\documents\projects\helloworld\headers\terrain.h
+1763915644 c:\users\leoou\documents\projects\helloworld\headers\terrain.h
 	"blocks.h"
 	<list>
 
@@ -1317,7 +1325,7 @@
 	<functional>
 	<list>
 
-1763872182 c:\users\leoou\documents\projects\helloworld\headers\portal.h
+1764048596 c:\users\leoou\documents\projects\helloworld\headers\portal.h
 	"objects.h"
 	"shape.h"
 	"render.h"
@@ -1325,10 +1333,10 @@
 	"collideTriggers.h"
 	"item.h"
 
-1763872099 source:c:\users\leoou\documents\projects\helloworld\src\portals.cpp
+1764048607 source:c:\users\leoou\documents\projects\helloworld\src\portals.cpp
 	"../headers/portal.h"
 
-1763872098 c:\users\leoou\documents\projects\helloworld\headers\collidetriggers.h
+1763915644 c:\users\leoou\documents\projects\helloworld\headers\collidetriggers.h
 	<functional>
 	"raylib.h"
 	<iostream>
@@ -1336,9 +1344,9 @@
 1758998460 c:\users\leoou\documents\projects\helloworld\headers\checkfunctions.h
 	"blackMagic.h"
 
-1763872098 c:\users\leoou\documents\projects\helloworld\headers\blackmagic.h
+1763915644 c:\users\leoou\documents\projects\helloworld\headers\blackmagic.h
 
-1763872319 c:\users\leoou\documents\projects\helloworld\headers\item.h
+1764048551 c:\users\leoou\documents\projects\helloworld\headers\item.h
 	"colliders.h"
 	"objects.h"
 	"render.h"
@@ -1350,7 +1358,7 @@
 	"../headers/objects.h"
 	"../headers/player.h"
 
-1763872099 source:c:\users\leoou\documents\projects\helloworld\src\item.cpp
+1764048569 source:c:\users\leoou\documents\projects\helloworld\src\item.cpp
 	"../headers/item.h"
 	"../headers/collideTriggers.h"
 	"../headers/sequencer.h"
@@ -1369,29 +1377,29 @@
 
 1761190815 c:\users\leoou\documents\projects\helloworld\headers\interface.h
 
-1763872415 source:c:\users\leoou\documents\projects\helloworld\src\sprites.cpp
+1763915644 source:c:\users\leoou\documents\projects\helloworld\src\sprites.cpp
 	<filesystem>
 	"../headers/sprites.h"
 
-1763872510 c:\users\leoou\documents\projects\helloworld\headers\sprites.h
+1763915644 c:\users\leoou\documents\projects\helloworld\headers\sprites.h
 	<iostream>
 	<unordered_map>
 	<raylib.h>
 	<memory>
 
-1763873301 source:c:\users\leoou\documents\projects\helloworld\src\factory.cpp
+1764024943 source:c:\users\leoou\documents\projects\helloworld\src\factory.cpp
 	"../headers/factory.h"
 	"../headers/objects.h"
 	"../headers/conversions.h"
 	"../headers/item.h"
 	"../headers/portal.h"
 
-1763873334 c:\users\leoou\documents\projects\helloworld\headers\factory.h
+1764024844 c:\users\leoou\documents\projects\helloworld\headers\factory.h
 	<iostream>
 	<array>
 	"conversions.h"
 
-1763785698 c:\users\leoou\documents\projects\helloworld\headers\conversions.h
+1763915644 c:\users\leoou\documents\projects\helloworld\headers\conversions.h
 	<vector>
 	<iostream>
 	"game.h"
@@ -1402,17 +1410,25 @@
 	"raylib.h"
 	"game.h"
 
-1763871627 source:c:\users\leoou\documents\projects\helloworld\src\conversions.cpp
-	"../headers/conversions.h"
+1763915644 source:c:\users\leoou\documents\projects\helloworld\src\conversions.cpp
 	"../headers/conversions.h"
 
 1763872182 c:\users\leoou\documents\projects\helloworld\headers\factories.h
 	"factory.h"
 	"portal.h"
 
-1763802616 c:\users\leoou\documents\projects\helloworld\headers\checkfields.h
-	"blackMagic.h"
+1763915644 c:\users\leoou\documents\projects\helloworld\headers\checkfields.h
 	"blackMagic.h"
 
 1763802616 c.h"
+
+1764223659 source:c:\users\leoou\documents\projects\helloworld\src\editor.cpp
+	"../headers/editor.h"
+	"../headers/game.h"
+	"../headers/factory.h"
+	"../headers/objects.h"
+
+1764223587 c:\users\leoou\documents\projects\helloworld\headers\editor.h
+	<iostream>
+	"raylib.h"
 

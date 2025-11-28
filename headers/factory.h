@@ -65,15 +65,19 @@ template<typename Obj, auto... Accessors>
 struct FactoryBase
 {
     //string* because we are usually taking in the contiguous strings of a std::vector<string> in "construct"
-    static Obj deserialize(std::string* params)
+    static Obj deserialize(std::vector<std::string>& params)
     {
         Obj obj;
-        [&obj,&params]<size_t... Index>(std::index_sequence<Index...>)
+        [&obj,&params,&params]<size_t... Index>(std::index_sequence<Index...>)
         {
             //set each field to a value that is converted from a string
             //"Accessors(obj)" returns a reference to the corresponding field
             //decltype lets us decide what type to convert into, based on the type of the field in "Obj"
-            ((Accessors(obj) = fromString<typename std::remove_reference<decltype(Accessors(obj))>::type>(params[Index])),...);
+            //if fewer than required fields are provided, we go up as high as we can, based on length
+            //we start at index + 1 because the first string is always the name of the object
+            (( Accessors(obj) = (Index + 1 >= params.size()) ?
+                                    Accessors(obj) :
+                                    fromString<typename std::remove_reference<decltype(Accessors(obj))>::type>(params[Index + 1])),...);
 
         }(std::make_index_sequence<sizeof...(Accessors)>{}); //<-- allows us to iterate through each accessor. "Index" is 0 - however many Accessors
         return obj;

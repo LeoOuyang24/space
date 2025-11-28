@@ -26,9 +26,15 @@ struct Key : public Object<RectCollider,TextureRenderer,KeyCollider,Key>
 {
     typedef Color KeyVal;
 
+    static constexpr Vector2 KEY_DIMEN = {20,20};
+    static constexpr std::string KEY_SPRITE_PATH = "key.png";
 
-    KeyVal key;
-    static constexpr KeyVal unlocked = WHITE; //value for unlocked things
+
+    static constexpr KeyVal UNLOCKED = WHITE; //value for unlocked things
+
+    KeyVal key = UNLOCKED;
+
+
     static bool unlocks(KeyVal keyVal, KeyVal lockVal);
     template<typename T>
     static bool unlocks(const T& container,KeyVal lockVal)
@@ -36,13 +42,15 @@ struct Key : public Object<RectCollider,TextureRenderer,KeyCollider,Key>
         return container.find(lockVal) != container.end();
     }
 
-    Key(KeyVal key_, const Vector3& pos, const Vector2& dimen, Texture2D& sprite) : key(key_), Object({Vector2(pos.x,pos.y),pos.z},std::make_tuple(dimen.x,dimen.y),std::make_tuple(std::ref(sprite)))
+    Key(KeyVal key_, const Vector3& pos) : key(key_), Object({Vector2(pos.x,pos.y),pos.z},std::make_tuple(KEY_DIMEN.x,KEY_DIMEN.y),std::make_tuple(*Globals::Game.Sprites.getSprite(KEY_SPRITE_PATH)))
     {
         tint = key;
     }
     Key() : Object()
     {
-
+        renderer.sprite = Globals::Game.Sprites.getSprite("key.png");
+        collider.width = KEY_DIMEN.x;
+        collider.height = KEY_DIMEN.y;
     }
     KeyVal getKey()
     {

@@ -41,7 +41,7 @@ void TriggerPortalSpawn::interact(PhysicsBody& self, PhysicsBody& other)
     //if active, a player has interacted with us, and either we are already unlocked or the player has the key, spawn the portal!
     if (this->active &&
         &other == Globals::Game.player.get() &&
-        (this->lockVal == Key::unlocked || Key::unlocks(Globals::Game.player->keys,this->lockVal)))
+        (this->lockVal == Key::UNLOCKED || Key::unlocks(Globals::Game.player->keys,this->lockVal)))
     {
         Vector3 spawn = this->absolute ?
                             this->start:

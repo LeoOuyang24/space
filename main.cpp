@@ -24,7 +24,7 @@
 #include "headers/portal.h"
 #include "headers/collideTriggers.h"
 #include "headers/item.h"
-
+#include "headers/editor.h"
 
 
 
@@ -40,14 +40,6 @@
 #endif
 
 
-enum Spawns
-{
-    PLANETS,
-    OBJECTS,
-    PLAYER,
-    ENDPOINT,
-    SIZE
-};
 
 
 bool active = false;
@@ -58,35 +50,23 @@ int main(void)
     const Vector2 screenDimen = {900,900};
 
     InitWindow(screenDimen.x, screenDimen.y, "raylib [core] example - basic window");
-   // ToggleFullscreen();
     rlDisableBackfaceCulling();
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
-    //--------------------------------------------------------------------------------------
 
-    const int minRadius = 10;
-    const int maxRadius = 50;
 
     Globals::Game.init();
 
     Camera3D& camera = Globals::Game.camera;
 
-
-    Player& player = *Globals::Game.player;
-
     Globals::Game.loadLevel("levels/layer0.txt");
-   // Globals::Game.addObject(Globals::Game.player);
     Globals::Game.setLayer(0);
-
-   Spawns spawns = PLANETS;
-    int a = 0;
 
     float accum = 0;
     float tick = 0.016;
     float speed = 1;
 
 
-    Vector2 endpoint = {};
     Shader stars= LoadShader(0, TextFormat("shaders/fragments/stars.h", GLSL_VERSION));
     Shader sun = LoadShader(0,TextFormat("shaders/fragments/sun.h",GLSL_VERSION));
 
@@ -110,12 +90,7 @@ int main(void)
 
     ExportImage(LoadImageFromTexture(bg.texture),"sprites/bg.png");*/
 
-
-
     int frames = 0;
-    //player.force = Vector2(100,0);
-
-    //Globals::Game.Sprites.addSprite("key.png","bg.png");
 
     Terrain::GravityFieldShader = LoadShader(0,TextFormat("shaders/fragments/terrain.h",GLSL_VERSION));
     Texture& blocks = Globals::Game.getCurrentTerrain()->blocksTexture.texture;
@@ -123,13 +98,11 @@ int main(void)
     SetShaderValue(Terrain::GravityFieldShader,GetShaderLocation(Terrain::GravityFieldShader,"pixelSizes"),&pixelSizes,SHADER_UNIFORM_VEC2);
 
 
-    Debug::togglePaused();
-
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
 
         float deltaTime = GetFrameTime();
-        if (!Debug::isPaused() || IsKeyPressed(KEY_RIGHT_BRACKET))
+        if ( IsKeyPressed(KEY_RIGHT_BRACKET) || !Debug::isPaused())
         {
         accum += deltaTime;
         Debug::clearRenderDefers();
@@ -145,17 +118,6 @@ int main(void)
             frames ++;
 
         }
-        //std::cout << 1/deltaTime << "\n";
-        // Update
-        //----------------------------------------------------------------------------------
-        // TODO: Update your variables here
-        //----------------------------------------------------------------------------------
-
-        if (IsKeyPressed(KEY_ONE))
-        {
-            spawns = static_cast<Spawns>(((int)spawns + 1)%Spawns::SIZE);
-            a = 255;
-        }
 
         if (GetMouseWheelMove())
         {
@@ -166,39 +128,7 @@ int main(void)
             camera.target.z += move;
         }
         //Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(),camera);
-        Vector2 mousePos = screenToWorld(GetMousePosition(),camera,screenDimen,Globals::Game.getCurrentZ());
-        if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON))
-        {
-            switch (spawns)
-            {
-            case PLANETS:
-                Globals::Game.getCurrentTerrain()->generatePlanet(mousePos,50,Color(100,255,100,255 ));
-                break;
-            case OBJECTS:
-                {
-                    Color color = {255,255,255,100};
-                    if (rand()%2)
-                        Globals::Game.addObject(*(new Object<RectCollider,ShapeRenderer<ShapeType::RECT>>({mousePos,Globals::Game.getCurrentLayer()},color,10,10)));
-                    else
-                        Globals::Game.addObject(*(new Object<CircleCollider,ShapeRenderer<ShapeType::CIRCLE>>({mousePos,Globals::Game.getCurrentLayer()},color,10)));
-                    break;
-                }
-            case PLAYER:
-                if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
-                {
-                    player.orient.pos = mousePos;
-                }
-                break;
-            case ENDPOINT:
-                endpoint = mousePos;
-                break;
 
-            }
-        }
-        else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
-        {
-            Globals::Game.getCurrentTerrain()->remove(mousePos,50);
-        }
 
         if (GetMousePosition().x >= 0.9*screenDimen.x)
         {
@@ -222,16 +152,9 @@ int main(void)
             camera.target.y -= 10;
         }
 
+        Debug::handleInput();
 
-        if (IsKeyPressed(KEY_S) && IsKeyDown(KEY_LEFT_CONTROL))
-        {
-            std::cout << "SAVING!\n";
-            std::ofstream file;
-            file.open("levels/custom.txt");
-            std::string cereal = Globals::Game.terrain.serialize(0);
-            file << cereal;
-            file.close();
-        }
+
 
         // Draw
         //----------------------------------------------------------------------------------
@@ -253,18 +176,7 @@ int main(void)
                 DrawBillboardRec(camera,bg,Rectangle(0,0,bg.width,bg.height),
                                  Vector3(Terrain::MAX_WIDTH/2,Terrain::MAX_WIDTH/2,Globals::BACKGROUND_Z),
                                  Vector2(bg.width,bg.height),WHITE);
-
                 Globals::Game.terrain.render();
-
-            if (spawns == ENDPOINT)
-            {
-                float z = Globals::Game.getCurrentZ();
-                DrawCircle3D(Vector3(endpoint.x,endpoint.y,z),3,{0,1,0},0,PURPLE);
-                DrawLine3D(Vector3(mousePos.x,mousePos.y,z),Vector3(endpoint.x,endpoint.y,z),PURPLE);
-
-                Vector2 onTerrain = Globals::Game.getCurrentTerrain()->lineTerrainIntersect(mousePos,endpoint).pos;
-                DrawCircle3D(Vector3(onTerrain.x,onTerrain.y,z),3,{0,1,0},0,PURPLE);
-            }
 
             Sequences::runRenders();
             Debug::renderDefers();
@@ -272,17 +184,13 @@ int main(void)
             EndMode3D();
 
             Globals::Game.interface.render();
-
-            DrawText(spawns == PLANETS ? "planets" : spawns == OBJECTS ?  "objects"  : spawns == ENDPOINT ? "endpoint" : "player" ,10,50,30,WHITE);
+            Debug::drawInterface();
 
             DrawFPS(10, 10);
 
         EndDrawing();
 
-        if (IsKeyPressed(KEY_BACKSLASH))
-        {
-            Debug::togglePaused();
-        }
+
         //----------------------------------------------------------------------------------
     }
 

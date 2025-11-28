@@ -16,7 +16,7 @@ Item::Item(const Vector3& pos, const Vector2& dimen, Texture2D& sprite) : Object
 
 bool Key::unlocks(Key::KeyVal keyVal, Key::KeyVal lockVal)
 {
-    return lockVal == Key::unlocked || lockVal == keyVal;
+    return lockVal == Key::UNLOCKED || lockVal == keyVal;
 }
 
 void KeyCollider::collideWith(PhysicsBody& self, PhysicsBody& other)

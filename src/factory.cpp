@@ -8,20 +8,22 @@ std::shared_ptr<PhysicsBody> construct(std::string cereal)
 {
     std::vector<std::string> params = split(cereal,' ');
     PhysicsBody* ptr = nullptr;
-
-    if (params[0] == Factory<Key>::ObjectName)
+    if (params.size() > 0)
     {
-        Key* key = (new Key(Factory<Key>::Base::deserialize(&params[1])));
-        key->tint = key->key;
-        ptr = key;
-    }
-    else if (params[0] == Factory<PortalSpawner>::ObjectName)
-    {
-        ptr = new PortalSpawner(Factory<PortalSpawner>::Base::deserialize(&params[1]));
-    }
-    else
-    {
-        std::cerr << "ERROR construct: unable to construct object: " << params[1] << "\n";
+        if (params[0] == Factory<Key>::ObjectName)
+        {
+            Key* key = (new Key(Factory<Key>::Base::deserialize(params)));
+            key->tint = key->key;
+            ptr = key;
+        }
+        else if (params[0] == Factory<PortalSpawner>::ObjectName)
+        {
+            ptr = new PortalSpawner(Factory<PortalSpawner>::Base::deserialize(params));
+        }
+        else
+        {
+            std::cerr << "ERROR construct: unable to construct object: " << params[0] << "\n";
+        }
     }
 
     return std::shared_ptr<PhysicsBody>(ptr);

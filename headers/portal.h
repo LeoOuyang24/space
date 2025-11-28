@@ -32,12 +32,12 @@ struct TriggerPortalSpawn : public InteractComponent
     Vector3 start = {}; //portal start point
     Vector3 end = {}; //portal end point
 
-    Key::KeyVal lockVal = Key::unlocked;
+    Key::KeyVal lockVal = Key::UNLOCKED;
 
     static InteractAction createInteractFunc();
 
     TriggerPortalSpawn(bool transition_, const Vector3& start_,
-                       const Vector3& end_, int radius, Key::KeyVal keyVal_ = Key::unlocked) :
+                       const Vector3& end_, int radius, Key::KeyVal keyVal_ = Key::UNLOCKED) :
                                                                 transition(transition_),
                                                                 lockVal(keyVal_),
                                                                 InteractComponent({}),
@@ -48,7 +48,7 @@ struct TriggerPortalSpawn : public InteractComponent
     }
 
     TriggerPortalSpawn(bool transition_, const Vector2& disp,
-                       const Vector3& end_, int radius, Key::KeyVal keyVal_ = Key::unlocked) :
+                       const Vector3& end_, int radius, Key::KeyVal keyVal_ = Key::UNLOCKED) :
                                                         transition(transition_),
                                                         lockVal(keyVal_),
                                                         InteractComponent({}),
