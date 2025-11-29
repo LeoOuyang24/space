@@ -91,7 +91,7 @@ struct FactoryBase
         //concatenate each serialized version of each field
         ((cereal += (toString<typename std::remove_reference<decltype(Accessors(object))>::type>(Accessors(object)) + " ")),...);
 
-        return cereal;
+        return Factory<Obj>::ObjectName + " " + cereal;
     }
 };
 

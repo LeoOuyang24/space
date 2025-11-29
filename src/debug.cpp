@@ -214,11 +214,17 @@ void Debug::handleInput()
         {
             currentMode = &editor;
         }
+        else if (IsKeyPressed(KEY_D))
+        {
+            currentMode = nullptr;
+        }
     }
+
     if (currentMode)
     {
         currentMode->handleInput();
     }
+
 }
 
 void Debug::drawInterface()
@@ -227,8 +233,37 @@ void Debug::drawInterface()
     {
         DrawText("PAUSED",GetScreenWidth()*.9,10,20,WHITE);
     }
+    Vector2 screenDimen = {GetScreenWidth(),GetScreenHeight()};
+    Camera3D& camera = Globals::Game.camera;
+
     if (currentMode)
     {
         currentMode->drawInterface();
+        if (GetMousePosition().x >= 0.9*screenDimen.x)
+        {
+            camera.position.x += 10;
+            camera.target.x += 10;
+        }
+        else if (GetMousePosition().x <= 0.1*screenDimen.x)
+        {
+            camera.position.x -= 10;
+            camera.target.x -= 10;
+        }
+
+        if (GetMousePosition().y >= 0.9*screenDimen.y)
+        {
+            camera.position.y += 10;
+            camera.target.y += 10;
+        }
+        else if (GetMousePosition().y <= 0.1*screenDimen.y)
+        {
+            camera.position.y -= 10;
+            camera.target.y -= 10;
+        }
     }
+}
+
+bool Debug::isDebugOn()
+{
+    return currentMode;
 }

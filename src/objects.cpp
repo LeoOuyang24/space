@@ -12,6 +12,14 @@ bool PhysicsBody::isDead()
     return dead;
 }
 
+void Forces::setForce(const Vector2& force, Forces::ForceSource source)
+{
+    Vector2 old = getForce(source);
+    totalForce -= old;
+    totalForce += force;
+    forces[source] = force;
+}
+
 void Forces::addForce(Vector2 force, Forces::ForceSource source)
 {
     if (forces.find(source) != forces.end())
@@ -26,9 +34,18 @@ void Forces::addForce(Vector2 force, Forces::ForceSource source)
     totalForce += force;
 }
 
+void Forces::addFriction(const Vector2& friction)
+{
+    for (auto& source : forces)
+    {
+        source.second *= friction;
+    }
+    totalForce *= friction;
+}
+
 void Forces::addFriction(float friction)
 {
-    for (auto source : forces)
+    for (auto& source : forces)
     {
         source.second *= friction;
     }

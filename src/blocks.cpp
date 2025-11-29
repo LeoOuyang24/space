@@ -37,7 +37,7 @@ Vector2 Terrain::nearestPos(const Vector2& vec)
 
 Terrain::Terrain()
 {
-    blocksTexture = LoadRenderTexture(MAX_WIDTH*Block::BLOCK_DIMEN,MAX_WIDTH*Block::BLOCK_DIMEN);
+    blocksTexture = LoadRenderTexture(MAX_TERRAIN_SIZE,MAX_TERRAIN_SIZE);
 
 //    upScaled.resize(upScaled.maxWidth*upScaled.maxWidth);
     //gravityFields.resize(gravityFields.maxWidth*gravityFields.maxWidth);
@@ -58,7 +58,7 @@ void Terrain::addBlock(const Vector2& pos, Block block)
     int index = pointToIndex(pos);
     //std::cout << index << "\n";
 
-    if (index < 0 || index >= pointToIndex({MAX_WIDTH*Block::BLOCK_DIMEN,MAX_WIDTH*Block::BLOCK_DIMEN}))
+    if (index < 0 || index >= pointToIndex({MAX_TERRAIN_SIZE,MAX_TERRAIN_SIZE}))
     {
         return;
     }

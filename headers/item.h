@@ -65,10 +65,7 @@ struct Factory<Key>
   using Base = FactoryBase<Key,
                         access<Key,&Key::key>,
                         access<Key,&Key::orient,&Orient::pos>,
-                        access<Key,&Key::orient,&Orient::layer>,
-                        access<Key,&Key::collider,&RectCollider::width>,
-                        access<Key,&Key::collider,&RectCollider::height>,
-                        access<Key,&Key::renderer,&TextureRenderer::sprite>>;
+                        access<Key,&Key::orient,&Orient::layer>>;
 };
 
 bool operator==(const Key::KeyVal& left, const Key::KeyVal& right);

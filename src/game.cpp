@@ -6,6 +6,21 @@
 #include "../headers/player.h"
 #include "../headers/factory.h"
 
+void moveCamera(Camera3D& camera, const Vector2& pos)
+{
+
+    float disp = Globals::CAMERA_Z_DISP*tan(camera.fovy/2*DEG2RAD); //distance from the edge of the screen
+
+    //clamps camera to level area
+    Vector2 clampedPos = {
+        Clamp(pos.x,disp,Terrain::MAX_TERRAIN_SIZE - disp),
+        Clamp(pos.y,disp,Terrain::MAX_TERRAIN_SIZE - disp)
+    };
+    assignVector(camera.position,clampedPos);
+    assignVector(camera.target,clampedPos);
+
+}
+
 Globals Globals::Game;
 
 void Globals::init()
@@ -15,7 +30,7 @@ void Globals::init()
 
     //Globals::Game.terrain.loadTerrain("sprites/layers/level2.png");
 
-    Player* ptr = new Player(Vector2(0,150));
+    Player* ptr = new Player(Vector2(5500,5500));
     player.reset(ptr);
     objects.addObject(player);
 

@@ -9,6 +9,10 @@
 #include "sprites.h"
 #include "interface.h"
 
+//no idea where to put this LUL
+//moves camera to look at "pos"
+void moveCamera(Camera3D& camera, const Vector2& pos);
+
 class Player;
 struct Globals
 {
@@ -19,7 +23,7 @@ struct Globals
     static constexpr int SPACE_Z = .01*MAX_Z;
     static constexpr int BACKGROUND_Z = MAX_Z - SPACE_Z;
     static constexpr int START_Z = BACKGROUND_Z - SPACE_Z*50;
-    static constexpr int CAMERA_Z_DISP = START_Z; //how far the camera is at all times from getCurrentZ()
+    static constexpr int CAMERA_Z_DISP = START_Z*0.7; //how far the camera is at all times from getCurrentZ()
 
     LayerType currentLayer = 0; //layer player is at
     std::shared_ptr<Player> player;

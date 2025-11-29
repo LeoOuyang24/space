@@ -35,5 +35,37 @@ PossiblePoint segmentIntersect(const Vector2& a1, const Vector2& a2, const Vecto
 PossiblePoint segmentIntersectRect(const Vector2& a1, const Vector2& a2, const Rectangle& rect);
 PossiblePoint segmentIntersectTriangle(const Vector2& a1, const Vector2& a2, const Vector2& t1, const Vector2& t2, const Vector2& t3);
 
+template<typename T>
+concept has_y = requires { &T::y; };
+
+template<typename T>
+concept has_z = requires { &T::z; };
+
+template<typename T>
+concept has_a = requires { &T::a; };
+
+//assigns different dimension vectors to each other
+// example: Vector2 can now be assigned to a Vector3, setting only the x and y fields
+template<typename Vector, typename OtherVector>
+void assignVector(Vector& v, const OtherVector& o)
+{
+    v.x = o.x;
+
+    if constexpr (has_y<Vector> && has_y<OtherVector>)
+    {
+        v.y = o.y;
+    }
+
+    if constexpr (has_z<Vector> && has_z<OtherVector>)
+    {
+        v.z = o.z;
+    }
+
+    if constexpr (has_a<Vector> && has_a<OtherVector>)
+    {
+        v.a = o.a;
+    }
+}
+
 
 #endif // RESOURCES_MATH_H_INCLUDED

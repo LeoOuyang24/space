@@ -24,7 +24,6 @@
 #include "headers/portal.h"
 #include "headers/collideTriggers.h"
 #include "headers/item.h"
-#include "headers/editor.h"
 
 
 
@@ -127,29 +126,9 @@ int main(void)
             camera.position.z += move;
             camera.target.z += move;
         }
-        //Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(),camera);
-
-
-        if (GetMousePosition().x >= 0.9*screenDimen.x)
+        if (!Debug::isDebugOn())
         {
-            camera.position.x += 10;
-            camera.target.x += 10;
-        }
-        else if (GetMousePosition().x <= 0.1*screenDimen.x)
-        {
-            camera.position.x -= 10;
-            camera.target.x -= 10;
-        }
-
-        if (GetMousePosition().y >= 0.9*screenDimen.y)
-        {
-            camera.position.y += 10;
-            camera.target.y += 10;
-        }
-        else if (GetMousePosition().y <= 0.1*screenDimen.y)
-        {
-            camera.position.y -= 10;
-            camera.target.y -= 10;
+            moveCamera(Globals::Game.camera,Globals::Game.player->orient.pos);
         }
 
         Debug::handleInput();
@@ -174,9 +153,11 @@ int main(void)
 
                 Texture2D& bg = *Globals::Game.Sprites.getSprite("bg.png");
                 DrawBillboardRec(camera,bg,Rectangle(0,0,bg.width,bg.height),
-                                 Vector3(Terrain::MAX_WIDTH/2,Terrain::MAX_WIDTH/2,Globals::BACKGROUND_Z),
+                                 Vector3(Terrain::MAX_TERRAIN_SIZE/2,Terrain::MAX_TERRAIN_SIZE/2,Globals::BACKGROUND_Z),
                                  Vector2(bg.width,bg.height),WHITE);
                 Globals::Game.terrain.render();
+
+
 
             Sequences::runRenders();
             Debug::renderDefers();

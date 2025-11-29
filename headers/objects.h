@@ -45,21 +45,23 @@ struct Forces
     {
         GRAVITY = 0,
         JUMP,
-        GRAPPLE,
-        MOVE
+        MOVE,
+        BOUNCE //forces from when going out of bounds
     };
 
     std::unordered_map<ForceSource,Vector2> forces; //mapping force source to a force
     Vector2 totalForce = {0,0}; //total forces
 
+    void setForce(const Vector2& force, Forces::ForceSource source);
     void addForce( Vector2 force, ForceSource source);
+    void addFriction(const Vector2& friction);
     void addFriction(float friction);
     void addFriction(float friction, ForceSource source);
     Vector2 getTotalForce();
 
-    Vector2 operator[](ForceSource source) //read-only, get force from a source
+    Vector2 getForce(ForceSource source) //read-only, get force from a source
     {
-        return forces[source];
+        return (forces.find(source) == forces.end()) ? Vector2{0,0} : forces[source];
     }
 };
 template<typename Collider, typename Renderer, typename... More>
@@ -195,7 +197,7 @@ protected:
     }
     void applyForces(Terrain& terrain)
     {
-        int searchRad = 100;
+        int searchRad = freeFall ? 400 : 200;
 
 
         if (!onGround && followGravity)
@@ -216,13 +218,14 @@ protected:
                                    });*/
             //forces.addForce(orient.getNormal()*0.1f,Forces::GRAVITY);
             int divide = 16;
-            int upTo = freeFall ? divide : 3;
+            const int landingDivide = 3;
+            int upTo = freeFall ? divide : landingDivide;
             Vector2 grav = {0,0};
             int count = 0;
             for (int i = 0; i < upTo; i ++)
             {
                 float angle =  2*M_PI/divide*i + M_PI/2-2*M_PI/divide + orient.rotation;
-                auto pos = terrain.lineBlockIntersect(orient.pos, orient.pos + Vector2(cos(angle),sin(angle))*150);
+                auto pos = terrain.lineBlockIntersect(orient.pos, orient.pos + Vector2(cos(angle),sin(angle))*searchRad);
                /* Debug::addDeferRender([pos](){
 
                                       DrawCircle3D(Vector3(pos.pos.x,pos.pos.y,Globals::Game.getCurrentZ()),10,{0,1,0},0,BLUE);
@@ -230,7 +233,7 @@ protected:
                                       });*/
                 if (pos.exists)
                 {
-                    grav +=  Vector2Normalize(pos.pos - orient.pos)*(1.0/pow(std::max(1.0f,Vector2Length(pos.pos -orient.pos)),2));
+                    grav +=  Vector2Normalize(pos.pos - orient.pos)*.002;//*((freeFall ? 5 : landingDivide)*2.0/pow(std::max(1.0f,Vector2Length(pos.pos -orient.pos)),2));
                     count ++;
                 }
             }
@@ -244,9 +247,22 @@ protected:
             }
         }
 
-        orient.pos += forces.getTotalForce();
-        //force = force*(onGround ? 0.5 : .99);
+
+        if (orient.pos.x >= Terrain::MAX_TERRAIN_SIZE || orient.pos.x <= 0)
+        {
+            forces.addFriction({-1,1});
+            forces.addForce( Vector2{(orient.pos.x <= 0 ) * 2 - 1,0},Forces::BOUNCE);
+        }
+        else if (orient.pos.y >= Terrain::MAX_TERRAIN_SIZE || orient.pos.y <= 0)
+        {
+            forces.addFriction({1,-1});
+            forces.addForce( Vector2{0,(orient.pos.y <= 0 ) * 2 - 1},Forces::BOUNCE);
+        }
+
+        orient.pos += forces.totalForce;
+
         forces.addFriction(onGround ? 0.5 : .99);
+
         wasOnGround = onGround;
         onGround = collider.isOnGround(orient,terrain);
 

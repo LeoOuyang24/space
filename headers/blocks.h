@@ -90,6 +90,8 @@ struct Terrain
 {
     static constexpr int MAX_WIDTH = 2000; //maximum number of blocks in the width direction
 
+    static constexpr int MAX_TERRAIN_SIZE = MAX_WIDTH*Block::BLOCK_DIMEN; //distance in width direction
+
     static Shader GravityFieldShader;
 
     //typedef std::vector<Block> TerrainMap;

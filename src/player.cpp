@@ -66,15 +66,17 @@ void PlayerRenderer::render(const Shape& shape,const Color& color)
 
     }*/
     Shape shape2 = shape;
-    shape2.orient.rotation += owner.aimAngle;
-    TextureRenderer::render(shape2,color);
+
     if (owner.state == Player::State::CHARGING)
     {
+        shape2.orient.rotation += owner.aimAngle;
         DrawLine3D({shape2.orient.pos.x,shape2.orient.pos.y,Globals::Game.getCurrentZ()},
                    {shape2.orient.pos.x + cos(shape2.orient.rotation - M_PI/2)*100,shape2.orient.pos.y + sin(shape2.orient.rotation - M_PI/2)*100,Globals::Game.getCurrentZ()},
                    RED
                    );
     }
+    TextureRenderer::render(shape2,color);
+
 }
 
 Player::Player(const Vector2& pos_) : Object({pos_},std::make_tuple(PLAYER_DIMEN,PLAYER_DIMEN,std::ref(*this)),std::make_tuple(std::ref(*this)))
@@ -94,8 +96,8 @@ void Player::update(Terrain& terrain)
 
     handleControls();
 
-    Vector2 forwardNorm = orient.getFacing(); //perpendicular to normal vector that moves us forward on flat ground with rotation 0
-    orient.pos += forwardNorm*speed;
+    //Vector2 forwardNorm = orient.getFacing(); //perpendicular to normal vector that moves us forward on flat ground with rotation 0
+    //orient.pos += forwardNorm*speed;
 
     if (onGround )
     {
@@ -141,15 +143,15 @@ void Player::handleControls()
     {
     case WALKING:
         {
+            power = 0;
             if (leftRight)
             {
                 float accel = (onGround ? PLAYER_GROUND_ACCEL : PLAYER_AIR_ACCEL);
-                float accelAmount = speed == 0 ? accel*2 : std::max(accel*0.5f,abs(accel*speed));
                 float maxSpeed = !onGround ? PLAYER_MAX_AIR_SPEED :
-                                        IsKeyDown(KEY_LEFT_SHIFT) ?
+                                        IsKeyDown(KEY_LEFT_CONTROL) ?
                                             PLAYER_RUN_MAX_SPEED :
                                             PLAYER_MAX_SPEED;
-                speed += accelAmount*(facing*2 - 1);
+                speed += accel*(facing*2 - 1);
 
                 speed = std::min(abs(speed),maxSpeed)*((speed > 0)*2 - 1); //prevent speed from exceeding maximum
 
@@ -157,38 +159,44 @@ void Player::handleControls()
             }
             if (IsKeyPressed(KEY_SPACE) && onGround)
             {
-                forces.addForce(orient.getNormal()*-6,Forces::JUMP);
+                forces.addForce(orient.getNormal()*-12,Forces::JUMP);
             }
         }
         break;
     case CHARGING:
         {
-            power = Clamp(power + 1,0,PLAYER_MAX_POWER);
-            if (leftRight)
+            if (IsKeyDown(KEY_SPACE))
             {
-                aimAngle = Clamp(aimAngle + 0.01*(this->facing*2 - 1),- M_PI/4, M_PI/4);
+                power = Clamp(power + 1,0,PLAYER_MAX_POWER);
             }
-            if (IsKeyReleased(KEY_SPACE))
+            else if (IsKeyReleased(KEY_SPACE))
             {
                 orient.rotation += aimAngle;
                 resetState.orient = orient;
                 resetState.keys = keys;
-                forces.addForce(orient.getNormal()*-8*(1 + power/100.0f),Forces::JUMP);
+                forces.addForce(orient.getNormal()*-12*(1 + power/40.0f),Forces::JUMP);
                 power = 0;
                 aimAngle = 0;
             }
-            if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
+            else
             {
                 power = 0;
             }
+            if (leftRight)
+            {
+                aimAngle = Clamp(aimAngle + 0.01*(this->facing*2 - 1),- M_PI/4, M_PI/4);
+            }
+
         }
     break;
     }
-
-    state = (!IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && IsKeyDown(KEY_SPACE) && !IsKeyPressed(KEY_SPACE) && onGround) ? CHARGING : WALKING;
-    if (!leftRight || state == CHARGING)
+    state = (IsKeyDown(KEY_LEFT_SHIFT) && onGround) ? CHARGING : WALKING;
+    if ((!leftRight || !onGround)|| state == CHARGING)
     {
-        speed = trunc(speed*0.85,3);
+        speed = trunc(speed*(onGround ? GROUND_FRICTION : AIR_FRICTION),3); //apply friction
     }
+    forces.setForce(orient.getFacing()*speed,Forces::MOVE);
+   // std::cout << forces.getForce(Forces::MOVE) << "\n";
+
 
 }

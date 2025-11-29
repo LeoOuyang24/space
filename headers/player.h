@@ -47,16 +47,19 @@ class Item;
 struct Player : public Object<PlayerCollider,PlayerRenderer>
 {
     static Texture2D PlayerSprite;
-    static constexpr int PLAYER_DIMEN = 20;
+    static constexpr int PLAYER_DIMEN = 30;
 
-    static constexpr float PLAYER_MAX_SPEED = 2;
-    static constexpr float PLAYER_RUN_MAX_SPEED = 3;
-    static constexpr float PLAYER_MAX_AIR_SPEED = 1;
+    static constexpr float PLAYER_MAX_SPEED = 3;
+    static constexpr float PLAYER_RUN_MAX_SPEED = 5;
+    static constexpr float PLAYER_MAX_AIR_SPEED = 4.5;
 
-    static constexpr float PLAYER_GROUND_ACCEL = 0.1;
-    static constexpr float PLAYER_AIR_ACCEL = 0.05;
+    static constexpr float PLAYER_GROUND_ACCEL = 0.5;
+    static constexpr float PLAYER_AIR_ACCEL = 0.01;
 
-    static constexpr float PLAYER_MAX_POWER = 50;
+    static constexpr float AIR_FRICTION = 0.99; //number to multiply to speed every frame. Bigger number = less friction
+    static constexpr float GROUND_FRICTION = 0.85;
+
+    static constexpr float PLAYER_MAX_POWER = 100;
 
     enum State
     {

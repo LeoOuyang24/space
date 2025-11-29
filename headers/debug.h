@@ -82,6 +82,7 @@ public:
 
     static void handleInput();
     static void drawInterface();
+    static bool isDebugOn();
 
 
 };
