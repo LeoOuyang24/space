@@ -8,12 +8,40 @@
 #include "collideTriggers.h"
 #include "item.h"
 
-struct Portal : public Object<CircleCollider,ShapeRenderer<CIRCLE>>
+struct PortalCondition
 {
+    virtual bool unlocked() = 0;
+    virtual void render(Shape shape) = 0;
+};
+
+struct TokenLocked : public PortalCondition
+{
+    size_t requirement = 0;
+    bool unlocked()
+    {
+        return Globals::Game.getCollects() >= requirement;
+    }
+    void render(Shape shape)
+    {
+        DrawText(std::to_string(requirement),shape.orient.pos.x,shape.orient.pos.y,20,BLACK);
+    }
+};
+
+struct UnlockPortal : public InteractComponent
+{
+    std::unique_ptr<PortalCondition> condition;
+    UnlockPortal(PortalCondition* cond, Portal& owner);
+};
+
+struct Portal : public Object<CircleCollider,ShapeRenderer<CIRCLE>,UnlockCondition,Portal>
+{
+
     Orient dest;
-    Shader portalShader;
+    static Shader PortalShader;
     RenderTexture2D texture;
     Portal(const Vector3& start, int radius, const Vector3& dest_);
+    Portal();
+
     void update()
     {
 
@@ -70,6 +98,18 @@ struct TriggerPortalSpawn : public InteractComponent
 };
 
 using PortalSpawner = Object<CircleCollider,TextureRenderer,TriggerPortalSpawn>;
+
+template<>
+struct Factory<Portal>
+{
+    static constexpr std::string ObjectName = "portal";
+    using Base = FactoryBase<Portal,
+                                access<Portal,&Portal::dest,&Orient::pos>,
+                                access<Portal,&Portal::dest,&Orient::layer>,
+                                access<Portal,&Portal::orient,&Orient::pos>,
+                                access<Portal,&Portal::orient,&Orient::layer>,
+                                access<Portal,&Portal::collider,&CircleCollider::radius>>;
+};
 
 template<>
 struct Factory<PortalSpawner>

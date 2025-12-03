@@ -60,15 +60,44 @@ void Editor::handleInput()
         }
 
     }
-
+    //serialize a layer
+    //it would also make sense for this code to be in the GlobalTerrain class
+    //however, I want to keep std::couts purely for debugging purposes. I think this allows me to separate the two
     if (IsKeyPressed(KEY_S) && IsKeyDown(KEY_LEFT_CONTROL))
     {
-        std::cout << "SAVING!\n";
+
         std::ofstream file;
-        file.open("levels/custom.txt");
-        std::string cereal = Globals::Game.terrain.serialize(0);
-        file << cereal;
-        file.close();
+        LayerType layer = Globals::Game.getCurrentLayer();
+        std::string config = Globals::Game.terrain.getConfigPath(layer);
+        if (config == "")
+        {
+            config = "levels/custom_layer_" + std::to_string(layer) + ".txt";
+        }
+
+        std::string imagePath = Globals::Game.terrain.getImagePath(layer);
+        if (imagePath == "")
+        {
+            imagePath = "sprites/layers/custom_layer_" + std::to_string(layer) + ".png";
+        }
+
+        std::string cereal = Globals::Game.terrain.serialize(layer);
+        if (cereal.size() > 0) //if serialization is blank, we have a problem (probably somehow getCurrentLayer() returned an invalid layer)
+        {
+            std::cout << "SAVING config to " << config << "\n";
+            file.open(config);
+            file << cereal;
+            file.close();
+            /*
+            TODO: currently saving terrain has the problem that it saves both the terrain outline and each pixel is 3 blocks big.
+            std::cout << "SAVING terrain to " << imagePath << "\n";
+            ExportImage(LoadImageFromTexture(Globals::Game.terrain.getLayerImage(layer)), imagePath.c_str());
+            */
+            std::cout << "DONE!\n";
+        }
+        else
+        {
+            std::cerr << "ERROR SERIALIZING TERRAIN!\n";
+        }
     }
 
 }

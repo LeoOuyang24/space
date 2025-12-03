@@ -14,6 +14,15 @@ Item::Item(const Vector3& pos, const Vector2& dimen, Texture2D& sprite) : Object
 
 }
 
+void CollectibleCollider::collideWith(PhysicsBody& self, PhysicsBody& other)
+{
+    if (&other == Globals::Game.player.get())
+    {
+        Globals::Game.addCollects();
+        self.setDead(true);
+    }
+}
+
 bool Key::unlocks(Key::KeyVal keyVal, Key::KeyVal lockVal)
 {
     return lockVal == Key::UNLOCKED || lockVal == keyVal;

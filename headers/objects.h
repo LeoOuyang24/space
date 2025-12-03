@@ -25,6 +25,7 @@ struct PhysicsBody
     virtual void render() = 0;
     virtual void update(Terrain&) = 0;
     virtual Vector2 getPos() = 0;
+    void setPos(const Vector2& pos);
     virtual void collideWith(PhysicsBody& other)
     {
 
@@ -259,7 +260,8 @@ protected:
             forces.addForce( Vector2{0,(orient.pos.y <= 0 ) * 2 - 1},Forces::BOUNCE);
         }
 
-        orient.pos += forces.totalForce;
+
+        setPos(getPos() + forces.getTotalForce());
 
         forces.addFriction(onGround ? 0.5 : .99);
 

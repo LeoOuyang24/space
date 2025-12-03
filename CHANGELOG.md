@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased:
+- Levels now load player position on the 2nd line
+- Added collectibles:
+    - Added interface counter for collectibles
+
 ## 11/28/2025:
 - Fixed some bugs with friction not actually affecting the individual forces
 - Moving against the edge of the screen bounces players in the opposite direction, like a pong paddle

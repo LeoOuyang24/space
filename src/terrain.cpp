@@ -48,7 +48,7 @@ void GlobalTerrain::pushBackTerrain()
     layers.emplace_back();
 }
 
-void GlobalTerrain::loadTerrain(std::string imagePath, LayerType layer)
+void GlobalTerrain::loadTerrain(std::string imagePath, LayerType layer, std::string configPath)
 {
     if (layer >= layers.size())
     {
@@ -62,6 +62,7 @@ void GlobalTerrain::loadTerrain(std::string imagePath, LayerType layer)
     Terrain* terr = getTerrain(layer);
 
     layers[layer].imagePath = imagePath;
+    layers[layer].configPath = configPath;
 
     Image img = LoadImage(imagePath.c_str());
     Color* colors = LoadImageColors(img);
@@ -151,6 +152,21 @@ float GlobalTerrain::getZOfLayer(LayerType index)
         return -1;
     }
     return Globals::START_Z + index*static_cast<float>(Globals::BACKGROUND_Z - Globals::START_Z)/(layers.size());
+}
+
+Texture2D GlobalTerrain::getLayerImage(LayerType index)
+{
+    return (index >= layers.size()) ? Texture2D() : layers[index].terrain.blocksTexture.texture;
+}
+
+std::string GlobalTerrain::getImagePath(LayerType index)
+{
+    return (index >= layers.size()) ? "" : layers[index].imagePath;
+}
+
+std::string GlobalTerrain::getConfigPath(LayerType index)
+{
+    return (index >= layers.size()) ? "" : layers[index].configPath;
 }
 
 std::string GlobalTerrain::serialize(LayerType index)

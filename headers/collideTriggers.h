@@ -37,7 +37,7 @@ struct InteractComponent
     }
     void collideWith(PhysicsBody& self, PhysicsBody& other)
     {
-        if (IsKeyPressed(KEY_E))
+        if (IsKeyPressed(KEY_E) && &self == Globals::Game.player.get())
         {
             interact(self,other);
         }

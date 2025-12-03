@@ -42,7 +42,8 @@ struct Key : public Object<RectCollider,TextureRenderer,KeyCollider,Key>
         return container.find(lockVal) != container.end();
     }
 
-    Key(KeyVal key_, const Vector3& pos) : key(key_), Object({Vector2(pos.x,pos.y),pos.z},std::make_tuple(KEY_DIMEN.x,KEY_DIMEN.y),std::make_tuple(*Globals::Game.Sprites.getSprite(KEY_SPRITE_PATH)))
+    Key(KeyVal key_, const Vector3& pos) : key(key_), Object({Vector2(pos.x,pos.y),pos.z},std::make_tuple(KEY_DIMEN.x,KEY_DIMEN.y),
+                                                             std::make_tuple(std::ref(*Globals::Game.Sprites.getSprite(KEY_SPRITE_PATH))))
     {
         tint = key;
     }
@@ -56,6 +57,28 @@ struct Key : public Object<RectCollider,TextureRenderer,KeyCollider,Key>
     {
         return key;
     }
+};
+
+struct CollectibleCollider
+{
+    void collideWith(PhysicsBody& self, PhysicsBody& other);
+};
+
+struct Collectible : public Object<CircleCollider,TextureRenderer,CollectibleCollider,Collectible>
+{
+    Collectible() : Object({},std::make_tuple(30),std::make_tuple(std::ref(*Globals::Game.Sprites.getSprite("gear.png"))))
+    {
+        followGravity = false;
+    }
+};
+
+template<>
+struct Factory<Collectible>
+{
+  static constexpr std::string ObjectName = "gear";
+  using Base = FactoryBase<Collectible,
+                        access<Collectible,&Collectible::orient,&Orient::pos>,
+                        access<Collectible,&Collectible::orient,&Orient::layer>>;
 };
 
 template<>

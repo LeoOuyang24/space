@@ -28,6 +28,7 @@ class GlobalTerrain
     {
         Terrain terrain;
         std::string imagePath = "";
+        std::string configPath = ""; //path to the layer config file.
         //contains weak_ptrs that point to the shared_ptrs in ObjectLookup
         std::list<std::weak_ptr<PhysicsBody>> objects;
     };
@@ -46,12 +47,15 @@ public:
     void pushBackTerrain(); //add terrain to furthest layer
     //load an image as the block data for the terrain at the provided layer
     //if it's out of bounds, push back a layer and modify that layer
-    void loadTerrain(std::string imagePath, LayerType layer = -1);
+    void loadTerrain(std::string imagePath, LayerType layer = -1, std::string configPath = "");
     Terrain* getTerrain(LayerType layer); //null if index is not valid
     void update(LayerType layer);
     void render();
     float getZOfLayer(LayerType index); //-1 if index is out of bounds
 
+    Texture2D getLayerImage(LayerType index);
+    std::string getImagePath(LayerType index);
+    std::string getConfigPath(LayerType index);
     std::string serialize(LayerType index);
 
 };

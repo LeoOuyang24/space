@@ -48,6 +48,21 @@ void Globals::init()
 
 }
 
+void Globals::addCollects(size_t val)
+{
+    collects += val;
+}
+
+size_t Globals::getCollects()
+{
+    return collects;
+}
+
+void Globals::setCollects(size_t val)
+{
+    collects = val;
+}
+
 void Globals::setLayer(LayerType layer)
 {
     if (terrain.getTerrain(layer))
@@ -99,16 +114,25 @@ void Globals::loadLevel(std::string path)
         int lineNum = 0;
         while(std::getline(levelFile,line))
         {
-            switch (lineNum)
+            if (line != "") //skip blank lines
             {
-            case 0: //first line is terrain image
-                terrain.loadTerrain(line,0);
-                break;
-            default:
-                addObject(construct(line));
-                break;
+                switch (lineNum)
+                {
+                case 0: //first line is terrain image
+                    terrain.loadTerrain(line,-1,path);
+                    break;
+                case 1: //2nd line is player position
+                    {
+                        Vector2 pos = fromString<Vector2>(line);
+                        Globals::Game.player->setPos(pos);
+                        break;
+                    }
+                default:
+                    addObject(construct(line));
+                    break;
+                }
+                lineNum ++;
             }
-            lineNum ++;
         }
         levelFile.close();
     }

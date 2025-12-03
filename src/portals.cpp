@@ -1,19 +1,41 @@
 #include "../headers/portal.h"
 
-Portal::Portal(const Vector3& start, int r, const Vector3& dest_) : dest({dest_.x,dest_.y},dest_.z,0), Object({Vector2(start.x,start.y),start.z},
-                                     std::make_tuple(r),
+UnlockCondition::UnlockCondition(PortalCondition* cond, Portal& owner) : InteractComponent(
+                                                                        [this,&owner]
+                                                                       (PhysicsBody& self, PhysicsBody& other){
+
+                                                               if (!this->condition.get() || this->condition->unlocked())
+                                                               {
+                                                                self.orient.pos = {owner.dest.pos.x,owner.dest.pos.y};
+                                                                Globals::Game.setLayer(owner.dest.layer);
+                                                               }
+
+                                                                                           }), condition(cond)
+{
+
+}
+
+Shader Portal::PortalShader;
+
+Portal::Portal() :  Object({Vector2(0,0),0},
+                                     std::make_tuple(100),
                                      std::make_tuple()
                                      )
- {
-    portalShader = LoadShader(0,TextFormat("shaders/fragments/portal.h",330));
+{
     texture = LoadRenderTexture(100,100);
     followGravity = false;
+}
+Portal::Portal(const Vector3& start, int r, const Vector3& dest_) : Portal()
+ {
+    assignVector(dest.pos,dest_);
+    dest.layer = dest_.z;
 
+    assignVector(orient.pos,start);
+    orient.layer = start.z;
  }
 
  void Portal::collideWith(PhysicsBody& player)
  {
-
     if (&player == Globals::Game.player.get())
     {
         player.orient.pos = {dest.pos.x,dest.pos.y};
@@ -28,9 +50,9 @@ Portal::Portal(const Vector3& start, int r, const Vector3& dest_) : dest({dest_.
 
     DrawCircle3D({orient.pos.x,orient.pos.y,Globals::Game.terrain.getZOfLayer(orient.layer)},collider.radius,{0,0,0},0,RED);
 
-    BeginShaderMode(portalShader);
+    BeginShaderMode(PortalShader);
         float time = GetTime();
-        SetShaderValue(portalShader,GetShaderLocation(portalShader,"time"),&time,SHADER_UNIFORM_FLOAT);
+        SetShaderValue(PortalShader,GetShaderLocation(PortalShader,"time"),&time,SHADER_UNIFORM_FLOAT);
         DrawBillboard(Globals::Game.camera,texture.texture,{orient.pos.x,orient.pos.y,Globals::Game.terrain.getZOfLayer(orient.layer)},collider.radius*3,WHITE);
         DrawBillboard(Globals::Game.camera,texture.texture,{dest.pos.x,dest.pos.y,Globals::Game.terrain.getZOfLayer(dest.layer)},collider.radius*3,WHITE);
     EndShaderMode();

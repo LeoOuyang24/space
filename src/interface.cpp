@@ -19,4 +19,8 @@ void Interface::render()
     }
     float height = Globals::Game.player->power/Player::PLAYER_MAX_POWER*100;
     DrawRectangle(100,GetScreenHeight()*.9 - height,100,height,RED);
+
+    DrawText(std::to_string(Globals::Game.getCollects()).c_str(),.85*GetScreenWidth(),.9*GetScreenHeight(),50,WHITE);
+    DrawTextureEx(*Globals::Game.Sprites.getSprite("gear.png"),{.8*GetScreenWidth(),.91*GetScreenHeight()},0,0.1,WHITE);
+   // DrawBillboard(Globals::Game.camera,*Globals::Game.Sprites.getSprite("gear.png"),{.8*GetScreenWidth(),.9*GetScreenHeight(),0},50,WHITE);
 }
