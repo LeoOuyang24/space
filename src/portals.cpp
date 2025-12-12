@@ -1,21 +1,32 @@
 #include "../headers/portal.h"
 
-UnlockCondition::UnlockCondition(PortalCondition* cond, Portal& owner) : InteractComponent(
-                                                                        [this,&owner]
-                                                                       (PhysicsBody& self, PhysicsBody& other){
+Shader Portal::PortalShader;
 
-                                                               if (!this->condition.get() || this->condition->unlocked())
-                                                               {
-                                                                self.orient.pos = {owner.dest.pos.x,owner.dest.pos.y};
-                                                                Globals::Game.setLayer(owner.dest.layer);
-                                                               }
-
-                                                                                           }), condition(cond)
+bool TokenLocked::unlocked()
 {
-
+    return Globals::Game.getCollects() >= requirement;
 }
 
-Shader Portal::PortalShader;
+void TokenLocked::render(Shape shape)
+{
+    std::string str = std::to_string(requirement);
+    int fontSize = 50;
+    Vector3 pos =
+
+    DrawText3D(GetFontDefault(),
+               str.c_str(),
+               Globals::Game.terrain.orientToVec3(shape.orient),
+               fontSize,10,0,false,unlocked() ? WHITE : RED,CENTER);
+
+    pos.x += fontSize/2;
+    pos.y += fontSize/2;
+    DrawBillboard(Globals::Game.camera,*Globals::Game.Sprites.getSprite("gear.png"),pos,fontSize,WHITE);
+}
+
+std::string TokenLocked::toString()
+{
+    return "gear," + std::to_string(requirement);
+}
 
 Portal::Portal() :  Object({Vector2(0,0),0},
                                      std::make_tuple(100),
@@ -24,6 +35,8 @@ Portal::Portal() :  Object({Vector2(0,0),0},
 {
     texture = LoadRenderTexture(100,100);
     followGravity = false;
+    cond.reset(new TokenLocked(5));
+
 }
 Portal::Portal(const Vector3& start, int r, const Vector3& dest_) : Portal()
  {
@@ -32,30 +45,46 @@ Portal::Portal(const Vector3& start, int r, const Vector3& dest_) : Portal()
 
     assignVector(orient.pos,start);
     orient.layer = start.z;
- }
 
- void Portal::collideWith(PhysicsBody& player)
+}
+
+bool Portal::unlocked()
+{
+    return !cond.get() || cond->unlocked();
+}
+
+ void Portal::interactWith(PhysicsBody& player)
  {
-    if (&player == Globals::Game.player.get())
+    if (unlocked())
     {
         player.orient.pos = {dest.pos.x,dest.pos.y};
         Globals::Game.setLayer(dest.layer);
     }
  }
 
+
  void Portal::render()
  {
-    // Object::render();
-    // renderer.render({CIRCLE,dest,&collider},WHITE);
-
     DrawCircle3D({orient.pos.x,orient.pos.y,Globals::Game.terrain.getZOfLayer(orient.layer)},collider.radius,{0,0,0},0,RED);
 
     BeginShaderMode(PortalShader);
         float time = GetTime();
+        Vector4 tint = unlocked() ? Vector4{1,1,0,0} : Vector4{0.5,0.5,0.5,0};
         SetShaderValue(PortalShader,GetShaderLocation(PortalShader,"time"),&time,SHADER_UNIFORM_FLOAT);
-        DrawBillboard(Globals::Game.camera,texture.texture,{orient.pos.x,orient.pos.y,Globals::Game.terrain.getZOfLayer(orient.layer)},collider.radius*3,WHITE);
-        DrawBillboard(Globals::Game.camera,texture.texture,{dest.pos.x,dest.pos.y,Globals::Game.terrain.getZOfLayer(dest.layer)},collider.radius*3,WHITE);
+        SetShaderValue(PortalShader,GetShaderLocation(PortalShader,"tint"),&tint,SHADER_UNIFORM_VEC4);
+        DrawBillboard(Globals::Game.camera,texture.texture,{
+                      orient.pos.x,orient.pos.y,
+                      Globals::Game.terrain.getZOfLayer(orient.layer)},
+                      collider.radius*3,WHITE);
+        //DrawBillboard(Globals::Game.camera,texture.texture,{dest.pos.x,dest.pos.y,Globals::Game.terrain.getZOfLayer(dest.layer)},collider.radius*3,WHITE);
+
+
     EndShaderMode();
+
+       if (cond.get())
+        {
+            cond->render(getShape());
+        }
  }
 
 void TriggerPortalSpawn::interact(PhysicsBody& self, PhysicsBody& other)

@@ -68,13 +68,14 @@ void Editor::handleInput()
 
         std::ofstream file;
         LayerType layer = Globals::Game.getCurrentLayer();
-        std::string config = Globals::Game.terrain.getConfigPath(layer);
+        GlobalTerrain::LayerInfo info = Globals::Game.terrain.getLayerInfo(layer);
+        std::string config = info.configPath;
         if (config == "")
         {
             config = "levels/custom_layer_" + std::to_string(layer) + ".txt";
         }
 
-        std::string imagePath = Globals::Game.terrain.getImagePath(layer);
+        std::string imagePath = info.imagePath;
         if (imagePath == "")
         {
             imagePath = "sprites/layers/custom_layer_" + std::to_string(layer) + ".png";
@@ -147,15 +148,20 @@ void Cheats::handleInput()
             {
                 Color color = {255,255,255,100};
                 if (rand()%2)
-                    Globals::Game.addObject(*(new Object<RectCollider,ShapeRenderer<ShapeType::RECT>>({mousePos,Globals::Game.getCurrentLayer()},color,10,10)));
+                    Globals::Game.addObject(*(new Object<RectCollider,ShapeRenderer<ShapeType::RECT>,EMPTY_TYPE>({mousePos,Globals::Game.getCurrentLayer()},std::make_tuple(10,10),{})));
                 else
-                    Globals::Game.addObject(*(new Object<CircleCollider,ShapeRenderer<ShapeType::CIRCLE>>({mousePos,Globals::Game.getCurrentLayer()},color,10)));
+                    Globals::Game.addObject(*(new Object<CircleCollider,ShapeRenderer<ShapeType::CIRCLE>,EMPTY_TYPE>({mousePos,Globals::Game.getCurrentLayer()},std::make_tuple(10),{})));
                 break;
             }
         case PLAYER:
             if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
             {
                 Globals::Game.player->orient.pos = mousePos;
+                if (Globals::Game.player->getDead())
+                {
+                    Globals::Game.player->setDead(false);
+                    Globals::Game.terrain.addObject(Globals::Game.player,Globals::Game.getCurrentLayer());
+                }
             }
             break;
         case ENDPOINT:
@@ -182,10 +188,21 @@ void Cheats::handleInput()
             DrawLine3D(Vector3(mousePos.x,mousePos.y,z),Vector3(endpoint.x,endpoint.y,z),PURPLE);
 
             Vector2 onTerrain = Globals::Game.getCurrentTerrain()->lineTerrainIntersect(mousePos,endpoint).pos;
-            //DrawCircle3D(Vector3(onTerrain.x,onTerrain.y,z),3,{0,1,0},0,BLACK);
-            DrawSphere(Vector3(onTerrain.x,onTerrain.y,z),5,BLACK);
+            DrawCircle3D(Vector3(onTerrain.x,onTerrain.y,z),3,{0,1,0},0,PURPLE);
 
+            LayerType layer = Globals::Game.getCurrentLayer();
+            Globals::Game.terrain.getTerrain(layer)->forEachPos([layer](const Vector2& pos){
+                                Terrain* terr = Globals::Game.terrain.getTerrain(layer);
+                                Vector2 rounded = terr->roundPos(pos);
+                                DrawCube({rounded.x + Block::BLOCK_DIMEN/2,rounded.y + Block::BLOCK_DIMEN/2,Globals::Game.getCurrentZ()},Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,1,
+                                         terr->isBlockType(rounded,SOLID) ? RED : BLUE);
+                                },
+                                screenToWorld(GetMousePosition(),
+                                              Globals::Game.camera,
+                                              {GetScreenWidth(),GetScreenHeight()},
+                                              Globals::Game.getCurrentZ()),10);
                       });
+
     }
 
 }

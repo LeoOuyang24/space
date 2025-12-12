@@ -26,7 +26,7 @@ struct PhysicsBody
     virtual void update(Terrain&) = 0;
     virtual Vector2 getPos() = 0;
     void setPos(const Vector2& pos);
-    virtual void collideWith(PhysicsBody& other)
+    virtual void onCollide(PhysicsBody& other)
     {
 
     }
@@ -35,6 +35,7 @@ struct PhysicsBody
         return EMPTY_SERIAL;
     }
     void setDead(bool val);
+    bool getDead();
     virtual bool isDead();
 };
 
@@ -65,17 +66,11 @@ struct Forces
         return (forces.find(source) == forces.end()) ? Vector2{0,0} : forces[source];
     }
 };
-template<typename Collider, typename Renderer, typename... More>
+template<typename Collider, typename Renderer, typename Descendant, typename... More>
 struct Object : public PhysicsBody
 {
-
     Collider collider;
     Renderer renderer;
-
-    GET_TYPE_WITH_collideWith<More...>::type collideTrigger;
-    //using FactoryType = GET_TYPE_WITH_ObjectName<More...>::type; //pass in an instance of Factory<Object> to give this object the ability to serialize
-    //FetchObject<More...>::type
-
 
     Color tint = WHITE;
     bool onGround = false;
@@ -88,24 +83,17 @@ struct Object : public PhysicsBody
     Vector2 nearest = {-1,-1};
 
     template<typename... CollArgs, typename... RenderArgs>
-    Object(const Orient& pos, std::tuple<CollArgs...> colliderArgs, std::tuple<RenderArgs...> renderArgs, std::tuple<More...> tup) : tint(WHITE),
+    Object(const Orient& pos, std::tuple<CollArgs...> colliderArgs, std::tuple<RenderArgs...> renderArgs) : tint(WHITE),
                                                                         collider(std::make_from_tuple<Collider>(colliderArgs)),
-                                                                        renderer(std::make_from_tuple<Renderer>(renderArgs)),
-                                                                        collideTrigger(std::move(std::get<decltype(collideTrigger)>(tup)))
+                                                                        renderer(std::make_from_tuple<Renderer>(renderArgs))
     {
         orient = pos;
-    }
-    template<typename... Args>
-    Object(const Orient& o, const Color& color,  Args... args) : tint(color), collider(args...)
-    {
-        orient = o;
     }
 
     template<typename... CollArgs, typename... RenderArgs, typename... Args>
     Object(const Orient& pos, std::tuple<CollArgs...> colliderArgs, std::tuple<RenderArgs...> renderArgs, Args... conArgs) : tint(WHITE),
                                                                         collider(std::make_from_tuple<Collider>(colliderArgs)),
-                                                                        renderer(std::make_from_tuple<Renderer>(renderArgs)),
-                                                                        collideTrigger(createFromArgs<decltype(collideTrigger)>(conArgs...))
+                                                                        renderer(std::make_from_tuple<Renderer>(renderArgs))
     {
         orient = pos;
     }
@@ -115,12 +103,27 @@ struct Object : public PhysicsBody
 
     }
 
-    void collideWith(PhysicsBody& other)
+    void onCollide(PhysicsBody& other)
     {
         //if there is a collide with function,
-        if constexpr (has_collideWith<decltype(collideTrigger)>)
+        if constexpr (has_interactWith<Descendant>)
         {
-            collideTrigger.collideWith(*this,other);
+            if (IsKeyPressed(KEY_E) && &other == Globals::Game.getPlayer())
+            {
+                static_cast<Descendant*>(this)->interactWith(other);
+            }
+        }
+        else if constexpr (has_collideWith<Descendant>)
+        {
+           static_cast<Descendant*>(this)->collideWith(other);
+        }
+        else
+        {
+            using collideTrigger = GET_TYPE_WITH_collideWith<More...>::type;
+            if constexpr(!std::is_same<collideTrigger,EMPTY_TYPE>::value)
+            {
+                collideTrigger::collideWith(*this,other);
+            }
         }
     }
 
@@ -128,12 +131,14 @@ struct Object : public PhysicsBody
     //we do this by figuring out which of our parameters is a descendant of PhysicsBody (because it has a "dead" field)
     std::string serialize()
     {
-        using FactoryType = typename GET_TYPE_WITH_dead<More...>::type;
-        if constexpr(has_dead<FactoryType>)
+        if constexpr(!std::is_same<Descendant,EMPTY_TYPE>::value)
         {
-            return Factory<FactoryType>::Base::serialize(*static_cast<FactoryType*>(this));
+            return Factory<Descendant>::Base::serialize(*static_cast<Descendant*>(this));
         }
-        return EMPTY_SERIAL;
+        else
+        {
+            return "";
+        }
     }
 
     Vector2 getPos()
@@ -160,7 +165,7 @@ struct Object : public PhysicsBody
 protected:
     void stayOnGround(Terrain& terrain)
     {
-        Vector2 bruh = terrain.lineTerrainIntersect(orient.pos,orient.pos + orient.getNormal()*GetDimen(getShape()).y/2).pos; //- normal*(collider.height)/2;
+        Vector2 bruh = terrain.lineTerrainIntersect(orient.pos,orient.pos + orient.getNormal()*GetDimen(getShape()).y).pos; //- normal*(collider.height)/2;
         Vector2 newPos = bruh - orient.getNormal()*(GetDimen(getShape()).y/2  - 1);
 
         orient.pos = newPos;
@@ -218,7 +223,7 @@ protected:
 
                                    });*/
             //forces.addForce(orient.getNormal()*0.1f,Forces::GRAVITY);
-            int divide = 16;
+            int divide = 32;
             const int landingDivide = 3;
             int upTo = freeFall ? divide : landingDivide;
             Vector2 grav = {0,0};
@@ -226,19 +231,29 @@ protected:
             for (int i = 0; i < upTo; i ++)
             {
                 float angle =  2*M_PI/divide*i + M_PI/2-2*M_PI/divide + orient.rotation;
-                auto pos = terrain.lineBlockIntersect(orient.pos, orient.pos + Vector2(cos(angle),sin(angle))*searchRad);
-               /* Debug::addDeferRender([pos](){
+                auto pos = terrain.lineBlockIntersect(orient.pos, orient.pos + Vector2(cos(angle),sin(angle))*searchRad,false);
+                Debug::addDeferRender([pos](){
 
-                                      DrawCircle3D(Vector3(pos.pos.x,pos.pos.y,Globals::Game.getCurrentZ()),10,{0,1,0},0,BLUE);
+                                      DrawCircle3D(Vector3(pos.pos.x,pos.pos.y,Globals::Game.getCurrentZ()),10,{0,1,0},0,pos.type == ANTI ? BLUE : RED);
 
-                                      });*/
-                if (pos.exists)
+                                      });
+                if (pos.type != AIR)
                 {
-                    grav +=  Vector2Normalize(pos.pos - orient.pos)*.002;//*((freeFall ? 5 : landingDivide)*2.0/pow(std::max(1.0f,Vector2Length(pos.pos -orient.pos)),2));
+                    Vector2 force = Vector2Normalize(pos.pos - orient.pos)*0.1/pow(Vector2Length(pos.pos - orient.pos),1);
+                    if (pos.type == ANTI)
+                    {
+                        force *= -1;
+                    }
+                    else if (pos.type == LAVA)
+                    {
+                        force *= .5;
+                    }
+                    grav +=  force;
+
                     count ++;
                 }
             }
-            if (count >0)
+            if (count > 0)
             {
                 forces.addForce(grav*150/count,Forces::GRAVITY);
             }

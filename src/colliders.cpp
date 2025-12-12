@@ -16,10 +16,10 @@ float CircleCollider::getLandingAngle(Orient& o, Terrain& terrain)
 
 bool RectCollider::isOnGround(const Orient& orient, Terrain& terrain)
 {
-    return  terrain.blockExists(rotatePoint(orient.pos + Vector2(width/2,  height/2),orient.pos,orient.rotation)) ||
-            terrain.blockExists(rotatePoint(orient.pos + Vector2(-width/2,  -height/2),orient.pos,orient.rotation)) ||
-            terrain.blockExists(rotatePoint(orient.pos + Vector2(width/2,  -height/2),orient.pos,orient.rotation)) ||
-            terrain.blockExists(rotatePoint(orient.pos + Vector2(-width/2,  height/2),orient.pos,orient.rotation));
+    return  terrain.isBlockType(rotatePoint(orient.pos + Vector2(width/2,  height/2),orient.pos,orient.rotation),SOLID) ||
+            terrain.isBlockType(rotatePoint(orient.pos + Vector2(-width/2,  -height/2),orient.pos,orient.rotation),SOLID) ||
+            terrain.isBlockType(rotatePoint(orient.pos + Vector2(width/2,  -height/2),orient.pos,orient.rotation),SOLID) ||
+            terrain.isBlockType(rotatePoint(orient.pos + Vector2(-width/2,  height/2),orient.pos,orient.rotation),SOLID);
 }
 
 float RectCollider::getLandingAngle(Orient& o, Terrain& terrain)

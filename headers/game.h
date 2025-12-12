@@ -43,6 +43,7 @@ struct Globals
 
     void addObject(PhysicsBody& body);
     void addObject(std::shared_ptr<PhysicsBody> ptr);
+    PhysicsBody* getPlayer();
 
     template<typename Obj, typename... Ts>
     void addObject(Ts... stuff)

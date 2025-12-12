@@ -43,8 +43,7 @@ struct PlayerState
     Orient orient;
 };
 
-class Item;
-struct Player : public Object<PlayerCollider,PlayerRenderer>
+struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
 {
     static Texture2D PlayerSprite;
     static constexpr int PLAYER_DIMEN = 30;
@@ -80,16 +79,15 @@ struct Player : public Object<PlayerCollider,PlayerRenderer>
     bool facing = true;
 
     std::unordered_set<Key::KeyVal> keys;
-    std::weak_ptr<Item> holding;
 
     Player(const Vector2& pos);
     void update(Terrain&);
-    void setHolding(Item& obj);
-    Item* getHolding();
     void addKey(Key::KeyVal);
 
     void handleControls(); //all player controls are handled here
 
 };
+
+
 
 #endif // PLAYER_H_INCLUDED

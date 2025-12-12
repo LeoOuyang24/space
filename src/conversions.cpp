@@ -1,82 +1,97 @@
+#include <cstring>
+
 #include "../headers/conversions.h"
 
-std::vector<std::string> split(std::string str, char delimit)
+#include "../headers/portal.h"
+
+std::string_view SplitString::operator[](size_t index) const
 {
-    std::vector<std::string> vec;
+    return index < nums.size() - 1 ? str.substr(nums[index], (nums[index + 1] - nums[index] - 1)) : "";
+}
+
+size_t SplitString::size() const
+{
+    return nums.size();
+}
+
+//splits a string
+SplitString::SplitString(std::string_view str, char delimit)
+{
     size_t start = 0;
     size_t ind = 0;
+    nums = {0};
     while ( (ind = str.find(delimit,start)) != std::string::npos)
     {
-        vec.push_back(str.substr(start,ind - start));
+        nums.push_back(ind + 1);
         start = ind + 1;
     }
-    vec.push_back(str.substr(start,ind));
-    return vec;
+    nums.push_back(str.size() + 1);
+    this->str = str;
 }
 
 template<>
-bool fromString(std::string str)
+bool fromString(std::string_view str)
 {
     return str == "1";
 }
 
 template<>
-float fromString(std::string str)
+float fromString(std::string_view str)
 {
-    return std::stof(str);
+    return str.size() > 0 ? std::atof(str.data()) : 0;
 }
 
 template<>
-int fromString(std::string str)
+int fromString(std::string_view str)
 {
-    return std::stoi(str);
+    return str.size() > 0 ? std::atoi(str.data()) : 0;
 }
 
 template<>
-size_t fromString(std::string str)
+size_t fromString(std::string_view str)
 {
-    return fromString<int>(str);
+    return str.size() > 0 ? fromString<int>(str) : 0;
 }
 
 template<>
-Vector2 fromString(std::string str)
+Vector2 fromString(std::string_view str)
 {
-    auto nums = split(str);
+    auto nums = SplitString(str);
     return
     {
         fromString<float>(nums[0]),
-        nums.size() > 0 ? fromString<float>(nums[1]) : 0
+        fromString<float>(nums[1])
     };
 }
 
 template<>
-Vector3 fromString(std::string str)
+Vector3 fromString(std::string_view str)
 {
-    auto nums = split(str);
+    auto nums = SplitString(str);
     return
     {
         fromString<int>(nums[0]),
-        nums.size() > 1 ? fromString<int>(nums[1]) : 0,
-        nums.size() > 2 ? fromString<int>(nums[2]) : 0
+        fromString<int>(nums[1]),
+        fromString<int>(nums[2])
     };
 }
 
 template<>
-Color fromString(std::string str)
+Color fromString(std::string_view str)
 {
-    auto nums = split(str);
+    auto nums = SplitString(str);
     return {
         fromString<int>(nums[0]),
-        nums.size() > 1 ? fromString<int>(nums[1]) : 0,
-        nums.size() > 2 ? fromString<int>(nums[2]) : 0,
-        nums.size() > 3 ? fromString<int>(nums[3]) : 0
+        fromString<int>(nums[1]),
+        fromString<int>(nums[2]),
+        fromString<int>(nums[3])
     };
 }
 
 template<>
-Texture2D* fromString(std::string str)
+Texture2D* fromString(std::string_view str)
 {
-    Texture2D* sprite = Globals::Game.Sprites.getSprite(str);
+    Texture2D* sprite = Globals::Game.Sprites.getSprite(str.data());
     if (!sprite)
     {
         std::cerr << "fromString: failed to fetch sprite: " << str << "\n";
@@ -85,6 +100,16 @@ Texture2D* fromString(std::string str)
     return sprite;
 }
 
+template<>
+PortalCondition* fromString(std::string_view str)
+{
+    SplitString split(str);
+    if (split[0] == "gear")
+    {
+        return new TokenLocked(fromString<size_t>(split[1]));
+    }
+    return nullptr;
+}
 
 
 
@@ -110,4 +135,20 @@ template<>
 std::string toString(Texture2D* sprite)
 {
     return Globals::Game.Sprites.getSpritePath(sprite);
+}
+
+template<>
+std::string toString(PortalCondition* cond)
+{
+    if (cond)
+    {
+        return cond->toString();
+    }
+    return "null";
+}
+
+template<>
+std::string toString(std::unique_ptr<PortalCondition>& ptr)
+{
+    return toString(ptr.get());
 }

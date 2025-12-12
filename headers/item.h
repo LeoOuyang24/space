@@ -8,21 +8,15 @@
 
 class HoldThis;
 
-struct Item : public Object<RectCollider,TextureRenderer,HoldThis>
-{
-public:
-    Item(const Vector3& pos, const Vector2& dimen, Texture2D& sprite);
-};
-
 struct KeyCollider
 {
     //only works if "self" is a Key
-    void collideWith(PhysicsBody& self, PhysicsBody& other);
+    static void collideWith(PhysicsBody& self, PhysicsBody& other);
 };
 
 //keys are objects with a specific key value
 //this key value is an integer that represents in
-struct Key : public Object<RectCollider,TextureRenderer,KeyCollider,Key>
+struct Key : public Object<RectCollider,TextureRenderer,Key,KeyCollider>
 {
     typedef Color KeyVal;
 
@@ -61,10 +55,10 @@ struct Key : public Object<RectCollider,TextureRenderer,KeyCollider,Key>
 
 struct CollectibleCollider
 {
-    void collideWith(PhysicsBody& self, PhysicsBody& other);
+    static void collideWith(PhysicsBody& self, PhysicsBody& other);
 };
 
-struct Collectible : public Object<CircleCollider,TextureRenderer,CollectibleCollider,Collectible>
+struct Collectible : public Object<CircleCollider,TextureRenderer,Collectible,CollectibleCollider>
 {
     Collectible() : Object({},std::make_tuple(30),std::make_tuple(std::ref(*Globals::Game.Sprites.getSprite("gear.png"))))
     {

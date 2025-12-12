@@ -18,7 +18,7 @@ struct Orient
 {
     Vector2 pos = {0,0};
 
-    LayerType layer = 0;
+    LayerType layer = -1;
 
     float rotation = 0; // IN RADIANS
 

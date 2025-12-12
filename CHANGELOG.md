@@ -4,6 +4,9 @@
 - Levels now load player position on the 2nd line
 - Added collectibles:
     - Added interface counter for collectibles
+- Portal now has a gray tint if locked
+- Portal locked conditions have been added, and can be deserialized/serialized
+- Added Antigravity and support for more than just binary blocks
 
 ## 11/28/2025:
 - Fixed some bugs with friction not actually affecting the individual forces

@@ -130,7 +130,7 @@ int main(void)
             camera.position.z += move;
             camera.target.z += move;
         }
-        if (!Debug::isDebugOn())
+        if (!Debug::isDebugOn() && Globals::Game.player)
         {
             moveCamera(Globals::Game.camera,Globals::Game.player->orient.pos);
         }

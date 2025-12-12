@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "../headers/terrain.h"
 #include "../headers/game.h"
 #include "../headers/sequencer.h"
 #include "../headers/player.h"
@@ -68,7 +69,7 @@ void Globals::setLayer(LayerType layer)
     if (terrain.getTerrain(layer))
     {
         currentLayer = layer;
-        if (player.get())
+        if (player.get() && player->orient.layer != layer)
         {
             player->orient.layer = layer;
             terrain.addObject(player,layer);
@@ -112,6 +113,7 @@ void Globals::loadLevel(std::string path)
     {
         std::string line;
         int lineNum = 0;
+        GlobalTerrain::LayerInfo info = {path};
         while(std::getline(levelFile,line))
         {
             if (line != "") //skip blank lines
@@ -119,11 +121,13 @@ void Globals::loadLevel(std::string path)
                 switch (lineNum)
                 {
                 case 0: //first line is terrain image
-                    terrain.loadTerrain(line,-1,path);
+                    info.imagePath = line;
+                    terrain.loadTerrain(-1,line);
                     break;
                 case 1: //2nd line is player position
                     {
                         Vector2 pos = fromString<Vector2>(line);
+                        info.playerPos = pos;
                         Globals::Game.player->setPos(pos);
                         break;
                     }
@@ -134,6 +138,8 @@ void Globals::loadLevel(std::string path)
                 lineNum ++;
             }
         }
+        terrain.setLayerInfo(terrain.getLayerCount() - 1,info);
+
         levelFile.close();
     }
     else
@@ -152,6 +158,11 @@ void Globals::addObject(std::shared_ptr<PhysicsBody> ptr)
 {
     objects.addObject(ptr);
     terrain.addObject(ptr,ptr->orient.layer);
+}
+
+PhysicsBody* Globals::getPlayer()
+{
+    return player.get();
 }
 
 Globals::Globals()

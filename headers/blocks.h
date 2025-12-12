@@ -13,63 +13,50 @@
 #include "../headers/resources_math.h"
 
 #include "debug.h"
-
+enum BlockType : uint8_t
+{
+    AIR = 0,
+    SOLID,
+    LAVA,
+    ANTI,
+    BLOCK_TYPES
+};
 struct Block
 {
     constexpr static int BLOCK_DIMEN=3;
 
     Color color;
-
-    void render();
+    BlockType type = SOLID;
 };
 
-
-template<typename T>
 struct TerrainMap
 {
-    const int blockDimen;
-    const int maxWidth;
-
-    std::vector<T> data;
-
-
-    void setVal(size_t index,T val)
-    {
-        data[index] = val;
-    }
-    auto& operator[] (size_t index)
-    {
-        return data[index];
-    }
-    size_t size()
-    {
-        return data.size();
-    }
-    void resize(size_t newSize)
-    {
-        data.resize(newSize);
-    }
-    void clear()
-    {
-        data.clear();
-    }
-};
-
-template<>
-struct TerrainMap<bool>
-{
+    //how many bits correspond to one block
+    constexpr static size_t PALETTE_SIZE = std::max(SOLID,static_cast<BlockType>(std::log2(static_cast<uint8_t>((BLOCK_TYPES)))));
     const int blockDimen;
     const int maxWidth;
 
     std::vector<bool> data;
 
-    void setVal(size_t index,bool val)
+    void setVal(size_t index,BlockType val)
     {
-        data[index] = val;
+        for (size_t i = 0; i < PALETTE_SIZE; i++)
+        {
+            data[index*PALETTE_SIZE + i] = (val >> i ) % 2;
+        }
     }
-    bool operator[] (size_t index)
+    BlockType operator[] (size_t index)
     {
-        return data[index];
+        if (index >= data.size())
+        {
+            return AIR;
+        }
+        uint8_t p = AIR;
+        for (size_t i = 0; i < PALETTE_SIZE; i ++)
+        {
+            p += data[index*PALETTE_SIZE + i] << i;
+        }
+        return static_cast<BlockType>(p);
     }
     size_t size()
     {
@@ -85,23 +72,29 @@ struct TerrainMap<bool>
     }
 };
 
+//returns a position and the type at that position
+struct PossibleBlock
+{
+    BlockType type = AIR;
+    Vector2 pos;
+};
 
 struct Terrain
 {
     static constexpr int MAX_WIDTH = 2000; //maximum number of blocks in the width direction
 
-    static constexpr int MAX_TERRAIN_SIZE = MAX_WIDTH*Block::BLOCK_DIMEN; //distance in width direction
+    static constexpr int MAX_TERRAIN_SIZE = MAX_WIDTH*Block::BLOCK_DIMEN; //distance in width direction in pixels
 
     static Shader GravityFieldShader;
 
     //typedef std::vector<Block> TerrainMap;
     //typedef std::vector<bool> TerrainMap;
-    TerrainMap<bool> terrain{Block::BLOCK_DIMEN,MAX_WIDTH};
+    TerrainMap terrain{Block::BLOCK_DIMEN,MAX_WIDTH};
     RenderTexture blocksTexture;
 
     Terrain();
 
-    void addBlock(const Vector2& pos, Block block);
+    void addBlock(const Vector2& pos, const Block& block);
     //remove all blocks in area
     void remove(const Vector2& pos, int radius);
     void clear();
@@ -114,8 +107,12 @@ struct Terrain
     void generateRightTriangle(const Vector2& corner, float height, const Color& color); //creates an isoscles right triangle
 
     PossiblePoint lineIntersectWithTerrain(const Vector2& a, const Vector2& b); //return the point closest to "a" that intersects with the terrain
-    PossiblePoint lineBlockIntersect(const Vector2& a, const Vector2& b); //return the point of intersection between the line a-b and the block closest to b as well as whether there even was a collision
-    PossiblePoint lineTerrainIntersect(const Vector2& a, const Vector2& b); //same as above except it'll loop until it can return a point that is out of terrain
+
+     //returns the point that an object moving from "a" to "b" would stop at after hitting terrain, returns "b" if there is a clear path
+     //isSolid = true if we wish to stop at a SOLID block. False, if we want to stop at any block that is not AIR
+    PossibleBlock lineBlockIntersect(const Vector2& a, const Vector2& b, bool isSolid = true);
+    //same as above, except we'll move "a" out of terrain first.
+    PossibleBlock lineTerrainIntersect(const Vector2& a, const Vector2& b, bool isSolid = true);
 
     size_t pointToIndex(const Vector2& vec,int blockDimen = Block::BLOCK_DIMEN, int maxWidth = MAX_WIDTH);
     Vector2 indexToPoint(size_t index,int blockDimen = Block::BLOCK_DIMEN, int maxWidth = MAX_WIDTH);
@@ -164,15 +161,8 @@ struct Terrain
             }
         }
     }
-    bool blockExists(const Vector2& pos); //true if block is at position
-    template<typename T>
-    bool blockExists(const Vector2& pos, TerrainMap<T>& terr)
-    {
-        size_t index = pointToIndex(pos,terr.blockDimen,terr.maxWidth);
-        return index < terr.size() && terr[index];
-    }
-
-    bool isSolid(const Vector2& pos); //returns true if there is terrain at position, not whether or not the pos is in the terrain
+    bool blockExists(const Vector2& pos); //true if block at position is not AIR
+    bool isBlockType(const Vector2& pos,BlockType type); //true if block at position is "type"
 
     void render(int z = 0);
 };

@@ -12,6 +12,11 @@ void PhysicsBody::setDead(bool val)
     dead = val;
 }
 
+bool PhysicsBody::getDead()
+{
+    return dead;
+}
+
 bool PhysicsBody::isDead()
 {
     return dead;

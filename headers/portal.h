@@ -1,6 +1,8 @@
 #ifndef PORTAL_H_INCLUDED
 #define PORTAL_H_INCLUDED
 
+#include "raylib_helper.h"
+
 #include "objects.h"
 #include "shape.h"
 #include "render.h"
@@ -12,41 +14,38 @@ struct PortalCondition
 {
     virtual bool unlocked() = 0;
     virtual void render(Shape shape) = 0;
+    virtual std::string toString() = 0;
 };
 
 struct TokenLocked : public PortalCondition
 {
+
     size_t requirement = 0;
-    bool unlocked()
+    TokenLocked(size_t req) : requirement(req)
     {
-        return Globals::Game.getCollects() >= requirement;
     }
-    void render(Shape shape)
-    {
-        DrawText(std::to_string(requirement),shape.orient.pos.x,shape.orient.pos.y,20,BLACK);
-    }
+    bool unlocked();
+    void render(Shape shape);
+    std::string toString();
+
+
 };
 
-struct UnlockPortal : public InteractComponent
-{
-    std::unique_ptr<PortalCondition> condition;
-    UnlockPortal(PortalCondition* cond, Portal& owner);
-};
 
-struct Portal : public Object<CircleCollider,ShapeRenderer<CIRCLE>,UnlockCondition,Portal>
+struct Portal : public Object<CircleCollider,ShapeRenderer<CIRCLE>,Portal>
 {
-
+    std::unique_ptr<PortalCondition> cond;
     Orient dest;
     static Shader PortalShader;
     RenderTexture2D texture;
     Portal(const Vector3& start, int radius, const Vector3& dest_);
     Portal();
-
+    bool unlocked();
     void update()
     {
 
     }
-    void collideWith(PhysicsBody& other);
+    void interactWith(PhysicsBody& other);
     void render();
 };
 
@@ -97,7 +96,7 @@ struct TriggerPortalSpawn : public InteractComponent
 
 };
 
-using PortalSpawner = Object<CircleCollider,TextureRenderer,TriggerPortalSpawn>;
+//using PortalSpawner = Object<CircleCollider,TextureRenderer,TriggerPortalSpawn>;
 
 template<>
 struct Factory<Portal>
@@ -108,10 +107,11 @@ struct Factory<Portal>
                                 access<Portal,&Portal::dest,&Orient::layer>,
                                 access<Portal,&Portal::orient,&Orient::pos>,
                                 access<Portal,&Portal::orient,&Orient::layer>,
+                                access<Portal,&Portal::cond>,
                                 access<Portal,&Portal::collider,&CircleCollider::radius>>;
 };
 
-template<>
+/*template<>
 struct Factory<PortalSpawner>
 {
     static constexpr std::string ObjectName = "portal_spawner";
@@ -124,7 +124,7 @@ struct Factory<PortalSpawner>
                                 access<PortalSpawner,&PortalSpawner::collideTrigger,&TriggerPortalSpawn::end>,
                                 access<PortalSpawner,&PortalSpawner::collideTrigger,&TriggerPortalSpawn::absolute>>;
 
-};
+};*/
 
 
 #endif // PORTAL_H_INCLUDED

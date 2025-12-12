@@ -104,26 +104,11 @@ void Player::update(Terrain& terrain)
         stayOnGround(terrain);
     }
 
-    if (Item* held = getHolding())
+    if (terrain.isBlockType(orient.pos,LAVA))
     {
-        held->orient.pos = orient.pos + orient.getFacing()*(GetDimen(held->getShape()).x/2 + collider.width/2)*(facing*2 - 1);
-        held->orient.layer = orient.layer;
-        held->orient.rotation = orient.rotation;
+        setDead(true);
     }
-}
 
-void Player::setHolding(Item& body)
-{
-    auto shared = Globals::Game.objects.getObject(body);
-    if (shared.get())
-    {
-        holding = std::static_pointer_cast<Item>(shared);
-    }
-}
-
-Item* Player::getHolding()
-{
-    return (holding.lock().get());
 }
 
 void Player::addKey(Key::KeyVal val)
@@ -144,11 +129,12 @@ void Player::handleControls()
     case WALKING:
         {
             power = 0;
+            bool running = IsKeyDown(KEY_LEFT_CONTROL);
             if (leftRight)
             {
                 float accel = (onGround ? PLAYER_GROUND_ACCEL : PLAYER_AIR_ACCEL);
                 float maxSpeed = !onGround ? PLAYER_MAX_AIR_SPEED :
-                                        IsKeyDown(KEY_LEFT_CONTROL) ?
+                                         running ?
                                             PLAYER_RUN_MAX_SPEED :
                                             PLAYER_MAX_SPEED;
                 speed += accel*(facing*2 - 1);
@@ -159,7 +145,10 @@ void Player::handleControls()
             }
             if (IsKeyPressed(KEY_SPACE) && onGround)
             {
-                forces.addForce(orient.getNormal()*-12,Forces::JUMP);
+                Vector2 jump = running ?
+                                    orient.getNormal()*-8 + orient.getFacing()*8*(facing*2 - 1) :
+                                    orient.getNormal()*-12;
+                forces.addForce(jump,Forces::JUMP);
             }
         }
         break;
@@ -174,7 +163,7 @@ void Player::handleControls()
                 orient.rotation += aimAngle;
                 resetState.orient = orient;
                 resetState.keys = keys;
-                forces.addForce(orient.getNormal()*-12*(1 + power/40.0f),Forces::JUMP);
+                forces.addForce(orient.getNormal()*-12*(1 + power/PLAYER_MAX_POWER),Forces::JUMP);
                 power = 0;
                 aimAngle = 0;
             }
@@ -195,6 +184,8 @@ void Player::handleControls()
     {
         speed = trunc(speed*(onGround ? GROUND_FRICTION : AIR_FRICTION),3); //apply friction
     }
+    //orient.pos += orient.getFacing()*speed;
+
     forces.setForce(orient.getFacing()*speed,Forces::MOVE);
    // std::cout << forces.getForce(Forces::MOVE) << "\n";
 
