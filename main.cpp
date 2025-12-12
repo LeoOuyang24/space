@@ -55,10 +55,14 @@ int main(void)
 
 
     Globals::Game.init();
+    Portal::PortalShader = LoadShader(0,TextFormat("shaders/fragments/portal.h",330));
+
+
 
     Camera3D& camera = Globals::Game.camera;
 
     Globals::Game.loadLevel("levels/layer0.txt");
+    Globals::Game.loadLevel("levels/layer1.txt");
     Globals::Game.setLayer(0);
 
     float accum = 0;
@@ -126,7 +130,7 @@ int main(void)
             camera.position.z += move;
             camera.target.z += move;
         }
-        if (!Debug::isDebugOn())
+        if (!Debug::isDebugOn() && Globals::Game.player)
         {
             moveCamera(Globals::Game.camera,Globals::Game.player->orient.pos);
         }

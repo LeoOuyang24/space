@@ -60,15 +60,45 @@ void Editor::handleInput()
         }
 
     }
-
+    //serialize a layer
+    //it would also make sense for this code to be in the GlobalTerrain class
+    //however, I want to keep std::couts purely for debugging purposes. I think this allows me to separate the two
     if (IsKeyPressed(KEY_S) && IsKeyDown(KEY_LEFT_CONTROL))
     {
-        std::cout << "SAVING!\n";
+
         std::ofstream file;
-        file.open("levels/custom.txt");
-        std::string cereal = Globals::Game.terrain.serialize(0);
-        file << cereal;
-        file.close();
+        LayerType layer = Globals::Game.getCurrentLayer();
+        GlobalTerrain::LayerInfo info = Globals::Game.terrain.getLayerInfo(layer);
+        std::string config = info.configPath;
+        if (config == "")
+        {
+            config = "levels/custom_layer_" + std::to_string(layer) + ".txt";
+        }
+
+        std::string imagePath = info.imagePath;
+        if (imagePath == "")
+        {
+            imagePath = "sprites/layers/custom_layer_" + std::to_string(layer) + ".png";
+        }
+
+        std::string cereal = Globals::Game.terrain.serialize(layer);
+        if (cereal.size() > 0) //if serialization is blank, we have a problem (probably somehow getCurrentLayer() returned an invalid layer)
+        {
+            std::cout << "SAVING config to " << config << "\n";
+            file.open(config);
+            file << cereal;
+            file.close();
+            /*
+            TODO: currently saving terrain has the problem that it saves both the terrain outline and each pixel is 3 blocks big.
+            std::cout << "SAVING terrain to " << imagePath << "\n";
+            ExportImage(LoadImageFromTexture(Globals::Game.terrain.getLayerImage(layer)), imagePath.c_str());
+            */
+            std::cout << "DONE!\n";
+        }
+        else
+        {
+            std::cerr << "ERROR SERIALIZING TERRAIN!\n";
+        }
     }
 
 }
@@ -118,15 +148,20 @@ void Cheats::handleInput()
             {
                 Color color = {255,255,255,100};
                 if (rand()%2)
-                    Globals::Game.addObject(*(new Object<RectCollider,ShapeRenderer<ShapeType::RECT>>({mousePos,Globals::Game.getCurrentLayer()},color,10,10)));
+                    Globals::Game.addObject(*(new Object<RectCollider,ShapeRenderer<ShapeType::RECT>,EMPTY_TYPE>({mousePos,Globals::Game.getCurrentLayer()},std::make_tuple(10,10),{})));
                 else
-                    Globals::Game.addObject(*(new Object<CircleCollider,ShapeRenderer<ShapeType::CIRCLE>>({mousePos,Globals::Game.getCurrentLayer()},color,10)));
+                    Globals::Game.addObject(*(new Object<CircleCollider,ShapeRenderer<ShapeType::CIRCLE>,EMPTY_TYPE>({mousePos,Globals::Game.getCurrentLayer()},std::make_tuple(10),{})));
                 break;
             }
         case PLAYER:
             if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
             {
                 Globals::Game.player->orient.pos = mousePos;
+                if (Globals::Game.player->getDead())
+                {
+                    Globals::Game.player->setDead(false);
+                    Globals::Game.terrain.addObject(Globals::Game.player,Globals::Game.getCurrentLayer());
+                }
             }
             break;
         case ENDPOINT:
@@ -153,10 +188,21 @@ void Cheats::handleInput()
             DrawLine3D(Vector3(mousePos.x,mousePos.y,z),Vector3(endpoint.x,endpoint.y,z),PURPLE);
 
             Vector2 onTerrain = Globals::Game.getCurrentTerrain()->lineTerrainIntersect(mousePos,endpoint).pos;
-            //DrawCircle3D(Vector3(onTerrain.x,onTerrain.y,z),3,{0,1,0},0,BLACK);
-            DrawSphere(Vector3(onTerrain.x,onTerrain.y,z),5,BLACK);
+            DrawCircle3D(Vector3(onTerrain.x,onTerrain.y,z),3,{0,1,0},0,PURPLE);
 
+            LayerType layer = Globals::Game.getCurrentLayer();
+            Globals::Game.terrain.getTerrain(layer)->forEachPos([layer](const Vector2& pos){
+                                Terrain* terr = Globals::Game.terrain.getTerrain(layer);
+                                Vector2 rounded = terr->roundPos(pos);
+                                DrawCube({rounded.x + Block::BLOCK_DIMEN/2,rounded.y + Block::BLOCK_DIMEN/2,Globals::Game.getCurrentZ()},Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,1,
+                                         terr->isBlockType(rounded,SOLID) ? RED : BLUE);
+                                },
+                                screenToWorld(GetMousePosition(),
+                                              Globals::Game.camera,
+                                              {GetScreenWidth(),GetScreenHeight()},
+                                              Globals::Game.getCurrentZ()),10);
                       });
+
     }
 
 }

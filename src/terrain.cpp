@@ -48,7 +48,7 @@ void GlobalTerrain::pushBackTerrain()
     layers.emplace_back();
 }
 
-void GlobalTerrain::loadTerrain(std::string imagePath, LayerType layer)
+void GlobalTerrain::loadTerrain(LayerType layer, std::string imagePath)
 {
     if (layer >= layers.size())
     {
@@ -61,11 +61,10 @@ void GlobalTerrain::loadTerrain(std::string imagePath, LayerType layer)
     }
     Terrain* terr = getTerrain(layer);
 
-    layers[layer].imagePath = imagePath;
+    layers[layer].info.imagePath = imagePath;
 
     Image img = LoadImage(imagePath.c_str());
     Color* colors = LoadImageColors(img);
-    Color c = GetImageColor(img,424,700);
     for (int i = 0; i < std::min(img.width,Terrain::MAX_WIDTH); i += 1)
     {
         for (int j = 0; j < std::min(img.height,Terrain::MAX_WIDTH); j += 1)
@@ -74,18 +73,37 @@ void GlobalTerrain::loadTerrain(std::string imagePath, LayerType layer)
             int index = terr->pointToIndex(point);
 
             Color color = GetImageColor(img,i,j);
+            BlockType type = SOLID;
+            if (color.r == 255 && color.g == 255 && color.b == 255)
+            {
+                type = ANTI;
+            }
+            else if (color.r == 255 && color.g == 0 && color.b == 0)
+            {
+                type = LAVA;
+            }
             if (color.a > 0)
                 {
-                    terr->addBlock(point,{color});
+                    terr->addBlock(point,{color,type});
                 }
-
         }
     }
     delete[] colors;
 
 
 }
+void GlobalTerrain::setLayerInfo(LayerType layer, const LayerInfo& info)
+{
+    if (layer < layers.size()) [[likely]]
+    {
+        layers[layer].info = info;
+    }
+}
 
+LayerType GlobalTerrain::getLayerCount()
+{
+    return layers.size();
+}
 
 Terrain* GlobalTerrain::getTerrain(LayerType layer)
 {
@@ -108,8 +126,8 @@ void GlobalTerrain::update(LayerType layer)
                     PhysicsBody* obj2 = jt->lock().get(); //guaranteed to be non-null and in this layer, since jt < it;
                     if (CheckCollision(obj->getShape(),obj2->getShape()))
                     {
-                        obj->collideWith(*obj2);
-                        obj2->collideWith(*obj);
+                        obj->onCollide(*obj2);
+                        obj2->onCollide(*obj);
                     }
                 }
                 ++it;
@@ -153,6 +171,19 @@ float GlobalTerrain::getZOfLayer(LayerType index)
     return Globals::START_Z + index*static_cast<float>(Globals::BACKGROUND_Z - Globals::START_Z)/(layers.size());
 }
 
+Vector3 GlobalTerrain::orientToVec3(const Orient& orient)
+{
+    return {orient.pos.x,orient.pos.y,getZOfLayer(orient.layer)};
+}
+
+GlobalTerrain::LayerInfo GlobalTerrain::getLayerInfo(LayerType index)
+{
+    if (index >= layers.size()) [[unlikely]]
+    {
+        return {};
+    }
+    return layers[index].info;
+}
 std::string GlobalTerrain::serialize(LayerType index)
 {
     if (index >= layers.size()) [[unlikely]]
@@ -161,7 +192,7 @@ std::string GlobalTerrain::serialize(LayerType index)
     }
     std::string cereal = "";
     Layer& layer = layers[index];
-    cereal += layer.imagePath + "\n";
+    cereal += layer.info.imagePath + "\n" + toString(layer.info.playerPos) + "\n";
     for (auto it = layer.objects.begin(); it != layer.objects.end(); ++it)
     {
         PhysicsBody* obj = it->lock().get();

@@ -2,9 +2,19 @@
 
 #include "../headers/objects.h"
 
+void PhysicsBody::setPos(const Vector2& pos)
+{
+    orient.pos = pos;
+}
+
 void PhysicsBody::setDead(bool val)
 {
     dead = val;
+}
+
+bool PhysicsBody::getDead()
+{
+    return dead;
 }
 
 bool PhysicsBody::isDead()

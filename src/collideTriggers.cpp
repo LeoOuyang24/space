@@ -7,6 +7,6 @@ void HoldThis::collideWith(PhysicsBody& self, PhysicsBody& other)
 {
     if (&other  == Globals::Game.player.get())
     {
-        static_cast<Player*>(&other)->setHolding(*static_cast<Item*>(&self));
+       // static_cast<Player*>(&other)->setHolding(*static_cast<Item*>(&self));
     }
 }

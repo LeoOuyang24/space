@@ -8,21 +8,15 @@
 
 class HoldThis;
 
-struct Item : public Object<RectCollider,TextureRenderer,HoldThis>
-{
-public:
-    Item(const Vector3& pos, const Vector2& dimen, Texture2D& sprite);
-};
-
 struct KeyCollider
 {
     //only works if "self" is a Key
-    void collideWith(PhysicsBody& self, PhysicsBody& other);
+    static void collideWith(PhysicsBody& self, PhysicsBody& other);
 };
 
 //keys are objects with a specific key value
 //this key value is an integer that represents in
-struct Key : public Object<RectCollider,TextureRenderer,KeyCollider,Key>
+struct Key : public Object<RectCollider,TextureRenderer,Key,KeyCollider>
 {
     typedef Color KeyVal;
 
@@ -42,7 +36,8 @@ struct Key : public Object<RectCollider,TextureRenderer,KeyCollider,Key>
         return container.find(lockVal) != container.end();
     }
 
-    Key(KeyVal key_, const Vector3& pos) : key(key_), Object({Vector2(pos.x,pos.y),pos.z},std::make_tuple(KEY_DIMEN.x,KEY_DIMEN.y),std::make_tuple(*Globals::Game.Sprites.getSprite(KEY_SPRITE_PATH)))
+    Key(KeyVal key_, const Vector3& pos) : key(key_), Object({Vector2(pos.x,pos.y),pos.z},std::make_tuple(KEY_DIMEN.x,KEY_DIMEN.y),
+                                                             std::make_tuple(std::ref(*Globals::Game.Sprites.getSprite(KEY_SPRITE_PATH))))
     {
         tint = key;
     }
@@ -56,6 +51,28 @@ struct Key : public Object<RectCollider,TextureRenderer,KeyCollider,Key>
     {
         return key;
     }
+};
+
+struct CollectibleCollider
+{
+    static void collideWith(PhysicsBody& self, PhysicsBody& other);
+};
+
+struct Collectible : public Object<CircleCollider,TextureRenderer,Collectible,CollectibleCollider>
+{
+    Collectible() : Object({},std::make_tuple(30),std::make_tuple(std::ref(*Globals::Game.Sprites.getSprite("gear.png"))))
+    {
+        followGravity = false;
+    }
+};
+
+template<>
+struct Factory<Collectible>
+{
+  static constexpr std::string ObjectName = "gear";
+  using Base = FactoryBase<Collectible,
+                        access<Collectible,&Collectible::orient,&Orient::pos>,
+                        access<Collectible,&Collectible::orient,&Orient::layer>>;
 };
 
 template<>

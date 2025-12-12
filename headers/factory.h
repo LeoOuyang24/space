@@ -28,11 +28,7 @@ set/read when deserializing/serializing. From there, Factory<Key> is just a wrap
 constexpr std::string EMPTY_SERIAL = ""; //empty serialization for objects that shouldn't be serialized
 
 
-template<typename Obj>
-auto& access(Obj& t)
-{
-    return t;
-}
+
 /***
 
 It would be really nice if we could access a member variable of a member variable but that syntax doesn't exist by default. So to access field C of class B
@@ -42,19 +38,73 @@ This is used in FactoryBase. Every FactoryBase contains a typename (Object we wa
 These access calls can be used to set/read each field we want of the given typename.
 
 ***/
+template<typename Obj>
+auto& access(Obj& t)
+{
+    return t;
+}
 template<typename Obj,auto Member, auto... Members>
 auto& access(Obj& thing)
 {
     return access<decltype(thing.*Member),Members...>(thing.*Member);
 }
 
+//sets a field. For most fields, this is pretty simple; simply set it to the serialized version
+template<size_t index, typename Accessed>
+void setValue(const SplitString& params, Accessed& accessed)
+{
+    if (index + 1 < params.size())
+    {
+        accessed = fromString<Accessed>(params[index + 1]);
+    }
+}
+
+//specialization for unique_ptr. We instead reset it to the raw pointer of the deserialized object
+template<size_t index,typename T >
+void setValue(const SplitString& params, std::unique_ptr<T>& ptr)
+{
+    if (index + 1 < params.size())
+    {
+        ptr.reset(fromString<T*>(params[index + 1]));
+    }
+}
+
+template<typename T>
+struct SerializableType
+{
+    using type = typename std::remove_reference<T>::type;
+};
+
+template<typename T>
+struct SerializableType<std::unique_ptr<T>&>
+{
+    using type = std::unique_ptr<T>&;
+};
+
 class PhysicsBody;
 //given a string, create the corresponding Object based on the name in the first part of the string.
 std::shared_ptr<PhysicsBody> construct(std::string cereal);
 
-//not actually defined here. look in factories.h for specializations. Each object we want to be able to serialize/deserialize has a specialization
+//Look for specializations below class declarations. Each object we want to be able to serialize/deserialize has a specialization
 template<typename Obj>
 struct Factory;
+
+//default definition for objects that really should never be serialized
+template<typename Obj>
+struct Factory
+{
+    struct Base
+    {
+        static Obj deserialize(const SplitString& params)
+        {
+            return Obj();
+        }
+        static std::string serialize(Obj& obj)
+        {
+            return "";
+        }
+    };
+};
 
 /***
 Workhorse class. "Obj" should be a type (probably a child of PhysicsBody) and Accessors should be a parameter pack of access<>() calls..
@@ -65,7 +115,7 @@ template<typename Obj, auto... Accessors>
 struct FactoryBase
 {
     //string* because we are usually taking in the contiguous strings of a std::vector<string> in "construct"
-    static Obj deserialize(std::vector<std::string>& params)
+    static Obj deserialize(const SplitString& params)
     {
         Obj obj;
         [&obj,&params,&params]<size_t... Index>(std::index_sequence<Index...>)
@@ -75,9 +125,7 @@ struct FactoryBase
             //decltype lets us decide what type to convert into, based on the type of the field in "Obj"
             //if fewer than required fields are provided, we go up as high as we can, based on length
             //we start at index + 1 because the first string is always the name of the object
-            (( Accessors(obj) = (Index + 1 >= params.size()) ?
-                                    Accessors(obj) :
-                                    fromString<typename std::remove_reference<decltype(Accessors(obj))>::type>(params[Index + 1])),...);
+            (setValue<Index>(params,Accessors(obj)),...);
 
         }(std::make_index_sequence<sizeof...(Accessors)>{}); //<-- allows us to iterate through each accessor. "Index" is 0 - however many Accessors
         return obj;
@@ -89,7 +137,7 @@ struct FactoryBase
     {
         std::string cereal = "";
         //concatenate each serialized version of each field
-        ((cereal += (toString<typename std::remove_reference<decltype(Accessors(object))>::type>(Accessors(object)) + " ")),...);
+        ((cereal += (toString<typename SerializableType<decltype(Accessors(object))>::type>(Accessors(object)) + " ")),...);
 
         return Factory<Obj>::ObjectName + " " + cereal;
     }

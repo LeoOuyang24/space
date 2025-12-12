@@ -25,11 +25,16 @@ struct Globals
     static constexpr int START_Z = BACKGROUND_Z - SPACE_Z*50;
     static constexpr int CAMERA_Z_DISP = START_Z*0.7; //how far the camera is at all times from getCurrentZ()
 
+    size_t collects = 0;
     LayerType currentLayer = 0; //layer player is at
     std::shared_ptr<Player> player;
 
     void init();
     void setLayer(LayerType layer); //set layer, move the player, and the camera
+
+    size_t getCollects();
+    void addCollects(size_t val = 1);
+    void setCollects(size_t val);
 
     float getCurrentZ();
     LayerType getCurrentLayer();
@@ -38,6 +43,7 @@ struct Globals
 
     void addObject(PhysicsBody& body);
     void addObject(std::shared_ptr<PhysicsBody> ptr);
+    PhysicsBody* getPlayer();
 
     template<typename Obj, typename... Ts>
     void addObject(Ts... stuff)

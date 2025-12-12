@@ -10,15 +10,6 @@
 #include "../headers/game.h"
 #include "rlgl.h"
 
-
-void Block::render()
-{
-    //DrawPoly(pos,4,Block::BLOCK_DIMEN,0,color);
-    //DrawCircle(pos.x,pos.y,2,RED);
-
-    //DrawRectangle(pos.x - BLOCK_DIMEN/2,pos.y - BLOCK_DIMEN/2,BLOCK_DIMEN,BLOCK_DIMEN,color);
-}
-
 Shader Terrain::GravityFieldShader;
 
 Vector2 Terrain::roundPos(const Vector2& vec, int blockDimen)
@@ -53,7 +44,7 @@ Rectangle Terrain::getBlockRect(const Vector2& pos)
     return {rounded.x,rounded.y,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN};
 }
 
-void Terrain::addBlock(const Vector2& pos, Block block)
+void Terrain::addBlock(const Vector2& pos, const Block& block)
 {
     int index = pointToIndex(pos);
     //std::cout << index << "\n";
@@ -62,14 +53,29 @@ void Terrain::addBlock(const Vector2& pos, Block block)
     {
         return;
     }
-    if (index >= terrain.size())
+    if (index*TerrainMap::PALETTE_SIZE >= terrain.size())
     {
-        terrain.resize(index + 1);
+        terrain.resize((index + 1)*TerrainMap::PALETTE_SIZE);
     }
-    //terrain[index] = true;//block;
-    terrain.setVal(index,true);
+    terrain.setVal(index,block.type);
 
-    //addGravity(pos + Vector2(Block::BLOCK_DIMEN/2,Block::BLOCK_DIMEN/2));
+    Color color;
+    switch (block.type)
+    {
+    case AIR:
+        color = {0,0,0,0};
+        break;
+    case LAVA:
+        color = {255,0,0,255};
+        break;
+    case ANTI:
+        color = WHITE;
+        break;
+    case SOLID:
+    default:
+        color = block.color;
+        break;
+    }
 
     Vector2 rounded = roundPos(pos);
     BeginTextureMode(blocksTexture);
@@ -79,12 +85,12 @@ void Terrain::addBlock(const Vector2& pos, Block block)
                 Vector2 neighbor = {rounded.x + Block::BLOCK_DIMEN*(i%3 - 1),rounded.y + Block::BLOCK_DIMEN*(i/3 - 1)};
                 if (!blockExists(neighbor))
                     {
-                        DrawRectangle(neighbor.x,blocksTexture.texture.height - neighbor.y,
+                        DrawRectangle(neighbor.x,blocksTexture.texture.height - neighbor.y -  Block::BLOCK_DIMEN,
                                       Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,
-                                      Color(block.color.r*.5,block.color.g*.5,block.color.b*.5,255));
+                                      Color(color.r*.5,color.g*.5,color.b*.5,255));
                     }
             }
-            DrawRectangle(rounded.x,blocksTexture.texture.height - rounded.y,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,block.color);
+            DrawRectangle(rounded.x,blocksTexture.texture.height - rounded.y - Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,color);
     EndTextureMode();
 }
 
@@ -101,7 +107,7 @@ void Terrain::remove(const Vector2& pos, int radius)
                if (blockExists(pos))
                {
                   //terrain[pointToIndex(pos)] = false;//{Color(0,0,0,0)};
-                  terrain.setVal(pointToIndex(pos),false);
+                  terrain.setVal(pointToIndex(pos),BlockType::AIR);
                }
                },pos,radius);
 
@@ -153,7 +159,7 @@ PossiblePoint Terrain::lineIntersectWithTerrain(const Vector2& a, const Vector2&
     Vector2 current = a;
     while (current != b)
     {
-        if (blockExists(current))
+        if (isBlockType(current,SOLID))
         {
             Rectangle block = getBlockRect(current);
 
@@ -169,23 +175,22 @@ PossiblePoint Terrain::lineIntersectWithTerrain(const Vector2& a, const Vector2&
     return {false};
 }
 
-PossiblePoint Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b)
+PossibleBlock Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, bool isSolid)
 {
 
     Vector2 newA = a;
     Vector2 dir = Vector2Normalize(b - a);
-    if (blockExists(newA) && !Vector2Equals(dir,{0,0}))
+    if ( (isSolid && isBlockType(newA,SOLID) || blockExists(newA))  && !Vector2Equals(dir,{0,0}))
     {
         Vector2 oldA;
-       // newA = indexToPoint(pointToIndex(newA));
-        while (blockExists(newA))
+        while ((isSolid && isBlockType(newA,SOLID) || blockExists(newA))) //move "A" backwards until we encounter non-solid block
         {
             oldA = newA;
             newA -= dir*Block::BLOCK_DIMEN;
             //std::cout << dir.x << " " << dir.y << "\n";
         }
 
-        PossiblePoint surface = segmentIntersectRect(oldA,newA,getBlockRect(oldA));
+        PossiblePoint surface = segmentIntersectRect(oldA,newA,getBlockRect(oldA)); //if newA is stuck on the surface of a block, move a little more
         if (surface.exists)
         {
             newA = surface.pos - dir;
@@ -194,36 +199,38 @@ PossiblePoint Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b)
     return lineBlockIntersect(newA,b);
 }
 
-PossiblePoint Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b)
+PossibleBlock Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, bool isSolid)
 {
 
     if (pointToIndex(a) == pointToIndex(b)) //if a and b are in teh same box, it comes down to whether or not there's empty space there
     {
-        return {blockExists(a),blockExists(a) ? a : b};
+        return { terrain[pointToIndex(a)], (isSolid && isBlockType(a,SOLID) || blockExists(a)) ? a : b};
     }
 
     Vector2 dir = Vector2Normalize(b - a);
 
     Vector2 current = a;
-
     Vector2 nudge = current + dir*.001;
+    BlockType type = AIR;
 
     bool past = false; //true if we have gone past b and not hit a wall
     //loop until we have gone past b or we hit a wall
-    while (!blockExists(nudge) && !past)
+    while (((isSolid && !isBlockType(nudge,SOLID)) || !blockExists(nudge)) && !past)
     {
-       // i ++;
         current = pointBoxEdgeIntersect(current,dir,Block::BLOCK_DIMEN);
-       // std::cout << curre
-        //std::cout << pointToIndex(nudge) << " " << current.x << " " << current.y << " " << dir.x << " " << dir.y <<"\n";
         nudge = current + dir*.001;
-        past = Vector2DistanceSqr(current,a) > Vector2DistanceSqr(b,a);
+        /*Debug::addDeferRender([current,this,dir](){
 
-       // std::cout << "CURRENT: " << current.x  << " " << current.y << " " << a.x << " " << a.y << "\n";
-    }
+                              DrawCircle3D({current.x + dir.x*.001,current.y+ dir.y*.001,Globals::Game.getCurrentZ()},2,{0,0,0},0,isBlockType(current + dir*.001,AIR) ? WHITE : RED);
+                              Vector2 rounded = roundPos(current);
+                              DrawCircle3D({rounded.x,rounded.y,Globals::Game.getCurrentZ()},2,{0,0,0},0,isBlockType(current,AIR) ? WHITE : RED);
+                              });*/
+        type = terrain[pointToIndex(nudge)];
+        past = Vector2DistanceSqr(current,a) > Vector2DistanceSqr(b,a);
+     }
    // std::cout << "done\n";
 
-    return {!past,past ? b : current};
+    return { type , past ? b : current};
 
 }
 size_t Terrain::pointToIndex(const Vector2& vec,int blockDimen, int maxWidth)
@@ -298,14 +305,14 @@ void Terrain::generateRightTriangle(const Vector2& corner, float height, const C
 
 bool Terrain::blockExists(const Vector2& pos)
 {
-    return pointToIndex(pos) < terrain.size() && terrain[pointToIndex(pos)];//terrain[pointToIndex(pos)].color.a != 0;
+    return pointToIndex(pos) < terrain.size() && terrain[pointToIndex(pos)] != AIR;//terrain[pointToIndex(pos)].color.a != 0;
 }
 
-/*bool Terrain::blockExists(const Vector2& pos, TerrainMap& terr)
+bool Terrain::isBlockType(const Vector2& pos, BlockType type)
 {
-    size_t index = pointToIndex(pos,terr.blockDimen,terr.maxWidth);
-    return index < terr.size() && terr[index];
-}*/
+    size_t index = pointToIndex(pos);
+    return index < terrain.size() && terrain[index] == type;
+}
 
 void Terrain::render(int z)
 {

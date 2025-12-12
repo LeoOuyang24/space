@@ -1,39 +1,90 @@
 #include "../headers/portal.h"
 
-Portal::Portal(const Vector3& start, int r, const Vector3& dest_) : dest({dest_.x,dest_.y},dest_.z,0), Object({Vector2(start.x,start.y),start.z},
-                                     std::make_tuple(r),
+Shader Portal::PortalShader;
+
+bool TokenLocked::unlocked()
+{
+    return Globals::Game.getCollects() >= requirement;
+}
+
+void TokenLocked::render(Shape shape)
+{
+    std::string str = std::to_string(requirement);
+    int fontSize = 50;
+    Vector3 pos =
+
+    DrawText3D(GetFontDefault(),
+               str.c_str(),
+               Globals::Game.terrain.orientToVec3(shape.orient),
+               fontSize,10,0,false,unlocked() ? WHITE : RED,CENTER);
+
+    pos.x += fontSize/2;
+    pos.y += fontSize/2;
+    DrawBillboard(Globals::Game.camera,*Globals::Game.Sprites.getSprite("gear.png"),pos,fontSize,WHITE);
+}
+
+std::string TokenLocked::toString()
+{
+    return "gear," + std::to_string(requirement);
+}
+
+Portal::Portal() :  Object({Vector2(0,0),0},
+                                     std::make_tuple(100),
                                      std::make_tuple()
                                      )
- {
-    portalShader = LoadShader(0,TextFormat("shaders/fragments/portal.h",330));
+{
     texture = LoadRenderTexture(100,100);
     followGravity = false;
+    cond.reset(new TokenLocked(5));
 
- }
-
- void Portal::collideWith(PhysicsBody& player)
+}
+Portal::Portal(const Vector3& start, int r, const Vector3& dest_) : Portal()
  {
+    assignVector(dest.pos,dest_);
+    dest.layer = dest_.z;
 
-    if (&player == Globals::Game.player.get())
+    assignVector(orient.pos,start);
+    orient.layer = start.z;
+
+}
+
+bool Portal::unlocked()
+{
+    return !cond.get() || cond->unlocked();
+}
+
+ void Portal::interactWith(PhysicsBody& player)
+ {
+    if (unlocked())
     {
         player.orient.pos = {dest.pos.x,dest.pos.y};
         Globals::Game.setLayer(dest.layer);
     }
  }
 
+
  void Portal::render()
  {
-    // Object::render();
-    // renderer.render({CIRCLE,dest,&collider},WHITE);
-
     DrawCircle3D({orient.pos.x,orient.pos.y,Globals::Game.terrain.getZOfLayer(orient.layer)},collider.radius,{0,0,0},0,RED);
 
-    BeginShaderMode(portalShader);
+    BeginShaderMode(PortalShader);
         float time = GetTime();
-        SetShaderValue(portalShader,GetShaderLocation(portalShader,"time"),&time,SHADER_UNIFORM_FLOAT);
-        DrawBillboard(Globals::Game.camera,texture.texture,{orient.pos.x,orient.pos.y,Globals::Game.terrain.getZOfLayer(orient.layer)},collider.radius*3,WHITE);
-        DrawBillboard(Globals::Game.camera,texture.texture,{dest.pos.x,dest.pos.y,Globals::Game.terrain.getZOfLayer(dest.layer)},collider.radius*3,WHITE);
+        Vector4 tint = unlocked() ? Vector4{1,1,0,0} : Vector4{0.5,0.5,0.5,0};
+        SetShaderValue(PortalShader,GetShaderLocation(PortalShader,"time"),&time,SHADER_UNIFORM_FLOAT);
+        SetShaderValue(PortalShader,GetShaderLocation(PortalShader,"tint"),&tint,SHADER_UNIFORM_VEC4);
+        DrawBillboard(Globals::Game.camera,texture.texture,{
+                      orient.pos.x,orient.pos.y,
+                      Globals::Game.terrain.getZOfLayer(orient.layer)},
+                      collider.radius*3,WHITE);
+        //DrawBillboard(Globals::Game.camera,texture.texture,{dest.pos.x,dest.pos.y,Globals::Game.terrain.getZOfLayer(dest.layer)},collider.radius*3,WHITE);
+
+
     EndShaderMode();
+
+       if (cond.get())
+        {
+            cond->render(getShape());
+        }
  }
 
 void TriggerPortalSpawn::interact(PhysicsBody& self, PhysicsBody& other)

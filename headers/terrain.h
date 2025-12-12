@@ -8,6 +8,7 @@
 
 typedef size_t LayerType;
 
+class Orient;
 class PhysicsBody;
 
 struct ObjectLookup
@@ -22,20 +23,16 @@ struct ObjectLookup
 
 };
 
-class GlobalTerrain
+
+
+struct GlobalTerrain
 {
-    struct Layer
+    struct LayerInfo //carries info of this layer for when it needs to be saved
     {
-        Terrain terrain;
+        std::string configPath = ""; //path to the layer config file.
         std::string imagePath = "";
-        //contains weak_ptrs that point to the shared_ptrs in ObjectLookup
-        std::list<std::weak_ptr<PhysicsBody>> objects;
+        Vector2 playerPos = {};
     };
-
-    std::vector<Layer> layers;
-
-    bool isValidObject(PhysicsBody* obj, LayerType layer); //true if obj should be updated (is alive, belongs in this layer, is not null
-public:
     //adds an object to a given layer, does nothing if provided layer is out of bounds
     void addObject(std::shared_ptr<PhysicsBody> obj, LayerType layer);
     //removing an object is intersting. We immediately kill it in ObjectLookup. However, the weak_ptr may persist in the old layer.
@@ -46,14 +43,29 @@ public:
     void pushBackTerrain(); //add terrain to furthest layer
     //load an image as the block data for the terrain at the provided layer
     //if it's out of bounds, push back a layer and modify that layer
-    void loadTerrain(std::string imagePath, LayerType layer = -1);
+    void loadTerrain(LayerType layer, std::string imagePath);
+    void setLayerInfo(LayerType layer, const LayerInfo& info); //set a level's info.
+    LayerType getLayerCount();
     Terrain* getTerrain(LayerType layer); //null if index is not valid
     void update(LayerType layer);
     void render();
     float getZOfLayer(LayerType index); //-1 if index is out of bounds
+    Vector3 orientToVec3(const Orient& orient);
 
+    LayerInfo getLayerInfo(LayerType index);
     std::string serialize(LayerType index);
+private:
+    struct Layer
+    {
+        Terrain terrain;
+        //contains weak_ptrs that point to the shared_ptrs in ObjectLookup
+        std::list<std::weak_ptr<PhysicsBody>> objects;
+        LayerInfo info;
+    };
 
+    std::vector<Layer> layers;
+
+    bool isValidObject(PhysicsBody* obj, LayerType layer); //true if obj should be updated (is alive, belongs in this layer, is not null
 };
 
 #endif // TERRAIN_H_INCLUDED
