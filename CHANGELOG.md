@@ -11,6 +11,9 @@
 * Portal locked conditions have been added, and can be deserialized/serialized
 * Added Antigravity and support for more than just binary blocks
 * Added long jump
+* Added signs and their serializations
+* Layer 1 is now fully playable!
+* Turned on Antialiasing
 
 ## 11/28/2025:
 

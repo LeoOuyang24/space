@@ -1,5 +1,53 @@
 #include "../headers/raylib_helper.h"
+#include "../headers/conversions.h"
 #include "rlgl.h"
+
+#include <iostream>
+
+std::string fitText(Font font, std::string_view text, float fontSize, float fontSpacing, float maxWidth)
+{
+    SplitString split(text,' '); //split strings into words
+    std::string str = std::string(split[0]); //start with the very first word already added.
+                                //yes this does mean that words that take up "maxWidth" will exceed "maxWidth" length, not much we can do
+
+    size_t strStart = 0; //start of our current line
+    for (int i = 1; i < split.size(); i ++)
+    {
+        size_t start = str.size(); //this is the index of the space before new word
+        str += ' ';
+        str += split[i]; //add the word and a space before it
+
+        //calculate if our currnet line is too long
+        float width = MeasureTextEx(font,&str[strStart],fontSize,fontSpacing).x;
+        if (width >= maxWidth) //if the width of our new word exceeds "maxWidth"...
+        {
+            str[start] = '\n'; //...replace the space we added earlier with a newline instead
+            strStart = start + 1; //index of our next line
+        }
+    }
+    return str;
+}
+
+void DrawText2D(Font font, const char *text, Vector2 position, float fontSize, float fontSpacing, Color tint, TextAlign align)
+{
+
+    SplitString split(text,'\n');
+
+    float height =  MeasureTextEx(font,text,fontSize,fontSpacing).y;
+
+    position.y -= height/2;
+
+    for (int i = 0; i < split.size(); i ++)
+    {
+        const char* c_str = std::string(split[i]).c_str();//no easy way to convert std::string_view to c_string that doesn't go over is my joker ark
+
+        //dimension of this line (we really only care about horizontal)
+        float width = MeasureTextEx(font,c_str,fontSize,fontSpacing).x;
+        Vector2 adjusted = {position.x - width/2*align,position.y + height/split.size()*i};
+        DrawTextEx(font,c_str,adjusted,fontSize,fontSpacing,tint);
+    }
+
+}
 
 //shamelessly, almost 100% copy pasted from https://www.raylib.com/examples/text/loader.html?name=text_3d_drawing\
 //is modified to draw along x-y plane as opposed to x-z,

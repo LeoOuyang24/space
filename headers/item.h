@@ -37,13 +37,13 @@ struct Key : public Object<RectCollider,TextureRenderer,Key,KeyCollider>
     }
 
     Key(KeyVal key_, const Vector3& pos) : key(key_), Object({Vector2(pos.x,pos.y),pos.z},std::make_tuple(KEY_DIMEN.x,KEY_DIMEN.y),
-                                                             std::make_tuple(std::ref(*Globals::Game.Sprites.getSprite(KEY_SPRITE_PATH))))
+                                                             std::make_tuple(Globals::Game.Sprites.getSprite(KEY_SPRITE_PATH)))
     {
         tint = key;
     }
     Key() : Object()
     {
-        renderer.sprite = Globals::Game.Sprites.getSprite("key.png");
+        renderer.setSprite(Globals::Game.Sprites.getSprite("key.png"));
         collider.width = KEY_DIMEN.x;
         collider.height = KEY_DIMEN.y;
     }
@@ -60,7 +60,7 @@ struct CollectibleCollider
 
 struct Collectible : public Object<CircleCollider,TextureRenderer,Collectible,CollectibleCollider>
 {
-    Collectible() : Object({},std::make_tuple(30),std::make_tuple(std::ref(*Globals::Game.Sprites.getSprite("gear.png"))))
+    Collectible() : Object({},std::make_tuple(30),std::make_tuple(Globals::Game.Sprites.getSprite("gear.png")))
     {
         followGravity = false;
     }

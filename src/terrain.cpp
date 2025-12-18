@@ -20,9 +20,9 @@ void ObjectLookup::addObject(std::shared_ptr<PhysicsBody> ptr)
         objects[ptr.get()] = ptr;
     }
 }
-std::shared_ptr<PhysicsBody> ObjectLookup::getObject(PhysicsBody& body)
+std::shared_ptr<PhysicsBody> ObjectLookup::getObject(PhysicsBody* body)
 {
-    auto it = objects.find(&body);
+    auto it = objects.find(body);
     if(it == objects.end())
     {
         return std::shared_ptr<PhysicsBody>();

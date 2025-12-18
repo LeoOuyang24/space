@@ -49,6 +49,8 @@ int main(void)
     const Vector2 screenDimen = {900,900};
 
     InitWindow(screenDimen.x, screenDimen.y, "raylib [core] example - basic window");
+   // SetConfigFlags(FLAG_MSAA_4X_HINT |  FLAG_FULLSCREEN_MODE );
+    SetConfigFlags(FLAG_MSAA_4X_HINT);
     rlDisableBackfaceCulling();
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
@@ -70,7 +72,7 @@ int main(void)
     float speed = 1;
 
 
-    Shader stars= LoadShader(0, TextFormat("shaders/fragments/stars.h", GLSL_VERSION));
+    /*Shader stars= LoadShader(0, TextFormat("shaders/fragments/stars.h", GLSL_VERSION));
     Shader sun = LoadShader(0,TextFormat("shaders/fragments/sun.h",GLSL_VERSION));
 
     SetShaderValue(stars, GetShaderLocation(stars,"screenDimen"), &screenDimen, SHADER_UNIFORM_VEC2);
@@ -78,9 +80,9 @@ int main(void)
     Vector4 sunEdge = {0,0.8,1,0.0};
     SetShaderValue(sun,GetShaderLocation(sun,"centerColor"),&sunCenter,SHADER_UNIFORM_VEC4);
     SetShaderValue(sun,GetShaderLocation(sun,"borderColor"),&sunEdge,SHADER_UNIFORM_VEC4);
-    auto timeLocation = GetShaderLocation(sun,"time");
+    auto timeLocation = GetShaderLocation(sun,"time");*/
 
-    //RenderTexture2D bg = LoadRenderTexture(5000*screenDimen.x/screenDimen.y,5000);//LoadRenderTexture(Terrain::MAX_WIDTH*screenDimen.x/screenDimen.y*2,Terrain::MAX_WIDTH*2);
+    RenderTexture2D bg = LoadRenderTexture(5000*2,5000);//LoadRenderTexture(Terrain::MAX_WIDTH*screenDimen.x/screenDimen.y*2,Terrain::MAX_WIDTH*2);
     /*BeginTextureMode(bg);
         ClearBackground(BLACK);
         BeginShaderMode(stars);
@@ -89,9 +91,31 @@ int main(void)
         BeginShaderMode(sun);
             DrawTexture(bg.texture,0,0,WHITE);
         EndShaderMode();
+    EndTextureMode();*/
+
+   /* BeginTextureMode(bg);
+        ClearBackground(BLACK);
+
+        for (int i = 0; i < 10000;i ++)
+        {
+            float randed = rand()%10000/10000.0*100;
+            float angle = rand()%10000/10000.0*360*M_PI/180;
+            int a = bg.texture.width;
+            int b = bg.texture.height;
+            float maxRadius = (a*b)/(sqrt(pow(b*cos(angle),2) + pow(a*sin(angle),2)));
+            float dist = maxRadius/2*Lerp(0,1,randed/(randed+5));
+            Vector2 center = {bg.texture.width/2 + cos(angle)*dist,bg.texture.height/2 + sin(angle)*dist};
+            Vector3 color = {rand()%100/100.0,rand()%100/100.0,rand()%100/100.0};
+            DrawCircleGradient(center.x,center.y,5,WHITE,Color(rand()%255,rand()%255,rand()%255,0));
+        }
+        BeginShaderMode(sun);
+            DrawTexture(bg.texture,0,0,WHITE);
+        EndShaderMode();
+        //DrawCircleGradient(bg.texture.width/2,bg.texture.height/2,bg.texture.width/3,WHITE,Color(0,255,255,0));
+        //DrawCircle(bg.texture.width/2,bg.texture.height/2,bg.texture.width/100,WHITE);
     EndTextureMode();
 
-    ExportImage(LoadImageFromTexture(bg.texture),"sprites/bg.png");*/
+    ExportImage(LoadImageFromTexture(bg.texture),"sprites/bg_scatter.png");*/
 
     int frames = 0;
 
@@ -155,10 +179,10 @@ int main(void)
                     DrawTexture(bg.texture,0,0,WHITE);
                 EndShaderMode();*/
 
-                Texture2D& bg = *Globals::Game.Sprites.getSprite("bg.png");
+                Texture2D& bg = *Globals::Game.Sprites.getSprite("bg_scatter.png");
                 DrawBillboardRec(camera,bg,Rectangle(0,0,bg.width,bg.height),
                                  Vector3(Terrain::MAX_TERRAIN_SIZE/2,Terrain::MAX_TERRAIN_SIZE/2,Globals::BACKGROUND_Z),
-                                 Vector2(bg.width,bg.height),WHITE);
+                                 Vector2(bg.width*2,bg.height*2),WHITE);
                 Globals::Game.terrain.render();
 
 
@@ -170,7 +194,6 @@ int main(void)
 
             Globals::Game.interface.render();
             Debug::drawInterface();
-
             DrawFPS(10, 10);
 
         EndDrawing();

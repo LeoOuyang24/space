@@ -1,4 +1,5 @@
 #include <cstring>
+#include <algorithm>
 
 #include "../headers/conversions.h"
 
@@ -11,7 +12,7 @@ std::string_view SplitString::operator[](size_t index) const
 
 size_t SplitString::size() const
 {
-    return nums.size();
+    return nums.size() - 1;
 }
 
 //splits a string
@@ -25,7 +26,10 @@ SplitString::SplitString(std::string_view str, char delimit)
         nums.push_back(ind + 1);
         start = ind + 1;
     }
-    nums.push_back(str.size() + 1);
+    if (nums[nums.size() -1] != str.size()) [[likely]] //false if the string ends with a delimit, in which case we can skip this
+    {
+        nums.push_back(str.size() + 1);
+    }
     this->str = str;
 }
 
@@ -111,33 +115,72 @@ PortalCondition* fromString(std::string_view str)
     return nullptr;
 }
 
+template<>
+std::string fromString(std::string_view str)
+{
+    std::string answer = "";
+    for (int i = 0; i < str.size(); i ++)
+    {
+        if (str[i] == '\\' && i < str.size() - 1)
+        {
+            switch (str[i+1])
+            {
+            case 'n':
+                answer += '\n';
+                break;
+            case 't':
+                answer += '\t';
+                break;
+            default:
+                answer += '\\';
+                i--;
+            }
+            i ++;
+        }
+        else
+        {
+            answer += str[i];
+        }
+    }
+    return answer;
 
+}
 
 template<>
-std::string toString(Vector2 vec)
+std::vector<std::string> fromString(std::string_view str)
+{
+    SplitString split(str,'|');
+    std::vector<std::string> answer;
+    split.forEach([&answer](const std::string_view& view){
+                  answer.emplace_back(fromString<std::string>(view));
+                  });
+    return answer;
+}
+
+template<>
+std::string toString(Vector2& vec)
 {
     return toString(vec.x) + "," + toString(vec.y);
 }
 
 template<>
-std::string toString(Vector3 vec)
+std::string toString(Vector3& vec)
 {
     return toString(vec.x) + "," + toString(vec.y) + "," + toString(vec.z);
 }
 
 template<>
-std::string toString(Color col)
+std::string toString(Color& col)
 {
     return toString(col.r) + "," + toString(col.g) + "," + toString(col.b) + "," + toString(col.a);
 }
 
 template<>
-std::string toString(Texture2D* sprite)
+std::string toString(Texture2D*& sprite)
 {
     return Globals::Game.Sprites.getSpritePath(sprite);
 }
 
-template<>
 std::string toString(PortalCondition* cond)
 {
     if (cond)
@@ -151,4 +194,22 @@ template<>
 std::string toString(std::unique_ptr<PortalCondition>& ptr)
 {
     return toString(ptr.get());
+}
+
+template<>
+std::string toString(std::string& str)
+{
+    return str;
+}
+template<>
+std::string toString(std::vector<std::string>& vec)
+{
+    std::string answer = vec.size() > 0 ? vec[0] : ""; //allows us to prepend the | delimitter, which prevents trailing delimitters
+    std::for_each(vec.begin() + 1,vec.end(),[&answer](const std::string& str){
+                  answer += '|' + str;
+
+                  });
+
+
+    return answer;
 }

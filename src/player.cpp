@@ -20,35 +20,6 @@ PlayerCollider::PlayerCollider(int width, int height, Player& owner_) : RectColl
 
 }
 
-bool PlayerCollider::isOnGround(Orient& o, Terrain& t)
-{
-    Vector2 last = o.pos;
-    Vector2 prevCorner = o.pos + Vector2Rotate(Vector2(-width/2,-height/2),o.rotation); //top left
-
-    for (int i = 0; i < 4; i ++) //top right, bot right, bot left, top left
-    {
-        int index =(i + 1)%4;
-        Vector2 corner = o.pos + Vector2Rotate(Vector2(width/2,height/2)*Vector2(index/2*2 - 1,((index%3) != 0)*2 - 1),o.rotation);
-
-        PossiblePoint intersect = t.lineIntersectWithTerrain(prevCorner,corner);
-
-      /*  Debug::addDeferRender([prevCorner,corner,intersect](){
-                                      DrawLineEx(prevCorner, corner,2, intersect.exists ? PURPLE : WHITE);
-
-                              });*/
-
-        if (intersect.exists)
-        {
-            return true;
-        }
-
-        prevCorner = corner;
-    }
-    return false;
-
-}
-
-
 
 PlayerRenderer::PlayerRenderer(Player& owner_) : owner(owner_)
 {
@@ -81,7 +52,7 @@ void PlayerRenderer::render(const Shape& shape,const Color& color)
 
 Player::Player(const Vector2& pos_) : Object({pos_},std::make_tuple(PLAYER_DIMEN,PLAYER_DIMEN,std::ref(*this)),std::make_tuple(std::ref(*this)))
 {
-    renderer.setSprite(*Globals::Game.Sprites.getSprite("guy.png"));
+    renderer.setSprite(Globals::Game.Sprites.getSprite("guy.png"));
 }
 
 void Player::update(Terrain& terrain)
@@ -146,8 +117,8 @@ void Player::handleControls()
             if (IsKeyPressed(KEY_SPACE) && onGround)
             {
                 Vector2 jump = running ?
-                                    orient.getNormal()*-8 + orient.getFacing()*8*(facing*2 - 1) :
-                                    orient.getNormal()*-12;
+                                    orient.getNormal()*-10 + orient.getFacing()*12*(facing*2 - 1) :
+                                    orient.getNormal()*-14;
                 forces.addForce(jump,Forces::JUMP);
             }
         }

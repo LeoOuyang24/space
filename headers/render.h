@@ -35,8 +35,8 @@ struct TextureRenderer
     {
 
     }
-    TextureRenderer(Texture2D& sprite);
-    void setSprite(Texture2D& sprite_);
+    TextureRenderer(Texture2D* sprite);
+    void setSprite(Texture2D* sprite_);
     virtual void render(const Shape& shape, const Color& color);
 
 };

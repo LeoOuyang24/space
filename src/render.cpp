@@ -1,13 +1,13 @@
 #include "../headers/render.h"
 
-TextureRenderer::TextureRenderer(Texture2D& sprite)
+TextureRenderer::TextureRenderer(Texture2D* sprite)
 {
     setSprite(sprite);
 }
 
-void TextureRenderer::setSprite(Texture2D& sprite_)
+void TextureRenderer::setSprite(Texture2D* sprite_)
 {
-    sprite = &sprite_;
+    sprite = sprite_;
 }
 void TextureRenderer::render(const Shape& shape, const Color& color)
 {

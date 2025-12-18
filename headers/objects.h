@@ -152,6 +152,7 @@ struct Object : public PhysicsBody
     virtual void render()
     {
         renderer.render(getShape(),tint);
+        Vector2 dimen = GetDimen(getShape());
     }
     virtual void update(Terrain& t)
     {
@@ -174,9 +175,9 @@ protected:
     void adjustAngle(Terrain& terrain)
     {
         //if on ground, adjust our angle based on the angle of the terrain
-        if (onGround)
+        if (onGround || !freeFall)
         {
-            if (!wasOnGround) //just landed
+            if (!wasOnGround && onGround) //just landed
             {
                 orient.rotation = collider.getLandingAngle(orient,terrain);
                 freeFall = false;
@@ -189,8 +190,15 @@ protected:
 
                 Vector2 normal = orient.getNormal();
 
-                botLeft = terrain.lineTerrainIntersect(botLeft - normal, botLeft).pos;
-                botRight = terrain.lineTerrainIntersect(botRight - normal,botRight).pos;
+                botLeft = terrain.lineTerrainIntersect(botLeft,botLeft + normal ).pos;
+                botRight = terrain.lineTerrainIntersect(botRight,botRight + normal).pos;
+
+                /*Debug::addDeferRender([botLeft,botRight](){
+
+                                      DrawCircle3D({botLeft.x,botLeft.y,Globals::Game.getCurrentZ()},10,{},0,BLUE);
+                                      DrawCircle3D({botRight.x,botRight.y,Globals::Game.getCurrentZ()},10,{},0,BLUE);
+
+                                      });*/
 
                 float newAngle = trunc(atan2(botRight.y - botLeft.y, botRight.x - botLeft.x),3);
 
@@ -224,22 +232,22 @@ protected:
                                    });*/
             //forces.addForce(orient.getNormal()*0.1f,Forces::GRAVITY);
             int divide = 32;
-            const int landingDivide = 3;
+            const int landingDivide = 5;
             int upTo = freeFall ? divide : landingDivide;
             Vector2 grav = {0,0};
             int count = 0;
             for (int i = 0; i < upTo; i ++)
             {
-                float angle =  2*M_PI/divide*i + M_PI/2-2*M_PI/divide + orient.rotation;
+                float angle =  2*M_PI/divide*i + M_PI/2-M_PI/(divide)*(landingDivide-1) + orient.rotation;
                 auto pos = terrain.lineBlockIntersect(orient.pos, orient.pos + Vector2(cos(angle),sin(angle))*searchRad,false);
-                Debug::addDeferRender([pos](){
+                /*Debug::addDeferRender([pos](){
 
                                       DrawCircle3D(Vector3(pos.pos.x,pos.pos.y,Globals::Game.getCurrentZ()),10,{0,1,0},0,pos.type == ANTI ? BLUE : RED);
 
-                                      });
+                                      });*/
                 if (pos.type != AIR)
                 {
-                    Vector2 force = Vector2Normalize(pos.pos - orient.pos)*0.1/pow(Vector2Length(pos.pos - orient.pos),1);
+                    Vector2 force = Vector2Normalize(pos.pos - orient.pos)/pow(Vector2Length(pos.pos - orient.pos),1);
                     if (pos.type == ANTI)
                     {
                         force *= -1;
@@ -255,7 +263,7 @@ protected:
             }
             if (count > 0)
             {
-                forces.addForce(grav*150/count,Forces::GRAVITY);
+                forces.addForce(grav*20/count,Forces::GRAVITY);
             }
             else
             {

@@ -25,6 +25,16 @@ struct SplitString
     //only indicies 0 - nums.size() - 1 are valid. All other indicies return "". Valid indicies return the index-th valid substring
     std::string_view operator[](size_t index) const;
     size_t size() const;
+
+    //pass in a function (std::string_view -> void) that is run on each substring
+    template<typename T>
+    void forEach(T func)
+    {
+        for (int i = 0; i < size(); i ++)
+        {
+            func((*this)[i]);
+        }
+    }
 };
 
 std::vector<size_t> split(std::string_view str, char delimit = ',');
@@ -33,17 +43,18 @@ template<typename T>
 T fromString(std::string_view);
 
 template<typename T>
-std::string toString(T);
+std::string toString(T&);
 
 
 template<typename T>
 concept Arith = std::is_arithmetic_v<T>;
 
 
-template<Arith A>
-std::string toString(A f)
+template<Arith A> //overload for number-like types, just run to_string on it
+std::string toString(A& f)
 {
     return std::to_string(f);
 }
+
 
 #endif // CONVERSIONS_H_INCLUDED

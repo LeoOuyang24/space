@@ -151,7 +151,7 @@ void Globals::loadLevel(std::string path)
 void Globals::addObject(PhysicsBody& body)
 {
     objects.addObject(body);
-    terrain.addObject(objects.getObject(body),body.orient.layer);
+    terrain.addObject(objects.getObject(&body),body.orient.layer);
 }
 
 void Globals::addObject(std::shared_ptr<PhysicsBody> ptr)

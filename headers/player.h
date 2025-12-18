@@ -22,8 +22,6 @@ class Player;
 struct PlayerCollider : public RectCollider
 {
     PlayerCollider(int width, int height, Player& owner_);
-    bool isOnGround(Orient& orient, Terrain& terrain);
-
 private:
     Player& owner;
 };

@@ -64,11 +64,13 @@
 		<Unit filename="headers/factories.h" />
 		<Unit filename="headers/factory.h" />
 		<Unit filename="headers/game.h" />
+		<Unit filename="headers/interactives.h" />
 		<Unit filename="headers/interface.h" />
 		<Unit filename="headers/item.h" />
 		<Unit filename="headers/objects.h" />
 		<Unit filename="headers/player.h" />
 		<Unit filename="headers/portal.h" />
+		<Unit filename="headers/raylib_helper.h" />
 		<Unit filename="headers/render.h" />
 		<Unit filename="headers/resources_math.h" />
 		<Unit filename="headers/sequencer.h" />
@@ -76,15 +78,11 @@
 		<Unit filename="headers/sprites.h" />
 		<Unit filename="headers/terrain.h" />
 		<Unit filename="main.cpp" />
-		<Unit filename="shaders/fragments/portal.h">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
-		<Unit filename="shaders/fragments/stars.h">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
-		<Unit filename="shaders/fragments/sun.h">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
+		<Unit filename="shaders/fragments/portal.h" />
+		<Unit filename="shaders/fragments/shooting-star.h" />
+		<Unit filename="shaders/fragments/stars.h" />
+		<Unit filename="shaders/fragments/sun.h" />
+		<Unit filename="shaders/fragments/terrain.h" />
 		<Unit filename="src/blocks.cpp" />
 		<Unit filename="src/collideTriggers.cpp" />
 		<Unit filename="src/colliders.cpp" />
@@ -92,11 +90,13 @@
 		<Unit filename="src/debug.cpp" />
 		<Unit filename="src/factory.cpp" />
 		<Unit filename="src/game.cpp" />
+		<Unit filename="src/interactives.cpp" />
 		<Unit filename="src/interface.cpp" />
 		<Unit filename="src/item.cpp" />
 		<Unit filename="src/objects.cpp" />
 		<Unit filename="src/player.cpp" />
 		<Unit filename="src/portals.cpp" />
+		<Unit filename="src/raylib_helper.cpp" />
 		<Unit filename="src/render.cpp" />
 		<Unit filename="src/resources_math.cpp" />
 		<Unit filename="src/sequencer.cpp" />

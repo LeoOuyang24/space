@@ -3,10 +3,11 @@
 #include "../headers/conversions.h"
 #include "../headers/item.h"
 #include "../headers/portal.h"
+#include "../headers/interactives.h"
 
 std::shared_ptr<PhysicsBody> construct(std::string cereal)
 {
-    SplitString params(cereal,' ');
+    SplitString params(cereal,'\t');
     PhysicsBody* ptr = nullptr;
     if (params.size() > 0)
     {
@@ -27,6 +28,10 @@ std::shared_ptr<PhysicsBody> construct(std::string cereal)
         else if (params[0] == Factory<Collectible>::ObjectName)
         {
             ptr = new Collectible(Factory<Collectible>::Base::deserialize(params));
+        }
+        else if (params[0] == Factory<Sign>::ObjectName)
+        {
+            ptr = new Sign(Factory<Sign>::Base::deserialize(params));
         }
         else
         {

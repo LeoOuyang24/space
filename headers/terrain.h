@@ -19,7 +19,7 @@ struct ObjectLookup
 
     void addObject(PhysicsBody& obj);
     void addObject(std::shared_ptr<PhysicsBody> ptr);
-    std::shared_ptr<PhysicsBody> getObject(PhysicsBody& body);
+    std::shared_ptr<PhysicsBody> getObject(PhysicsBody* body);
 
 };
 

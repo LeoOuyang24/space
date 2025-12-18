@@ -29,7 +29,7 @@ float rand(float x)
 
 void main()
 {
-    int starSpacing = int(screenDimen.x/100);
+    int starSpacing = int(screenDimen.x/1000);
 
     vec2 pos = vec2(fragTexCoord.x*screenDimen.x,(1 - fragTexCoord.y)*screenDimen.y);
 

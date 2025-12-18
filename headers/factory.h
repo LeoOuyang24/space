@@ -69,18 +69,6 @@ void setValue(const SplitString& params, std::unique_ptr<T>& ptr)
     }
 }
 
-template<typename T>
-struct SerializableType
-{
-    using type = typename std::remove_reference<T>::type;
-};
-
-template<typename T>
-struct SerializableType<std::unique_ptr<T>&>
-{
-    using type = std::unique_ptr<T>&;
-};
-
 class PhysicsBody;
 //given a string, create the corresponding Object based on the name in the first part of the string.
 std::shared_ptr<PhysicsBody> construct(std::string cereal);
@@ -137,9 +125,9 @@ struct FactoryBase
     {
         std::string cereal = "";
         //concatenate each serialized version of each field
-        ((cereal += (toString<typename SerializableType<decltype(Accessors(object))>::type>(Accessors(object)) + " ")),...);
+        ((cereal += (toString(Accessors(object)) + "\t")),...);
 
-        return Factory<Obj>::ObjectName + " " + cereal;
+        return Factory<Obj>::ObjectName + "\t" + cereal;
     }
 };
 
