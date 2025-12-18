@@ -1,12 +1,10 @@
 # Changelog
 
-## Unreleased:
+## 12/17/2025:
 
 * Levels now load player position on the 2nd line
 * Added collectibles:
-
   * Added interface counter for collectibles
-
 * Portal now has a gray tint if locked
 * Portal locked conditions have been added, and can be deserialized/serialized
 * Added Antigravity and support for more than just binary blocks
@@ -14,6 +12,7 @@
 * Added signs and their serializations
 * Layer 1 is now fully playable!
 * Turned on Antialiasing
+* New background! based off a radial way of generating background stars
 
 ## 11/28/2025:
 
