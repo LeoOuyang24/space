@@ -106,13 +106,15 @@ struct Terrain
 
     void generateRightTriangle(const Vector2& corner, float height, const Color& color); //creates an isoscles right triangle
 
-    PossiblePoint lineIntersectWithTerrain(const Vector2& a, const Vector2& b); //return the point closest to "a" that intersects with the terrain
+    //slightly incorrect way to find the point closest to "a" taht intersects with terrain
+    //calculates by jumping increments of Block::Block_Dimen towards "b", which means it might skip some blocks at certain angles
+    //PossiblePoint lineIntersectWithTerrain(const Vector2& a, const Vector2& b);
 
      //returns the point that an object moving from "a" to "b" would stop at after hitting terrain, returns "b" if there is a clear path
      //isSolid = true if we wish to stop at a SOLID block. False, if we want to stop at any block that is not AIR
-    PossibleBlock lineBlockIntersect(const Vector2& a, const Vector2& b, bool isSolid = true);
+    Vector2 lineBlockIntersect(const Vector2& a, const Vector2& b, bool isSolid = true);
     //same as above, except we'll move "a" out of terrain first.
-    PossibleBlock lineTerrainIntersect(const Vector2& a, const Vector2& b, bool isSolid = true);
+    Vector2 lineTerrainIntersect(const Vector2& a, const Vector2& b, bool isSolid = true);
 
     size_t pointToIndex(const Vector2& vec,int blockDimen = Block::BLOCK_DIMEN, int maxWidth = MAX_WIDTH);
     Vector2 indexToPoint(size_t index,int blockDimen = Block::BLOCK_DIMEN, int maxWidth = MAX_WIDTH);
@@ -161,8 +163,8 @@ struct Terrain
             }
         }
     }
-    bool blockExists(const Vector2& pos); //true if block at position is not AIR
-    bool isBlockType(const Vector2& pos,BlockType type); //true if block at position is "type"
+    bool blockExists(const Vector2& pos, bool checkEdge = false); //true if block at position is not AIR
+    bool isBlockType(const Vector2& pos,BlockType type, bool checkEdges = false); //true if block at position is "type". "checkEdges" will check neighbors if point is on edge
 
     void render(int z = 0);
 };

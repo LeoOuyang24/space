@@ -33,7 +33,7 @@ struct Globals
     void setLayer(LayerType layer); //set layer, move the player, and the camera
 
     size_t getCollects();
-    void addCollects(size_t val = 1);
+    void addCollects(int val = 1);
     void setCollects(size_t val);
 
     float getCurrentZ();

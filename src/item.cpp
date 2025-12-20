@@ -4,11 +4,17 @@
 #include "../headers/player.h"
 
 
+void Collectible::onRestore()
+{
+    Globals::Game.addCollects(-1);
+}
+
 void CollectibleCollider::collideWith(PhysicsBody& self, PhysicsBody& other)
 {
     if (&other == Globals::Game.player.get())
     {
         Globals::Game.addCollects();
+        Globals::Game.player->addResetObject(self);
         self.setDead(true);
     }
 }

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 
 #include "../headers/player.h"
 
@@ -15,7 +16,7 @@ size_t std::hash<Key::KeyVal>::operator()(const Key::KeyVal& val) const
 
 Texture2D Player::PlayerSprite;
 
-PlayerCollider::PlayerCollider(int width, int height, Player& owner_) : RectCollider{width,height}, owner(owner_)
+PlayerCollider::PlayerCollider(int width, int height) : RectCollider{width,height}
 {
 
 }
@@ -50,7 +51,7 @@ void PlayerRenderer::render(const Shape& shape,const Color& color)
 
 }
 
-Player::Player(const Vector2& pos_) : Object({pos_},std::make_tuple(PLAYER_DIMEN,PLAYER_DIMEN,std::ref(*this)),std::make_tuple(std::ref(*this)))
+Player::Player(const Vector2& pos_) : Object({pos_},std::make_tuple(PLAYER_DIMEN,PLAYER_DIMEN),std::make_tuple(std::ref(*this)))
 {
     renderer.setSprite(Globals::Game.Sprites.getSprite("guy.png"));
 }
@@ -61,8 +62,6 @@ void Player::update(Terrain& terrain)
     Object::applyForces(terrain);
 
     tint = onGround ? WHITE : freeFall ? BLUE : RED;
-    Vector2 normal = orient.getNormal();
-
     Object::adjustAngle(terrain);
 
     handleControls();
@@ -72,6 +71,7 @@ void Player::update(Terrain& terrain)
 
     if (onGround )
     {
+        saveResetState();
         stayOnGround(terrain);
     }
 
@@ -159,6 +159,35 @@ void Player::handleControls()
 
     forces.setForce(orient.getFacing()*speed,Forces::MOVE);
    // std::cout << forces.getForce(Forces::MOVE) << "\n";
+}
 
+void Player::saveResetState()
+{
+    resetState.restoreThese.clear();
+    resetState.orient = getOrient();
+}
+
+void Player::addResetObject(PhysicsBody& body)
+{
+    resetState.restoreThese.push_back({Globals::Game.objects.getObject(&body),body.getOrient()});
+}
+
+void Player::resetPlayer()
+{
+    forces.addFriction(0);
+    std::for_each(resetState.restoreThese.begin(),resetState.restoreThese.end(),[](const RestoreObject& restore){
+
+                  if (restore.ptr.get())
+                  {
+                        restore.ptr->setDead(false);
+                        restore.ptr->setOrient(restore.orient);
+                        restore.ptr->onRestore();
+                        Globals::Game.addObject(restore.ptr);
+                  }
+
+                  });
+    resetState.restoreThese.clear();
+    orient = resetState.orient;
+    setDead(false);
 
 }

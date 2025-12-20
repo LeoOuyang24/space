@@ -1072,7 +1072,7 @@
 	<raylib.h>
 	"raymath.h"
 
-1766032062 source:c:\users\leoou\documents\projects\helloworld\main.cpp
+1766118505 source:c:\users\leoou\documents\projects\helloworld\main.cpp
 	<unordered_map>
 	<iostream>
 	<fstream>
@@ -1174,7 +1174,7 @@
 	<array>
 	"conversions.h"
 
-1765513330 c:\users\leoou\documents\projects\helloworld\headers\blocks.h
+1766125098 c:\users\leoou\documents\projects\helloworld\headers\blocks.h
 	<math.h>
 	<memory>
 	<iostream>
@@ -1184,12 +1184,12 @@
 	"../headers/resources_math.h"
 	"debug.h"
 
-1764366272 c:\users\leoou\documents\projects\helloworld\headers\resources_math.h
+1766034383 c:\users\leoou\documents\projects\helloworld\headers\resources_math.h
 	<utility>
 	<raylib.h>
 	"raymath.h"
 
-1765946578 c:\users\leoou\documents\projects\helloworld\headers\objects.h
+1766205754 c:\users\leoou\documents\projects\helloworld\headers\objects.h
 	<tuple>
 	<raylib.h>
 	"blocks.h"
@@ -1202,7 +1202,7 @@
 	"colliders.h"
 	"game.h"
 
-1765946338 c:\users\leoou\documents\projects\helloworld\headers\player.h
+1766041358 c:\users\leoou\documents\projects\helloworld\headers\player.h
 	<tuple>
 	<unordered_set>
 	"objects.h"
@@ -1210,7 +1210,7 @@
 	"render.h"
 	"item.h"
 
-1765513330 source:c:\users\leoou\documents\projects\helloworld\src\blocks.cpp
+1766205735 source:c:\users\leoou\documents\projects\helloworld\src\blocks.cpp
 	<iostream>
 	<math.h>
 	"../headers/debug.h"
@@ -1219,12 +1219,13 @@
 	"../headers/game.h"
 	"rlgl.h"
 
-1765513330 source:c:\users\leoou\documents\projects\helloworld\src\objects.cpp
+1766118560 source:c:\users\leoou\documents\projects\helloworld\src\objects.cpp
 	<iostream>
 	"../headers/objects.h"
 
-1765946338 source:c:\users\leoou\documents\projects\helloworld\src\player.cpp
+1766041394 source:c:\users\leoou\documents\projects\helloworld\src\player.cpp
 	<iostream>
+	<algorithm>
 	"../headers/player.h"
 	"../headers/debug.h"
 	"../headers/game.h"
@@ -1252,10 +1253,11 @@
 	<string.h>
 	<math.h>
 
-1757561665 source:c:\users\leoou\documents\projects\helloworld\src\resources_math.cpp
+1766034482 source:c:\users\leoou\documents\projects\helloworld\src\resources_math.cpp
 	<iostream>
 	<math.h>
 	"../headers/resources_math.h"
+	"../headers/game.h"
 
 1765513330 c:\users\leoou\documents\projects\helloworld\headers\shape.h
 	<functional>
@@ -1284,7 +1286,7 @@
 	<iostream>
 	"raylib.h"
 
-1765513330 source:c:\users\leoou\documents\projects\helloworld\src\debug.cpp
+1766205655 source:c:\users\leoou\documents\projects\helloworld\src\debug.cpp
 	<fstream>
 	"../headers/debug.h"
 	"../headers/game.h"
@@ -1293,14 +1295,14 @@
 	"../headers/render.h"
 	"../headers/player.h"
 
-1765513330 c:\users\leoou\documents\projects\helloworld\headers\game.h
+1766041164 c:\users\leoou\documents\projects\helloworld\headers\game.h
 	<memory>
 	<raylib.h>
 	"terrain.h"
 	"sprites.h"
 	"interface.h"
 
-1765563145 source:c:\users\leoou\documents\projects\helloworld\src\game.cpp
+1766041119 source:c:\users\leoou\documents\projects\helloworld\src\game.cpp
 	<iostream>
 	<fstream>
 	"../headers/terrain.h"
@@ -1309,11 +1311,12 @@
 	"../headers/player.h"
 	"../headers/factory.h"
 
-1765562774 source:c:\users\leoou\documents\projects\helloworld\src\terrain.cpp
+1766040884 source:c:\users\leoou\documents\projects\helloworld\src\terrain.cpp
 	<sstream>
 	"../headers/terrain.h"
 	"../headers/game.h"
 	"../headers/objects.h"
+	"../headers/player.h"
 
 1765562792 c:\users\leoou\documents\projects\helloworld\headers\terrain.h
 	"blocks.h"
@@ -1348,7 +1351,7 @@
 
 1763915644 c:\users\leoou\documents\projects\helloworld\headers\blackmagic.h
 
-1765517747 c:\users\leoou\documents\projects\helloworld\headers\item.h
+1766041085 c:\users\leoou\documents\projects\helloworld\headers\item.h
 	"colliders.h"
 	"objects.h"
 	"render.h"
@@ -1360,15 +1363,16 @@
 	"../headers/objects.h"
 	"../headers/player.h"
 
-1765513330 source:c:\users\leoou\documents\projects\helloworld\src\item.cpp
+1766041110 source:c:\users\leoou\documents\projects\helloworld\src\item.cpp
 	"../headers/item.h"
 	"../headers/collideTriggers.h"
 	"../headers/sequencer.h"
 	"../headers/player.h"
 
-1765946260 source:c:\users\leoou\documents\projects\helloworld\src\colliders.cpp
+1766129810 source:c:\users\leoou\documents\projects\helloworld\src\colliders.cpp
 	"../headers/colliders.h"
 	"../headers/game.h"
+	"../headers/raylib_helper.h"
 
 1763011472 c:\users\leoou\documents\projects\helloworld\headers\colliders.h
 	"shape.h"

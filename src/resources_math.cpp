@@ -3,6 +3,7 @@
 #include <math.h>
 
 #include "../headers/resources_math.h"
+#include "../headers/game.h"
 
 float trunc(float x, int places)
 {
@@ -168,3 +169,7 @@ PossiblePoint segmentIntersectTriangle(const Vector2& a1, const Vector2& a2, con
     return answer;
 }
 
+Vector3 toVector3(const Vector2& vector2)
+{
+    return {vector2.x,vector2.y,Globals::Game.getCurrentZ()};
+}

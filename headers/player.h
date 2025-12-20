@@ -17,15 +17,12 @@ struct std::hash<Key::KeyVal>
 };
 
 class Player;
-//a bit more accurate rect collider that checks if a side is in terrain
-//also considered "not on ground" if user is jumped
+
+//
 struct PlayerCollider : public RectCollider
 {
-    PlayerCollider(int width, int height, Player& owner_);
-private:
-    Player& owner;
+    PlayerCollider(int width, int height);
 };
-
 struct PlayerRenderer : public TextureRenderer
 {
     PlayerRenderer(Player& owner_);
@@ -34,11 +31,20 @@ private:
     Player& owner;
 };
 
+//represents an object that may need to be restored if the player dies before landing
+//used for things like restoring a gear that was collected followed by the player dying before landing
+struct RestoreObject
+{
+    std::shared_ptr<PhysicsBody> ptr;
+    Orient orient;
+};
+
 //variables that get reset upon RESET
 struct PlayerState
 {
+    std::vector<RestoreObject> restoreThese;
     std::unordered_set<Key::KeyVal> keys;
-    Orient orient;
+    Orient orient; //orientation right before dying
 };
 
 struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
@@ -84,6 +90,9 @@ struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
 
     void handleControls(); //all player controls are handled here
 
+    void saveResetState();
+    void addResetObject(PhysicsBody& body);
+    void resetPlayer();
 };
 
 

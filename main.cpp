@@ -60,7 +60,6 @@ int main(void)
     Portal::PortalShader = LoadShader(0,TextFormat("shaders/fragments/portal.h",330));
 
 
-
     Camera3D& camera = Globals::Game.camera;
 
     Globals::Game.loadLevel("levels/layer0.txt");
@@ -184,8 +183,6 @@ int main(void)
                                  Vector3(Terrain::MAX_TERRAIN_SIZE/2,Terrain::MAX_TERRAIN_SIZE/2,Globals::BACKGROUND_Z),
                                  Vector2(bg.width*2,bg.height*2),WHITE);
                 Globals::Game.terrain.render();
-
-
 
             Sequences::runRenders();
             Debug::renderDefers();

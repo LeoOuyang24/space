@@ -32,8 +32,10 @@ float pointInRectAngle(const Vector2& p1, const Rectangle& rect);
 Vector2 screenToWorld(const Vector2& screenPoint, Camera3D& camera, const Vector2& screenDimen, float z);
 
 PossiblePoint segmentIntersect(const Vector2& a1, const Vector2& a2, const Vector2& b1, const Vector2& b2); //returns false if the lines segments don't exist
-PossiblePoint segmentIntersectRect(const Vector2& a1, const Vector2& a2, const Rectangle& rect);
+PossiblePoint segmentIntersectRect(const Vector2& a1, const Vector2& a2, const Rectangle& rect); //true if a1-a2 intersects with "rect"
 PossiblePoint segmentIntersectTriangle(const Vector2& a1, const Vector2& a2, const Vector2& t1, const Vector2& t2, const Vector2& t3);
+
+Vector3 toVector3(const Vector2& vector2);
 
 template<typename T>
 concept has_y = requires { &T::y; };

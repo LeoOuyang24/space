@@ -64,6 +64,7 @@ struct Collectible : public Object<CircleCollider,TextureRenderer,Collectible,Co
     {
         followGravity = false;
     }
+    void onRestore();
 };
 
 template<>

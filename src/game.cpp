@@ -49,7 +49,7 @@ void Globals::init()
 
 }
 
-void Globals::addCollects(size_t val)
+void Globals::addCollects(int val)
 {
     collects += val;
 }

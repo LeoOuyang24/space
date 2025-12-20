@@ -3,6 +3,7 @@
 #include "../headers/terrain.h"
 #include "../headers/game.h"
 #include "../headers/objects.h"
+#include "../headers/player.h"
 
 
 void ObjectLookup::addObject(PhysicsBody& body)
@@ -131,6 +132,10 @@ void GlobalTerrain::update(LayerType layer)
                     }
                 }
                 ++it;
+            }
+            else if (obj->getDead() && obj == Globals::Game.getPlayer()) //player gets reset as opposed to removed
+            {
+                static_cast<Player*>(obj)->resetPlayer();
             }
             else //otherwise, remove it
             {

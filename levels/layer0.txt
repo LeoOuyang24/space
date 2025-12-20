@@ -4,14 +4,15 @@ portal	4285.000000,4646.000000	0	1732.742188,5267.184082	0	gear,2	100
 gear	3852.991943,4761.678223	0	
 gear	3860.300781,4418.778320	0	
 gear	3875.545166,5559.309570	0	
-portal	0.000000,0.000000	18446744073709551615	3854.965088,4631.198242	0	gear,5	100	
+portal	2799.000000,4005.000000	1	3854.965088,4631.198242	0	gear,5	100	
 gear	1773.914795,5730.196289	0	
 gear	1867.668091,4955.374023	0	
+gear	1773.914795,5730.196289	0	
 gear	5050.907715,4672.971680	0	
-sign	Yo ho ho! He awakens!|...I think...|I can't actually see you! But if you are reading this, I'm the Sign Painter!|And you! A probably very sore astronaut waking from cryosleep!|The most important thing when first waking up is to stretch those legs!|Try it with WASD!	1294.705566,4124.031738	0	
-sign	Very good!|...Unless you didn't read the previous sign, in which case this probably made no sense...|Either way you may have realized you can jump with SPACE.|If you're feeling feisty, you can even run with CTRL.|But if you are really, REALLY crazy, you can try to jump AND run!|Whew, now that'd be a sight!	1285.891479,4404.959473	0	
-sign	Damn I sure hope someone actually reads all these signs...|I wonder what they would think... ...would they even speak English?	1295.812988,3527.352783	0	
-sign	Wow that lava sure looks dangerous... Maybe this ones a bit too tough for now!|Then again Mom didn't raise no quitter!|..or did she?|Maybe Mom raised someone who isn't a quitter but knows exactly the adequate amount of trying before realizing their time is too precious!|Yes that's it!	4772.666016,4553.031738	0	
+sign	Yo ho ho! He awakens!|...I think...|I can't actually see you! But if you are reading this, I'm the Sign Painter!|And you! A probably very sore astronaut waking from cryosleep!|The most important thing when first waking up is to stretch those legs!|Try it with WASD!	1296.500854,4124.000000	0	
+sign	Very good!|...Unless you didn't read the previous sign, in which case this probably made no sense...|Either way you may have realized you can jump with SPACE.|If you're feeling feisty, you can even run with CTRL.|But if you are really, REALLY crazy, you can try to jump AND run!|Whew, now that'd be a sight!	1284.351440,4405.000000	0	
+sign	Damn I sure hope someone actually reads all these signs...|I wonder what they would think... ...would they even speak English?	1294.308838,3527.000000	0	
+sign	Wow that lava sure looks dangerous... Maybe this ones a bit too tough for now!|Then again Mom didn't raise no quitter!|..or did she?|Maybe Mom raised someone who isn't a quitter but knows exactly the adequate amount of trying before realizing their time is too precious!|Yes that's it!	4773.593750,4553.000000	0	
 gear	1304.908569,3277.898682	0	
 
-gear	997.365112,4813.558594	0	
+gear	1021.696655,4816.194824	0	

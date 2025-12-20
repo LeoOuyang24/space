@@ -1,5 +1,11 @@
 # Changelog
 
+## UNRELEASED
+
+* Added respawning and resetting objects that were collected in the air
+* Made terrain detection more accurate
+  * Whether a block at a point is of a certain type now is now dependeng on not only itself, but also its neighbors, if the given point is on an edge
+
 ## 12/17/2025:
 
 * Levels now load player position on the 2nd line

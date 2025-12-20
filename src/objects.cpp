@@ -7,6 +7,16 @@ void PhysicsBody::setPos(const Vector2& pos)
     orient.pos = pos;
 }
 
+Orient PhysicsBody::getOrient()
+{
+    return orient;
+}
+
+void PhysicsBody::setOrient(const Orient& orient)
+{
+    this->orient = orient;
+}
+
 void PhysicsBody::setDead(bool val)
 {
     dead = val;

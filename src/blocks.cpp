@@ -124,11 +124,18 @@ void Terrain::clear()
 
 Vector2 Terrain::pointBoxEdgeIntersect(const Vector2& a, const Vector2& dir,int dimens)
 {
+    if (dir.x == 0 && dir.y == 0) [[unlikely]]
+    {
+        return a;
+    }
+
     //std::cout << dir.x << " " << dir.y << "\n";
     Vector2 rounded = roundPos(a);
 
     if (dir.y == 0) //if line is horizontal, figure out whether we intersect with the left or right edge
     {
+        //if going to the right, we intersect with the right edge, otherwise left
+        //if we are already on a left edge, make sure we go back one "dimens"
         return {rounded.x + dimens*((dir.x > 0) - (dir.x < 0 && a.x == rounded.x)),a.y};
     }
     else
@@ -141,10 +148,10 @@ Vector2 Terrain::pointBoxEdgeIntersect(const Vector2& a, const Vector2& dir,int 
                                     rounded.y    :       //otherwise we round
                                 rounded.y + dimens;     //if going down, it's the bottom border
 
-        float x = (vertBorder - a.y)/dir.y*dir.x+ a.x; //the x coordinate if "a" continues in direction "dir" until it hits either the top or bottom edge
+        float x = (vertBorder - a.y)/dir.y*dir.x+ a.x; //the x coordinate if "a" continues in direction "dir" until it hits either the top or bottom edge, regardless of left-right border
 
-        float left = rounded.x - dimens*(rounded.x == a.x && dir.x < 0);
-        float right = left + dimens;
+        float left = rounded.x - dimens*(rounded.x == a.x && dir.x < 0); //left border
+        float right = left + dimens; //right border
         x = std::min(std::max(x,left),right); //clamp x to inside the rectangle
 
 
@@ -154,7 +161,7 @@ Vector2 Terrain::pointBoxEdgeIntersect(const Vector2& a, const Vector2& dir,int 
     }
 }
 
-PossiblePoint Terrain::lineIntersectWithTerrain(const Vector2& a, const Vector2& b) //return the point closest to "a" that intersects with the terrain
+/*PossiblePoint Terrain::lineIntersectWithTerrain(const Vector2& a, const Vector2& b) //return the point closest to "a" that intersects with the terrain
 {
     Vector2 current = a;
     while (current != b)
@@ -173,9 +180,9 @@ PossiblePoint Terrain::lineIntersectWithTerrain(const Vector2& a, const Vector2&
         current = Vector2MoveTowards(current,b,Block::BLOCK_DIMEN);
     }
     return {false};
-}
+}*/
 
-PossibleBlock Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, bool isSolid)
+Vector2 Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, bool isSolid)
 {
 
     Vector2 newA = a;
@@ -196,41 +203,35 @@ PossibleBlock Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, 
             newA = surface.pos - dir;
         }
     }
-    return lineBlockIntersect(newA,b);
+    return lineBlockIntersect(newA,b,isSolid);
 }
 
-PossibleBlock Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, bool isSolid)
+Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, bool isSolid)
 {
 
     if (pointToIndex(a) == pointToIndex(b)) //if a and b are in teh same box, it comes down to whether or not there's empty space there
     {
-        return { terrain[pointToIndex(a)], (isSolid && isBlockType(a,SOLID) || blockExists(a)) ? a : b};
+        return (isSolid && isBlockType(a,SOLID,true) || blockExists(a,true)) ? a : b;
     }
 
     Vector2 dir = Vector2Normalize(b - a);
 
     Vector2 current = a;
-    Vector2 nudge = current + dir*.001;
-    BlockType type = AIR;
-
-    bool past = false; //true if we have gone past b and not hit a wall
+    bool past = false;
     //loop until we have gone past b or we hit a wall
-    while (((isSolid && !isBlockType(nudge,SOLID)) || !blockExists(nudge)) && !past)
+    while (((isSolid && !isBlockType(current,SOLID,true)) || !blockExists(current,true)) && !past)
     {
         current = pointBoxEdgeIntersect(current,dir,Block::BLOCK_DIMEN);
-        nudge = current + dir*.001;
-        /*Debug::addDeferRender([current,this,dir](){
+        past = abs(current.y - a.y) > abs(b.y - a.y) || abs(current.x - a.x) > abs(b.x - a.x);
 
-                              DrawCircle3D({current.x + dir.x*.001,current.y+ dir.y*.001,Globals::Game.getCurrentZ()},2,{0,0,0},0,isBlockType(current + dir*.001,AIR) ? WHITE : RED);
-                              Vector2 rounded = roundPos(current);
-                              DrawCircle3D({rounded.x,rounded.y,Globals::Game.getCurrentZ()},2,{0,0,0},0,isBlockType(current,AIR) ? WHITE : RED);
+        /*Debug::addDeferRender([current,this](){
+
+                              DrawCircle3D(toVector3(current),2,{},0,blockExists(current,true) ? RED : WHITE);
+
                               });*/
-        type = terrain[pointToIndex(nudge)];
-        past = Vector2DistanceSqr(current,a) > Vector2DistanceSqr(b,a);
-     }
-   // std::cout << "done\n";
+    }
 
-    return { type , past ? b : current};
+    return past ? b : current;
 
 }
 size_t Terrain::pointToIndex(const Vector2& vec,int blockDimen, int maxWidth)
@@ -303,15 +304,49 @@ void Terrain::generateRightTriangle(const Vector2& corner, float height, const C
     }
 }
 
-bool Terrain::blockExists(const Vector2& pos)
-{
-    return pointToIndex(pos) < terrain.size() && terrain[pointToIndex(pos)] != AIR;//terrain[pointToIndex(pos)].color.a != 0;
-}
-
-bool Terrain::isBlockType(const Vector2& pos, BlockType type)
+bool Terrain::blockExists(const Vector2& pos, bool checkEdge)
 {
     size_t index = pointToIndex(pos);
-    return index < terrain.size() && terrain[index] == type;
+    if (index >= terrain.size())
+    {
+        return false;
+    }
+    bool answer = terrain[index] != AIR;
+    if ( !answer && checkEdge)
+    {
+        if ( static_cast<int>(pos.x) % Block::BLOCK_DIMEN == 0)
+        {
+            answer = (pos.x > 0 && terrain[index - 1] != AIR);
+        }
+        if (!answer && static_cast<int>(pos.y) % Block::BLOCK_DIMEN == 0)
+        {
+            answer = (pos.y > 0 && terrain[index - MAX_WIDTH] != AIR);
+        }
+    }
+    return answer;
+}
+
+bool Terrain::isBlockType(const Vector2& pos, BlockType type, bool checkEdge)
+{
+    size_t index = pointToIndex(pos);
+    if (index >= terrain.size())
+    {
+        return false;
+    }
+    bool answer = terrain[index] == type;
+    if ( !answer && checkEdge)
+    {
+        if ( static_cast<int>(pos.x) % Block::BLOCK_DIMEN == 0)
+        {
+            answer = (pos.x > 0 && terrain[index - 1] == type);
+        }
+        if (!answer && static_cast<int>(pos.y) % Block::BLOCK_DIMEN == 0)
+        {
+            answer = (pos.y > 0 && terrain[index - MAX_WIDTH] == type);
+        }
+    }
+    return answer;
+
 }
 
 void Terrain::render(int z)

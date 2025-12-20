@@ -25,8 +25,14 @@ struct PhysicsBody
     virtual void render() = 0;
     virtual void update(Terrain&) = 0;
     virtual Vector2 getPos() = 0;
+    Orient getOrient();
+    void setOrient(const Orient& orient);
     void setPos(const Vector2& pos);
     virtual void onCollide(PhysicsBody& other)
+    {
+
+    }
+    virtual void onRestore() //called when an object is restored
     {
 
     }
@@ -79,8 +85,6 @@ struct Object : public PhysicsBody
 
     bool followGravity = true;
     Forces forces;
-
-    Vector2 nearest = {-1,-1};
 
     template<typename... CollArgs, typename... RenderArgs>
     Object(const Orient& pos, std::tuple<CollArgs...> colliderArgs, std::tuple<RenderArgs...> renderArgs) : tint(WHITE),
@@ -166,7 +170,7 @@ struct Object : public PhysicsBody
 protected:
     void stayOnGround(Terrain& terrain)
     {
-        Vector2 bruh = terrain.lineTerrainIntersect(orient.pos,orient.pos + orient.getNormal()*GetDimen(getShape()).y).pos; //- normal*(collider.height)/2;
+        Vector2 bruh = terrain.lineTerrainIntersect(orient.pos,orient.pos + orient.getNormal()*GetDimen(getShape()).y); //- normal*(collider.height)/2;
         Vector2 newPos = bruh - orient.getNormal()*(GetDimen(getShape()).y/2  - 1);
 
         orient.pos = newPos;
@@ -175,9 +179,9 @@ protected:
     void adjustAngle(Terrain& terrain)
     {
         //if on ground, adjust our angle based on the angle of the terrain
-        if (onGround || !freeFall)
+        if (onGround)
         {
-            if (!wasOnGround && onGround) //just landed
+            if (!wasOnGround) //just landed
             {
                 orient.rotation = collider.getLandingAngle(orient,terrain);
                 freeFall = false;
@@ -190,8 +194,8 @@ protected:
 
                 Vector2 normal = orient.getNormal();
 
-                botLeft = terrain.lineTerrainIntersect(botLeft,botLeft + normal ).pos;
-                botRight = terrain.lineTerrainIntersect(botRight,botRight + normal).pos;
+                botLeft = terrain.lineTerrainIntersect(botLeft,botLeft + normal );//.pos;
+                botRight = terrain.lineTerrainIntersect(botRight,botRight + normal);//.pos;
 
                 /*Debug::addDeferRender([botLeft,botRight](){
 
@@ -225,12 +229,6 @@ protected:
                         this->forces.addForce((pos - orient.pos)*mag,Forces::GRAVITY);
                     }
                     },orient.pos,searchRad);*/
-             /*Debug::addDeferRender([this](){
-
-                                   DrawLine3D({orient.pos.x,orient.pos.y,Globals::Game.getCurrentZ()},{nearest.x,nearest.y,Globals::Game.getCurrentZ()},PURPLE);
-
-                                   });*/
-            //forces.addForce(orient.getNormal()*0.1f,Forces::GRAVITY);
             int divide = 32;
             const int landingDivide = 5;
             int upTo = freeFall ? divide : landingDivide;
@@ -240,19 +238,19 @@ protected:
             {
                 float angle =  2*M_PI/divide*i + M_PI/2-M_PI/(divide)*(landingDivide-1) + orient.rotation;
                 auto pos = terrain.lineBlockIntersect(orient.pos, orient.pos + Vector2(cos(angle),sin(angle))*searchRad,false);
-                /*Debug::addDeferRender([pos](){
+                Debug::addDeferRender([pos,&terrain](){
 
-                                      DrawCircle3D(Vector3(pos.pos.x,pos.pos.y,Globals::Game.getCurrentZ()),10,{0,1,0},0,pos.type == ANTI ? BLUE : RED);
+                                      DrawCircle3D(Vector3(pos.x,pos.y,Globals::Game.getCurrentZ()),10,{0,1,0},0,terrain.isBlockType(pos,ANTI,true) ? BLUE : RED);
 
-                                      });*/
-                if (pos.type != AIR)
+                                      });
+                if (terrain.blockExists(pos,true) && !Vector2Equals(pos,orient.pos))
                 {
-                    Vector2 force = Vector2Normalize(pos.pos - orient.pos)/pow(Vector2Length(pos.pos - orient.pos),1);
-                    if (pos.type == ANTI)
+                    Vector2 force = Vector2Normalize(pos - orient.pos)/pow(Vector2Length(pos - orient.pos),1);
+                    if (terrain.isBlockType(pos,ANTI,true))
                     {
                         force *= -1;
                     }
-                    else if (pos.type == LAVA)
+                    if (terrain.isBlockType(pos,LAVA,true))
                     {
                         force *= .5;
                     }

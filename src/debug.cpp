@@ -156,7 +156,7 @@ void Cheats::handleInput()
         case PLAYER:
             if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
             {
-                Globals::Game.player->orient.pos = mousePos;
+                Globals::Game.player->setPos(mousePos);
                 if (Globals::Game.player->getDead())
                 {
                     Globals::Game.player->setDead(false);
@@ -187,20 +187,21 @@ void Cheats::handleInput()
             DrawCircle3D(Vector3(endpoint.x,endpoint.y,z),3,{0,1,0},0,PURPLE);
             DrawLine3D(Vector3(mousePos.x,mousePos.y,z),Vector3(endpoint.x,endpoint.y,z),PURPLE);
 
-            Vector2 onTerrain = Globals::Game.getCurrentTerrain()->lineTerrainIntersect(mousePos,endpoint).pos;
+            Vector2 onTerrain = Globals::Game.getCurrentTerrain()->lineTerrainIntersect(mousePos,endpoint,false);
             DrawCircle3D(Vector3(onTerrain.x,onTerrain.y,z),3,{0,1,0},0,PURPLE);
 
             LayerType layer = Globals::Game.getCurrentLayer();
             Globals::Game.terrain.getTerrain(layer)->forEachPos([layer](const Vector2& pos){
                                 Terrain* terr = Globals::Game.terrain.getTerrain(layer);
                                 Vector2 rounded = terr->roundPos(pos);
-                                DrawCube({rounded.x + Block::BLOCK_DIMEN/2,rounded.y + Block::BLOCK_DIMEN/2,Globals::Game.getCurrentZ()},Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,1,
-                                         terr->isBlockType(rounded,SOLID) ? RED : BLUE);
+                                DrawCube({rounded.x + Block::BLOCK_DIMEN/2.0,rounded.y + Block::BLOCK_DIMEN/2.0,Globals::Game.getCurrentZ()},
+                                         Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,0,
+                                         terr->blockExists(pos,false) ? RED : BLUE);
                                 },
                                 screenToWorld(GetMousePosition(),
                                               Globals::Game.camera,
                                               {GetScreenWidth(),GetScreenHeight()},
-                                              Globals::Game.getCurrentZ()),10);
+                                              Globals::Game.getCurrentZ()),2*Block::BLOCK_DIMEN);
                       });
 
     }
