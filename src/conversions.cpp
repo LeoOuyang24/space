@@ -204,11 +204,15 @@ std::string toString(std::string& str)
 template<>
 std::string toString(std::vector<std::string>& vec)
 {
-    std::string answer = vec.size() > 0 ? vec[0] : ""; //allows us to prepend the | delimitter, which prevents trailing delimitters
-    std::for_each(vec.begin() + 1,vec.end(),[&answer](const std::string& str){
+    std::string answer = vec.size() > 0 ? vec[0] : ""; //adding the first element allows us to prepend the | delimitter, which prevents trailing delimitters
+    if (vec.size() > 0)
+    {
+           std::for_each(vec.begin() + 1,vec.end(),[&answer](const std::string& str){
                   answer += '|' + str;
 
                   });
+    }
+
 
 
     return answer;

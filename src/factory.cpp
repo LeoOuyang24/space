@@ -33,6 +33,10 @@ std::shared_ptr<PhysicsBody> construct(std::string cereal)
         {
             ptr = new Sign(Factory<Sign>::Base::deserialize(params));
         }
+        else if (params[0] == Factory<Rover>::ObjectName)
+        {
+            ptr = new Rover(Factory<Rover>::Base::deserialize(params));
+        }
         else
         {
             std::cerr << "ERROR construct: unable to construct object: " << params[0] << "\n";

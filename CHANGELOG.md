@@ -1,10 +1,13 @@
 # Changelog
 
-## UNRELEASED
+## 12/25/2025:
 
 * Added respawning and resetting objects that were collected in the air
 * Made terrain detection more accurate
   * Whether a block at a point is of a certain type now is now dependeng on not only itself, but also its neighbors, if the given point is on an edge
+* Terrain is now rendered before entities as a temporary workaround to the depth problem
+* Added boosting
+* Added levels 2 and 3
 
 ## 12/17/2025:
 

@@ -137,7 +137,6 @@ Vector3 DrawText3D(Font font, const char *text, Vector3 position, float fontSize
     {
         startPos.x -= dimen.x/2*((align == RIGHT) + 1);
     }
-
     for (int i = 0; i < length;)
     {
         // Get next codepoint from byte string and glyph index in font
@@ -168,6 +167,6 @@ Vector3 DrawText3D(Font font, const char *text, Vector3 position, float fontSize
         }
 
         i += codepointByteCount;   // Move text bytes counter to next codepoint
-        return { startPos.x + textOffsetX, startPos.y  + textOffsetY, position.z };
     }
+    return { startPos.x + textOffsetX, startPos.y  + textOffsetY, position.z };
 }

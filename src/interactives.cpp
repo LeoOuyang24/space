@@ -22,3 +22,13 @@ size_t Sign::getMessagesSize()
 {
     return message.size();
 }
+
+Rover::Rover() : Object({},std::make_tuple(ROVER_DIMEN.x,ROVER_DIMEN.y),std::make_tuple(Globals::Game.Sprites.getSprite(ROVER_SPRITE_PATH)))
+{
+
+}
+
+void Rover::interactWith(PhysicsBody& other)
+{
+
+}

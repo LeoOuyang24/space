@@ -72,8 +72,7 @@ struct Factory<Collectible>
 {
   static constexpr std::string ObjectName = "gear";
   using Base = FactoryBase<Collectible,
-                        access<Collectible,&Collectible::orient,&Orient::pos>,
-                        access<Collectible,&Collectible::orient,&Orient::layer>>;
+                        access<Collectible,&Collectible::orient,&Orient::pos>>;
 };
 
 template<>
@@ -82,8 +81,7 @@ struct Factory<Key>
   static constexpr std::string ObjectName = "key";
   using Base = FactoryBase<Key,
                         access<Key,&Key::key>,
-                        access<Key,&Key::orient,&Orient::pos>,
-                        access<Key,&Key::orient,&Orient::layer>>;
+                        access<Key,&Key::orient,&Orient::pos>>;
 };
 
 bool operator==(const Key::KeyVal& left, const Key::KeyVal& right);

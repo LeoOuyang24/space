@@ -11,10 +11,11 @@ void Collectible::onRestore()
 
 void CollectibleCollider::collideWith(PhysicsBody& self, PhysicsBody& other)
 {
-    if (&other == Globals::Game.player.get())
+    Player* player = static_cast<Player*>(Globals::Game.getPlayer());
+    if (&other == player)
     {
         Globals::Game.addCollects();
-        Globals::Game.player->addResetObject(self);
+        player->addResetObject(self);
         self.setDead(true);
     }
 }

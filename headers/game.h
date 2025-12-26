@@ -20,8 +20,8 @@ struct Globals
 
     //the bigger the z, the further away from the screen
     static constexpr int MAX_Z = 1000; //furthest away something can be before going out of vision
-    static constexpr int SPACE_Z = .01*MAX_Z;
-    static constexpr int BACKGROUND_Z = MAX_Z - SPACE_Z;
+    static constexpr int SPACE_Z = .01*MAX_Z; //distance between layers if there are 50 layers
+    static constexpr int BACKGROUND_Z = MAX_Z - SPACE_Z; //z coordinate of background
     static constexpr int START_Z = BACKGROUND_Z - SPACE_Z*50;
     static constexpr int CAMERA_Z_DISP = START_Z*0.7; //how far the camera is at all times from getCurrentZ()
 
@@ -41,16 +41,10 @@ struct Globals
     Terrain* getCurrentTerrain();
     void loadLevel(std::string path);
 
-    void addObject(PhysicsBody& body);
+    void addObject(PhysicsBody& body, LayerType layer);
+    void addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer);
     void addObject(std::shared_ptr<PhysicsBody> ptr);
     PhysicsBody* getPlayer();
-
-    template<typename Obj, typename... Ts>
-    void addObject(Ts... stuff)
-    {
-        std::shared_ptr<PhysicsBody> made = std::make_shared<Obj>(stuff...);
-        addObject(made);
-    }
 
     SpritesGlobal Sprites;
     Camera3D camera;

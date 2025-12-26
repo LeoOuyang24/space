@@ -38,17 +38,33 @@ void PlayerRenderer::render(const Shape& shape,const Color& color)
 
     }*/
     Shape shape2 = shape;
+    facing = owner.facing;
 
-    if (owner.state == Player::State::CHARGING)
+    switch (owner.state)
     {
-        shape2.orient.rotation += owner.aimAngle;
-        DrawLine3D({shape2.orient.pos.x,shape2.orient.pos.y,Globals::Game.getCurrentZ()},
-                   {shape2.orient.pos.x + cos(shape2.orient.rotation - M_PI/2)*100,shape2.orient.pos.y + sin(shape2.orient.rotation - M_PI/2)*100,Globals::Game.getCurrentZ()},
-                   RED
-                   );
+    case Player::State::CHARGING:
+        {
+            shape2.orient.rotation += owner.aimAngle;
+            DrawLine3D({shape2.orient.pos.x,shape2.orient.pos.y,Globals::Game.getCurrentZ()},
+                       {shape2.orient.pos.x + cos(shape2.orient.rotation - M_PI/2)*100,shape2.orient.pos.y + sin(shape2.orient.rotation - M_PI/2)*100,Globals::Game.getCurrentZ()},
+                       RED
+                       );
+            break;
+        }
+    case Player::State::PORTALLING:
+        {
+            DrawSphere(toVector3(shape2.orient.pos),GetDimen(shape2).x/2.0,YELLOW);
+            break;
+        }
     }
+    if (owner.state != Player::State::PORTALLING)
     TextureRenderer::render(shape2,color);
 
+}
+
+bool Player::isTangible()
+{
+    return state != PORTALLING;
 }
 
 Player::Player(const Vector2& pos_) : Object({pos_},std::make_tuple(PLAYER_DIMEN,PLAYER_DIMEN),std::make_tuple(std::ref(*this)))
@@ -62,8 +78,15 @@ void Player::update(Terrain& terrain)
     Object::applyForces(terrain);
 
     tint = onGround ? WHITE : freeFall ? BLUE : RED;
-    Object::adjustAngle(terrain);
 
+
+    float oldRotation = orient.rotation;
+    Object::adjustAngle(terrain);
+   /* if (onGround && !wasOnGround && abs(orient.rotation - oldRotation) > 3*M_PI/4)
+    {
+        //flip angle upon landing
+        facing = !facing;
+    }*/
     handleControls();
 
     //Vector2 forwardNorm = orient.getFacing(); //perpendicular to normal vector that moves us forward on flat ground with rotation 0
@@ -71,6 +94,7 @@ void Player::update(Terrain& terrain)
 
     if (onGround )
     {
+        boosted = false;
         saveResetState();
         stayOnGround(terrain);
     }
@@ -112,7 +136,6 @@ void Player::handleControls()
 
                 speed = std::min(abs(speed),maxSpeed)*((speed > 0)*2 - 1); //prevent speed from exceeding maximum
 
-                this->renderer.facing = facing;
             }
             if (IsKeyPressed(KEY_SPACE) && onGround)
             {
@@ -120,6 +143,15 @@ void Player::handleControls()
                                     orient.getNormal()*-10 + orient.getFacing()*12*(facing*2 - 1) :
                                     orient.getNormal()*-14;
                 forces.addForce(jump,Forces::JUMP);
+            }
+            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && !onGround && !boosted)
+            {
+                forces.addFriction(0);
+                forces.addForce(Vector2Normalize(screenToWorld(GetMousePosition(),
+                                              Globals::Game.camera,
+                                              {GetScreenWidth(),GetScreenHeight()},
+                                              Globals::Game.getCurrentZ()) - getPos())*5,Forces::BOOSTING);
+                boosted = true;
             }
         }
         break;
@@ -150,7 +182,8 @@ void Player::handleControls()
         }
     break;
     }
-    state = (IsKeyDown(KEY_LEFT_SHIFT) && onGround) ? CHARGING : WALKING;
+    setState(state == PORTALLING ? PORTALLING : WALKING);
+    //setState((IsKeyDown(KEY_LEFT_SHIFT) && onGround) ? CHARGING : WALKING);
     if ((!leftRight || !onGround)|| state == CHARGING)
     {
         speed = trunc(speed*(onGround ? GROUND_FRICTION : AIR_FRICTION),3); //apply friction
@@ -158,7 +191,26 @@ void Player::handleControls()
     //orient.pos += orient.getFacing()*speed;
 
     forces.setForce(orient.getFacing()*speed,Forces::MOVE);
+
+    if (IsKeyDown(KEY_Z))
+    {
+        dying += 1;
+        if (dying >= 100)
+        {
+            setDead(true);
+            dying = 0;
+        }
+    }
+    else
+    {
+        dying = 0;
+    }
    // std::cout << forces.getForce(Forces::MOVE) << "\n";
+}
+
+void Player::setState(State newState)
+{
+    state = newState;
 }
 
 void Player::saveResetState()

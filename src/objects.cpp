@@ -32,6 +32,11 @@ bool PhysicsBody::isDead()
     return dead;
 }
 
+bool PhysicsBody::isTangible()
+{
+    return true;
+}
+
 void Forces::setForce(const Vector2& force, Forces::ForceSource source)
 {
     Vector2 old = getForce(source);
@@ -86,3 +91,4 @@ Vector2 Forces::getTotalForce()
 {
     return Vector2LengthSqr(totalForce) > 100 ? Vector2Normalize(totalForce)*10 : totalForce;
 }
+

@@ -61,9 +61,10 @@ int main(void)
 
 
     Camera3D& camera = Globals::Game.camera;
-
+    //Globals::Game.loadLevel("levels/load_this.txt");
     Globals::Game.loadLevel("levels/layer0.txt");
     Globals::Game.loadLevel("levels/layer1.txt");
+    Globals::Game.loadLevel("levels/layer2.txt");
     Globals::Game.setLayer(0);
 
     float accum = 0;
@@ -159,8 +160,6 @@ int main(void)
         }
 
         Debug::handleInput();
-
-
 
         // Draw
         //----------------------------------------------------------------------------------

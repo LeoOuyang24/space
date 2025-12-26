@@ -1,0 +1,5 @@
+sprites/layers/level3.png
+2000.000000,3600.000000
+sign	Oof... Ow... So bright...|Wait, I have no eyes!|Anyway thanks for playing!|That's all for now... or is it??	2702.155518,3227.000000	0	
+rover	555.733276,399.000000	
+portal	2600.000000,3230.000000	0	497.821075,707.446167	null	100	

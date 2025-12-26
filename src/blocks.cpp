@@ -29,7 +29,7 @@ Vector2 Terrain::nearestPos(const Vector2& vec)
 Terrain::Terrain()
 {
     blocksTexture = LoadRenderTexture(MAX_TERRAIN_SIZE,MAX_TERRAIN_SIZE);
-
+    //terrain.data.reserve(MAX_WIDTH*MAX_WIDTH*TerrainMap::PALETTE_SIZE);
 //    upScaled.resize(upScaled.maxWidth*upScaled.maxWidth);
     //gravityFields.resize(gravityFields.maxWidth*gravityFields.maxWidth);
 
@@ -47,17 +47,17 @@ Rectangle Terrain::getBlockRect(const Vector2& pos)
 void Terrain::addBlock(const Vector2& pos, const Block& block)
 {
     int index = pointToIndex(pos);
-    //std::cout << index << "\n";
 
-    if (index < 0 || index >= pointToIndex({MAX_TERRAIN_SIZE,MAX_TERRAIN_SIZE}))
+    if (index < 0 || index >= pointToIndex({MAX_TERRAIN_SIZE - 1,MAX_TERRAIN_SIZE - 1}))
     {
         return;
     }
-    if (index*TerrainMap::PALETTE_SIZE >= terrain.size())
+    if (index >= terrain.size())
     {
         terrain.resize((index + 1)*TerrainMap::PALETTE_SIZE);
     }
     terrain.setVal(index,block.type);
+    //std::cout << pos << "  " << index << " "<< terrain.size()<< "\n";
 
     Color color;
     switch (block.type)
@@ -83,7 +83,9 @@ void Terrain::addBlock(const Vector2& pos, const Block& block)
             for (int i = 0; i < 9; i ++)
             {
                 Vector2 neighbor = {rounded.x + Block::BLOCK_DIMEN*(i%3 - 1),rounded.y + Block::BLOCK_DIMEN*(i/3 - 1)};
-                if (!blockExists(neighbor))
+                if (neighbor.x >= 0 && neighbor.y >= 0 &&
+                    neighbor.x < blocksTexture.texture.width && neighbor.y < blocksTexture.texture.height &&
+                    !blockExists(neighbor))
                     {
                         DrawRectangle(neighbor.x,blocksTexture.texture.height - neighbor.y -  Block::BLOCK_DIMEN,
                                       Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,
@@ -306,11 +308,13 @@ void Terrain::generateRightTriangle(const Vector2& corner, float height, const C
 
 bool Terrain::blockExists(const Vector2& pos, bool checkEdge)
 {
+
     size_t index = pointToIndex(pos);
     if (index >= terrain.size())
     {
         return false;
     }
+
     bool answer = terrain[index] != AIR;
     if ( !answer && checkEdge)
     {
@@ -323,6 +327,7 @@ bool Terrain::blockExists(const Vector2& pos, bool checkEdge)
             answer = (pos.y > 0 && terrain[index - MAX_WIDTH] != AIR);
         }
     }
+
     return answer;
 }
 
@@ -349,11 +354,12 @@ bool Terrain::isBlockType(const Vector2& pos, BlockType type, bool checkEdge)
 
 }
 
-void Terrain::render(int z)
+void Terrain::render(int i, int z)
 {
 
-   Vector3 white = Vector3{255,255,255}*std::max(0.0f,std::min(1.0f,(1 - static_cast<float>(z - Globals::Game.camera.position.z - Globals::Game.CAMERA_Z_DISP)/Globals::MAX_Z)));
-   //std::cout << (1 - static_cast<float>(z - Globals::Game.currentZ)/Globals::MAX_Z) << "\n";
+   //Vector3 white = Vector3{255,255,255}*std::max(0.0f,std::min(1.0f,(1 - static_cast<float>(z - Globals::Game.camera.position.z - Globals::Game.CAMERA_Z_DISP)/Globals::MAX_Z)));
+
+   Vector3 white = Vector3(255,255,255)*pow(.5,i);
 
    Color balls = {white.x,white.y,white.z,255}; //can't do math with raylib colors breaking_bad_crawl_space.gif
 

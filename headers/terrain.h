@@ -49,7 +49,8 @@ struct GlobalTerrain
     Terrain* getTerrain(LayerType layer); //null if index is not valid
     void update(LayerType layer);
     void render();
-    float getZOfLayer(LayerType index); //-1 if index is out of bounds
+
+    int getZOfLayer(LayerType index); //-1 if index is out of bounds. Returns an int because floating point values causes billboards to not be rendered
     Vector3 orientToVec3(const Orient& orient);
 
     LayerInfo getLayerInfo(LayerType index);

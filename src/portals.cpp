@@ -1,4 +1,5 @@
 #include "../headers/portal.h"
+#include "../headers/sequencer.h"
 
 Shader Portal::PortalShader;
 
@@ -38,15 +39,6 @@ Portal::Portal() :  Object({Vector2(0,0),0},
     cond.reset(new TokenLocked(5));
 
 }
-Portal::Portal(const Vector3& start, int r, const Vector3& dest_) : Portal()
- {
-    assignVector(dest.pos,dest_);
-    dest.layer = dest_.z;
-
-    assignVector(orient.pos,start);
-    orient.layer = start.z;
-
-}
 
 bool Portal::unlocked()
 {
@@ -57,8 +49,27 @@ bool Portal::unlocked()
  {
     if (unlocked())
     {
-        player.orient.pos = {dest.pos.x,dest.pos.y};
-        Globals::Game.setLayer(dest.layer);
+        static_cast<Player*>(&player)->setState(Player::State::PORTALLING);
+       // RunThis r = RunThis::Func([](int){return true;});
+        //player.orient.pos = {dest.pos.x,dest.pos.y};
+        Sequences::add(true,
+                       [&player,pos=this->orient.pos](int x){
+                        player.setPos(pos);
+                       return x >= 30; //wait 30 frames (~0.5 second)
+
+                       },
+                       [dest=this->destPos,start = player.getPos()](int x){
+                        Player* player = static_cast<Player*>(Globals::Game.getPlayer());
+                        player->setPos(start + (dest - start)*.01f*x);
+                        return Vector2Equals(player->getPos(),dest) || x >= 100; //fail safe, this can only run 100 times
+                       },
+                        [this](int)
+                        {
+                            static_cast<Player*>(Globals::Game.getPlayer())->setState(Player::State::WALKING);
+                            Globals::Game.setLayer(orient.layer + layerDisp);
+                            return true;
+                        }
+                       );
     }
  }
 
@@ -87,17 +98,3 @@ bool Portal::unlocked()
         }
  }
 
-void TriggerPortalSpawn::interact(PhysicsBody& self, PhysicsBody& other)
- {
-    //if active, a player has interacted with us, and either we are already unlocked or the player has the key, spawn the portal!
-    if (this->active &&
-        &other == Globals::Game.player.get() &&
-        (this->lockVal == Key::UNLOCKED || Key::unlocks(Globals::Game.player->keys,this->lockVal)))
-    {
-        Vector3 spawn = this->absolute ?
-                            this->start:
-                            Vector3(this->start.x + self.orient.pos.x, this->start.y + self.orient.pos.y, self.orient.layer);
-       Portal* portal = new Portal(spawn,10,this->end);
-       Globals::Game.addObject(*portal);
-    }
- }

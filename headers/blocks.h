@@ -45,9 +45,9 @@ struct TerrainMap
             data[index*PALETTE_SIZE + i] = (val >> i ) % 2;
         }
     }
-    BlockType operator[] (size_t index)
+    BlockType operator[] (size_t index) //index will be converted to a multiple of PALETTE SIZE. so index 3 = 3*PALETTE_SIZE for the 4th block
     {
-        if (index >= data.size())
+        if (index >= size())
         {
             return AIR;
         }
@@ -58,9 +58,9 @@ struct TerrainMap
         }
         return static_cast<BlockType>(p);
     }
-    size_t size()
+    size_t size() //number of blocks, not number of bits
     {
-        return data.size();
+        return data.size()/PALETTE_SIZE;
     }
     void resize(size_t newSize)
     {
@@ -166,7 +166,9 @@ struct Terrain
     bool blockExists(const Vector2& pos, bool checkEdge = false); //true if block at position is not AIR
     bool isBlockType(const Vector2& pos,BlockType type, bool checkEdges = false); //true if block at position is "type". "checkEdges" will check neighbors if point is on edge
 
-    void render(int z = 0);
+    //"i" is index relative to current layer (0 if we are on layer 2 and rendering layer 2)
+    //"z" is z coordinate to render at (absolute)
+    void render(int i = 0, int z = 0);
 };
 
 

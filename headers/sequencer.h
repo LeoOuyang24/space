@@ -18,6 +18,11 @@ struct RunThis
 
     int ranNumTimes = 0; //number of times this function has been called
 
+    RunThis(const Func& f) : func(f)
+    {
+
+    }
+
     bool operator()()
     {
         bool val = func(ranNumTimes);
@@ -43,6 +48,14 @@ public:
     //isPhysics = true means we add to "physicsSequences", else "renderSequences"
     static void add(const Sequencer& sequence, bool isPhysics);
     static void add(const RunThis& runThis, bool isPhysics);
+
+    template<typename... Callable>
+    static void add(bool isPhysics, Callable... callable)
+    {
+        Sequencer seq = {RunThis::Func(callable)...};
+        add(seq,isPhysics);
+    }
+
     static void runPhysics();
     static void runRenders();
 };

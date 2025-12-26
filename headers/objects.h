@@ -42,6 +42,8 @@ struct PhysicsBody
     }
     void setDead(bool val);
     bool getDead();
+
+    virtual bool isTangible(); //can be collided with. If false, will not call "onCollide"
     virtual bool isDead();
 };
 
@@ -54,7 +56,8 @@ struct Forces
         GRAVITY = 0,
         JUMP,
         MOVE,
-        BOUNCE //forces from when going out of bounds
+        BOUNCE, //forces from when going out of bounds
+        BOOSTING //from boosting, player specific
     };
 
     std::unordered_map<ForceSource,Vector2> forces; //mapping force source to a force
@@ -112,7 +115,7 @@ struct Object : public PhysicsBody
         //if there is a collide with function,
         if constexpr (has_interactWith<Descendant>)
         {
-            if (IsKeyPressed(KEY_E) && &other == Globals::Game.getPlayer())
+            if (IsKeyPressed(KEY_E) && &other == Globals::Game.getPlayer() && isTangible())
             {
                 static_cast<Descendant*>(this)->interactWith(other);
             }
@@ -217,18 +220,9 @@ protected:
     {
         int searchRad = freeFall ? 400 : 200;
 
-
         if (!onGround && followGravity)
         {
 
-
-                /*terrain.forEachPosSample([this,&terrain](const Vector2& pos, int size){
-                    if (terrain.blockExists(pos))
-                    {
-                        float mag = 0.001/pow(std::max(1.0f,Vector2Length(pos -orient.pos)),2);
-                        this->forces.addForce((pos - orient.pos)*mag,Forces::GRAVITY);
-                    }
-                    },orient.pos,searchRad);*/
             int divide = 32;
             const int landingDivide = 5;
             int upTo = freeFall ? divide : landingDivide;
@@ -238,11 +232,11 @@ protected:
             {
                 float angle =  2*M_PI/divide*i + M_PI/2-M_PI/(divide)*(landingDivide-1) + orient.rotation;
                 auto pos = terrain.lineBlockIntersect(orient.pos, orient.pos + Vector2(cos(angle),sin(angle))*searchRad,false);
-                Debug::addDeferRender([pos,&terrain](){
+                /*Debug::addDeferRender([pos,&terrain](){
 
                                       DrawCircle3D(Vector3(pos.x,pos.y,Globals::Game.getCurrentZ()),10,{0,1,0},0,terrain.isBlockType(pos,ANTI,true) ? BLUE : RED);
 
-                                      });
+                                      });*/
                 if (terrain.blockExists(pos,true) && !Vector2Equals(pos,orient.pos))
                 {
                     Vector2 force = Vector2Normalize(pos - orient.pos)/pow(Vector2Length(pos - orient.pos),1);
@@ -292,6 +286,5 @@ protected:
     }
 
 };
-
 
 #endif // OBJECTS_H_INCLUDED

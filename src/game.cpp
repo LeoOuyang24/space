@@ -78,7 +78,7 @@ void Globals::setLayer(LayerType layer)
         Sequences::add({[camera=&(this->camera),endZ=getCurrentZ()  - Globals::CAMERA_Z_DISP,startZ = camera.position.z](int runTimes){
 
                        camera->position.z = Lerp(startZ,endZ,runTimes/50.0);
-                       return runTimes == 50;
+                       return runTimes >= 50;
 
                        }},false);
     }
@@ -128,11 +128,14 @@ void Globals::loadLevel(std::string path)
                     {
                         Vector2 pos = fromString<Vector2>(line);
                         info.playerPos = pos;
-                        Globals::Game.player->setPos(pos);
+                        if (terrain.getLayerCount() == 1) //first layer
+                        {
+                            Globals::Game.player->setPos(pos);
+                        }
                         break;
                     }
                 default:
-                    addObject(construct(line));
+                    addObject(construct(line),terrain.getLayerCount() - 1);
                     break;
                 }
                 lineNum ++;
@@ -148,16 +151,31 @@ void Globals::loadLevel(std::string path)
     }
 }
 
-void Globals::addObject(PhysicsBody& body)
+void Globals::addObject(PhysicsBody& body, LayerType layer)
 {
+    body.setOrient({body.getPos(),layer});
     objects.addObject(body);
-    terrain.addObject(objects.getObject(&body),body.orient.layer);
+    terrain.addObject(objects.getObject(&body),layer);
+}
+
+void Globals::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
+{
+    if (ptr.get())
+    {
+        ptr->setOrient({ptr->getPos(),layer});
+        objects.addObject(ptr);
+        terrain.addObject(ptr,layer);
+    }
+
 }
 
 void Globals::addObject(std::shared_ptr<PhysicsBody> ptr)
 {
-    objects.addObject(ptr);
-    terrain.addObject(ptr,ptr->orient.layer);
+    if (ptr.get())
+    {
+        addObject(ptr,ptr->getOrient().layer);
+    }
+
 }
 
 PhysicsBody* Globals::getPlayer()

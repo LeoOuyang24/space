@@ -67,7 +67,8 @@ struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
     enum State
     {
         WALKING = 0,
-        CHARGING
+        CHARGING,
+        PORTALLING
     };
 
     State state = WALKING;
@@ -77,18 +78,24 @@ struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
 
     float speed = 0;
 
-    float aimAngle = 0;
-    float power = 0;
+    float aimAngle = 0; //aim for charging
+    float power = 0; //charging power
+    int dying = 0; //press and hold to die
+
+    bool boosted = false;
 
     bool facing = true;
 
     std::unordered_set<Key::KeyVal> keys;
+    bool isTangible();
 
     Player(const Vector2& pos);
     void update(Terrain&);
     void addKey(Key::KeyVal);
 
     void handleControls(); //all player controls are handled here
+
+    void setState(State newState);
 
     void saveResetState();
     void addResetObject(PhysicsBody& body);

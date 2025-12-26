@@ -47,8 +47,7 @@ void Editor::handleInput()
             if (ptr.get())
             {
                 ptr->orient.pos = coords;
-                ptr->orient.layer = Globals::Game.getCurrentLayer();
-                Globals::Game.addObject(ptr);
+                Globals::Game.addObject(ptr,Globals::Game.getCurrentLayer());
             }
 
             activeSearch = false;
@@ -148,9 +147,15 @@ void Cheats::handleInput()
             {
                 Color color = {255,255,255,100};
                 if (rand()%2)
-                    Globals::Game.addObject(*(new Object<RectCollider,ShapeRenderer<ShapeType::RECT>,EMPTY_TYPE>({mousePos,Globals::Game.getCurrentLayer()},std::make_tuple(10,10),{})));
+                    Globals::Game.addObject(*(new Object<RectCollider,
+                                              ShapeRenderer<ShapeType::RECT>,EMPTY_TYPE>(
+                                                {mousePos},
+                                                std::make_tuple(10,10),{})),Globals::Game.getCurrentLayer());
                 else
-                    Globals::Game.addObject(*(new Object<CircleCollider,ShapeRenderer<ShapeType::CIRCLE>,EMPTY_TYPE>({mousePos,Globals::Game.getCurrentLayer()},std::make_tuple(10),{})));
+                    Globals::Game.addObject(*(new Object<CircleCollider,
+                                              ShapeRenderer<ShapeType::CIRCLE>,EMPTY_TYPE>(
+                                                {mousePos},
+                                                std::make_tuple(10),{})),Globals::Game.getCurrentLayer());
                 break;
             }
         case PLAYER:
@@ -265,6 +270,14 @@ void Debug::handleInput()
         {
             currentMode = nullptr;
         }
+    }
+    else if (IsKeyPressed(KEY_EQUAL))
+    {
+        Globals::Game.setLayer(Globals::Game.getCurrentLayer() + 1);
+    }
+    else if (IsKeyPressed(KEY_MINUS))
+    {
+        Globals::Game.setLayer(Globals::Game.getCurrentLayer() - 1);
     }
 
     if (currentMode)

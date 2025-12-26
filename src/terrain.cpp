@@ -70,11 +70,14 @@ void GlobalTerrain::loadTerrain(LayerType layer, std::string imagePath)
     {
         for (int j = 0; j < std::min(img.height,Terrain::MAX_WIDTH); j += 1)
         {
+
             Vector2 point = {i*Block::BLOCK_DIMEN,j*Block::BLOCK_DIMEN};
             int index = terr->pointToIndex(point);
 
             Color color = GetImageColor(img,i,j);
+
             BlockType type = SOLID;
+
             if (color.r == 255 && color.g == 255 && color.b == 255)
             {
                 type = ANTI;
@@ -122,13 +125,16 @@ void GlobalTerrain::update(LayerType layer)
             if (isValidObject(obj,layer)) //if object is non-null and in this layer and not dead, update it!
             {
                 obj->update(*getTerrain(layer));
-                for (auto jt = objects.begin(); jt != it; ++jt)
+                if (obj->isTangible())
                 {
-                    PhysicsBody* obj2 = jt->lock().get(); //guaranteed to be non-null and in this layer, since jt < it;
-                    if (CheckCollision(obj->getShape(),obj2->getShape()))
+                    for (auto jt = objects.begin(); jt != it; ++jt)
                     {
-                        obj->onCollide(*obj2);
-                        obj2->onCollide(*obj);
+                        PhysicsBody* obj2 = jt->lock().get(); //guaranteed to be non-null and in this layer, since jt < it;
+                        if (obj2->isTangible() && CheckCollision(obj->getShape(),obj2->getShape()))
+                        {
+                            obj->onCollide(*obj2);
+                            obj2->onCollide(*obj);
+                        }
                     }
                 }
                 ++it;
@@ -147,33 +153,38 @@ void GlobalTerrain::update(LayerType layer)
 
 void GlobalTerrain::render()
 {
-    //render layers from back all the way to front, not including layers past the camera
+    //current layer
     int limit = std::min(layers.size() - 1,std::max(static_cast<LayerType>(0),Globals::Game.getCurrentLayer()));
     //fun fact! -1 >= (sizeof)0 <-- this is true! So "limit" actually has to be an int. Otherwise, even if "i" goes negative, i
     //will still be "larger" than size_t.
     //Alternatively, we can make both "limit" and "i" a size_t and then check if i > layers.size(), but that seems unintuitive
+
+
+    //render layers from back all the way to front, not including layers past the camera
     for (int i = layers.size() - 1; i >= limit ;i--)
     {
-        float z = getZOfLayer(i);
+        layers[i].terrain.render(i - Globals::Game.getCurrentLayer(),getZOfLayer(i));
 
-        layers[i].terrain.render(z);
-        for (auto it = layers[i].objects.begin(); it != layers[i].objects.end(); ++it)
+    }
+
+    //only render entities of the current layer
+    for (auto it = layers[limit].objects.begin(); it != layers[limit].objects.end(); ++it)
+    {
+        if (PhysicsBody* obj = it->lock().get()) [[likely]] //highly likely since update removes bad pointers and it always runs first
         {
-            if (PhysicsBody* obj = it->lock().get()) [[likely]] //highly likely since update removes bad pointers and it always runs first
-            {
-                obj->render();
-            }
+            obj->render();
         }
     }
+
 }
 
-float GlobalTerrain::getZOfLayer(LayerType index)
+int GlobalTerrain::getZOfLayer(LayerType index)
 {
     if (index >= layers.size()) [[unlikely]]
     {
         return -1;
     }
-    return Globals::START_Z + index*static_cast<float>(Globals::BACKGROUND_Z - Globals::START_Z)/(layers.size());
+    return (Globals::START_Z + index*static_cast<float>(Globals::BACKGROUND_Z - Globals::START_Z)/(layers.size()));
 }
 
 Vector3 GlobalTerrain::orientToVec3(const Orient& orient)
