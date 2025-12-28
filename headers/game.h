@@ -9,9 +9,6 @@
 #include "sprites.h"
 #include "interface.h"
 
-//no idea where to put this LUL
-//moves camera to look at "pos"
-void moveCamera(Camera3D& camera, const Vector2& pos);
 
 class Player;
 struct Globals
@@ -24,6 +21,8 @@ struct Globals
     static constexpr int BACKGROUND_Z = MAX_Z - SPACE_Z; //z coordinate of background
     static constexpr int START_Z = BACKGROUND_Z - SPACE_Z*50;
     static constexpr int CAMERA_Z_DISP = START_Z*0.7; //how far the camera is at all times from getCurrentZ()
+
+    static constexpr Vector2 screenDimen = {900,900};
 
     size_t collects = 0;
     LayerType currentLayer = 0; //layer player is at
@@ -46,6 +45,9 @@ struct Globals
     void addObject(std::shared_ptr<PhysicsBody> ptr);
     PhysicsBody* getPlayer();
 
+    void setCameraFollow(bool val);
+    bool getCameraFollow();
+
     SpritesGlobal Sprites;
     Camera3D camera;
     GlobalTerrain terrain;
@@ -53,6 +55,7 @@ struct Globals
     Interface interface;
 
 private:
+    bool cameraFollow = false;
     Globals();
 };
 

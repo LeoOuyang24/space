@@ -3,6 +3,9 @@
 
 #include <iostream>
 #include <memory>
+#include <functional>
+
+#include "UI.h"
 
 class Sign;
 class Interface
@@ -11,9 +14,14 @@ class Interface
     bool justSet = false;
     std::weak_ptr<Sign> sign;
     size_t messageIndex = 0;
+
+    Menus currentMenu = Menus::MAIN_MENU;
+    MainMenu menu;
+
     void processSign();//handle rendering sign message
 public:
     void setMessage(Sign* message);
+    void setMenu(Menus menu);
     void render();
 };
 

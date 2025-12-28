@@ -1,5 +1,15 @@
 # Changelog
 
+## UNRELEASED:
+
+* Added music
+* Created Sound Library for sounds
+* Added help text for resetting and interacting with objects
+* Added main menu
+  * Hitting play plays a zoom out "cutscene"
+  * Moved level 1 stuff around to better suit the cutscene
+  * TODO: add ability to skip cutscenes 
+
 ## 12/25/2025:
 
 * Added respawning and resetting objects that were collected in the air

@@ -6,7 +6,6 @@
 #include <raylib.h>
 
 #include "blocks.h"
-#include "terrain.h"
 #include "factory.h"
 #include "checkFields.h"
 #include "collideTriggers.h"
@@ -14,6 +13,7 @@
 #include "debug.h"
 #include "colliders.h"
 #include "game.h"
+#include "sequencer.h"
 
 struct PhysicsBody
 {
@@ -75,6 +75,11 @@ struct Forces
         return (forces.find(source) == forces.end()) ? Vector2{0,0} : forces[source];
     }
 };
+
+
+//renders a suggested button press over an object
+void suggestButtonPress(const Shape& shape,std::string_view str);
+
 template<typename Collider, typename Renderer, typename Descendant, typename... More>
 struct Object : public PhysicsBody
 {
@@ -115,9 +120,16 @@ struct Object : public PhysicsBody
         //if there is a collide with function,
         if constexpr (has_interactWith<Descendant>)
         {
-            if (IsKeyPressed(KEY_E) && &other == Globals::Game.getPlayer() && isTangible())
+            if (&other == Globals::Game.getPlayer())
             {
-                static_cast<Descendant*>(this)->interactWith(other);
+                if (IsKeyPressed(KEY_E))
+                {
+                    static_cast<Descendant*>(this)->interactWith(other);
+                }
+                else
+                {
+                    Sequences::add({[this](int){suggestButtonPress(getShape(),"E");return true;}},false);
+                }
             }
         }
         else if constexpr (has_collideWith<Descendant>)
@@ -286,5 +298,6 @@ protected:
     }
 
 };
+
 
 #endif // OBJECTS_H_INCLUDED

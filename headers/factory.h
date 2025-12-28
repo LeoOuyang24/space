@@ -106,7 +106,7 @@ struct FactoryBase
     static Obj deserialize(const SplitString& params)
     {
         Obj obj;
-        [&obj,&params,&params]<size_t... Index>(std::index_sequence<Index...>)
+        [&obj,&params]<size_t... Index>(std::index_sequence<Index...>)
         {
             //set each field to a value that is converted from a string
             //"Accessors(obj)" returns a reference to the corresponding field

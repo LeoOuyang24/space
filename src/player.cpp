@@ -7,6 +7,8 @@
 #include "../headers/game.h"
 
 #include "../headers/item.h"
+#include "../headers/sequencer.h"
+#include "../headers/raylib_helper.h"
 
 size_t std::hash<Key::KeyVal>::operator()(const Key::KeyVal& val) const
 {
@@ -57,6 +59,12 @@ void PlayerRenderer::render(const Shape& shape,const Color& color)
             break;
         }
     }
+
+    if ( owner.freeFallTime != 0 && GetTime() - owner.freeFallTime > 5)
+    {
+        suggestButtonPress(owner.getShape(),"Z");
+    }
+
     if (owner.state != Player::State::PORTALLING)
     TextureRenderer::render(shape2,color);
 
@@ -87,6 +95,12 @@ void Player::update(Terrain& terrain)
         //flip angle upon landing
         facing = !facing;
     }*/
+
+    if (onGround && !wasOnGround)
+    {
+        freeFallTime = -1;
+    }
+
     handleControls();
 
     //Vector2 forwardNorm = orient.getFacing(); //perpendicular to normal vector that moves us forward on flat ground with rotation 0
@@ -95,8 +109,13 @@ void Player::update(Terrain& terrain)
     if (onGround )
     {
         boosted = false;
+        freeFallTime = 0;
         saveResetState();
         stayOnGround(terrain);
+    }
+    else if (wasOnGround)
+    {
+        freeFallTime = GetTime();
     }
 
     if (terrain.isBlockType(orient.pos,LAVA))

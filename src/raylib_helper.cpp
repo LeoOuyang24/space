@@ -4,6 +4,29 @@
 
 #include <iostream>
 
+void moveCamera(Camera3D& camera, const Vector2& pos)
+{
+
+    float disp = Globals::CAMERA_Z_DISP*tan(camera.fovy/2*DEG2RAD); //distance from the edge of the screen
+
+    //clamps camera to level area
+    Vector2 clampedPos = {
+        Clamp(pos.x,disp,Terrain::MAX_TERRAIN_SIZE - disp),
+        Clamp(pos.y,disp,Terrain::MAX_TERRAIN_SIZE - disp)
+    };
+    assignVector(camera.position,clampedPos);
+    assignVector(camera.target,clampedPos);
+
+}
+
+void moveCamera(Camera3D& camera, const Vector3& pos)
+{
+    moveCamera(camera,Vector2{pos.x,pos.y});
+
+    camera.target.z = pos.z;
+    camera.position.z = pos.z - Globals::CAMERA_Z_DISP;
+}
+
 std::string fitText(Font font, std::string_view text, float fontSize, float fontSpacing, float maxWidth)
 {
     SplitString split(text,' '); //split strings into words

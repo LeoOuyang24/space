@@ -10,9 +10,9 @@
 
 #include <raylib.h>
 #include <raymath.h>
-#include "../headers/resources_math.h"
-
+#include "resources_math.h"
 #include "debug.h"
+
 enum BlockType : uint8_t
 {
     AIR = 0,

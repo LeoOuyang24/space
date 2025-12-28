@@ -22,8 +22,8 @@
 #include "headers/sequencer.h"
 
 #include "headers/portal.h"
-#include "headers/collideTriggers.h"
 #include "headers/item.h"
+#include "headers/audio.h"
 
 
 
@@ -46,29 +46,29 @@ int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const Vector2 screenDimen = {900,900};
+    const Vector2 screenDimen = Globals::screenDimen;
 
     InitWindow(screenDimen.x, screenDimen.y, "raylib [core] example - basic window");
+    InitAudioDevice();
    // SetConfigFlags(FLAG_MSAA_4X_HINT |  FLAG_FULLSCREEN_MODE );
     SetConfigFlags(FLAG_MSAA_4X_HINT);
     rlDisableBackfaceCulling();
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
 
-
     Globals::Game.init();
     Portal::PortalShader = LoadShader(0,TextFormat("shaders/fragments/portal.h",330));
-
 
     Camera3D& camera = Globals::Game.camera;
     //Globals::Game.loadLevel("levels/load_this.txt");
     Globals::Game.loadLevel("levels/layer0.txt");
     Globals::Game.loadLevel("levels/layer1.txt");
     Globals::Game.loadLevel("levels/layer2.txt");
-    Globals::Game.setLayer(0);
+
+    moveCamera(camera,Vector3{Terrain::MAX_TERRAIN_SIZE*0.5,Terrain::MAX_TERRAIN_SIZE*0.5,Globals::BACKGROUND_Z});
 
     float accum = 0;
-    float tick = 0.016;
+    float tick = 1/60.0f;
     float speed = 1;
 
 
@@ -124,9 +124,11 @@ int main(void)
     Vector2 pixelSizes = {1.0/blocks.width,1.0/blocks.height};
     SetShaderValue(Terrain::GravityFieldShader,GetShaderLocation(Terrain::GravityFieldShader,"pixelSizes"),&pixelSizes,SHADER_UNIFORM_VEC2);
 
-
+    SoundLibrary::loadBGM("music/world3.mp3");
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
+
+        SoundLibrary::update();
 
         float deltaTime = GetFrameTime();
         if ( IsKeyPressed(KEY_RIGHT_BRACKET) || !Debug::isPaused())
@@ -143,8 +145,8 @@ int main(void)
 
             accum -= tick/speed;
             frames ++;
-
         }
+        frames = 0;
 
         if (GetMouseWheelMove())
         {
@@ -154,7 +156,7 @@ int main(void)
             camera.position.z += move;
             camera.target.z += move;
         }
-        if (!Debug::isDebugOn() && Globals::Game.player)
+        if (!Debug::isDebugOn() && Globals::Game.player && Globals::Game.getCameraFollow())
         {
             moveCamera(Globals::Game.camera,Globals::Game.player->orient.pos);
         }
@@ -180,7 +182,7 @@ int main(void)
                 Texture2D& bg = *Globals::Game.Sprites.getSprite("bg_scatter.png");
                 DrawBillboardRec(camera,bg,Rectangle(0,0,bg.width,bg.height),
                                  Vector3(Terrain::MAX_TERRAIN_SIZE/2,Terrain::MAX_TERRAIN_SIZE/2,Globals::BACKGROUND_Z),
-                                 Vector2(bg.width*2,bg.height*2),WHITE);
+                                 Vector2(bg.width,bg.height),WHITE);
                 Globals::Game.terrain.render();
 
             Sequences::runRenders();

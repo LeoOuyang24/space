@@ -6,21 +6,7 @@
 #include "../headers/sequencer.h"
 #include "../headers/player.h"
 #include "../headers/factory.h"
-
-void moveCamera(Camera3D& camera, const Vector2& pos)
-{
-
-    float disp = Globals::CAMERA_Z_DISP*tan(camera.fovy/2*DEG2RAD); //distance from the edge of the screen
-
-    //clamps camera to level area
-    Vector2 clampedPos = {
-        Clamp(pos.x,disp,Terrain::MAX_TERRAIN_SIZE - disp),
-        Clamp(pos.y,disp,Terrain::MAX_TERRAIN_SIZE - disp)
-    };
-    assignVector(camera.position,clampedPos);
-    assignVector(camera.target,clampedPos);
-
-}
+#include "../headers/audio.h"
 
 Globals Globals::Game;
 
@@ -28,6 +14,7 @@ void Globals::init()
 {
 
     Sprites.addSprites("sprites");
+    SoundLibrary::loadSounds("sounds");
 
     //Globals::Game.terrain.loadTerrain("sprites/layers/level2.png");
 
@@ -75,12 +62,12 @@ void Globals::setLayer(LayerType layer)
             terrain.addObject(player,layer);
         }
 
-        Sequences::add({[camera=&(this->camera),endZ=getCurrentZ()  - Globals::CAMERA_Z_DISP,startZ = camera.position.z](int runTimes){
+        /*Sequences::add({[camera=&(this->camera),endZ=getCurrentZ()  - Globals::CAMERA_Z_DISP,startZ = camera.position.z](int runTimes){
 
                        camera->position.z = Lerp(startZ,endZ,runTimes/50.0);
                        return runTimes >= 50;
 
-                       }},false);
+                       }},false);*/
     }
     else
     {
@@ -182,6 +169,17 @@ PhysicsBody* Globals::getPlayer()
 {
     return player.get();
 }
+
+void Globals::setCameraFollow(bool val)
+{
+    cameraFollow = val;
+}
+
+bool Globals::getCameraFollow()
+{
+    return cameraFollow;
+}
+
 
 Globals::Globals()
 {

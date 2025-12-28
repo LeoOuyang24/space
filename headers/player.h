@@ -82,6 +82,8 @@ struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
     float power = 0; //charging power
     int dying = 0; //press and hold to die
 
+    double freeFallTime = 0;
+
     bool boosted = false;
 
     bool facing = true;

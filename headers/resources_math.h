@@ -2,9 +2,12 @@
 #define RESOURCES_MATH_H_INCLUDED
 
 #include <utility>
+#include <iostream>
+
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 #include <raylib.h>
-#include "raymath.h"
 
 
 //generic math functions I use
@@ -14,6 +17,11 @@
 float trunc(float x, int places);
 Vector2 trunc(const Vector2& p, int places);
 
+template<typename T>
+T lerp(T a, T b, float amount)
+{
+    return a + (b - a)*std::min(std::max(0.0f,amount),1.0f);
+}
 
 struct PossiblePoint //a point that may not exist
 {

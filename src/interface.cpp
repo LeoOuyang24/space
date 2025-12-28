@@ -46,8 +46,18 @@ void Interface::setMessage(Sign* message)
     }
 }
 
+void Interface::setMenu(Menus newMenu)
+{
+    currentMenu = newMenu;
+}
+
 void Interface::render()
 {
+    if (currentMenu == MAIN_MENU)
+    {
+        menu.update();
+    }
+
     int i = 0;
     Vector2 screenDimen = {GetScreenWidth(),GetScreenHeight()};
     Texture2D& sprite = *Globals::Game.Sprites.getSprite("key.png");
@@ -73,6 +83,5 @@ void Interface::render()
     {
         processSign();
     }
-
-
+    Player* player = Globals::Game.player.get();
 }

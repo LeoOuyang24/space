@@ -6,6 +6,13 @@
 
 #include "raylib.h"
 
+
+//no idea where to put this LUL
+//moves camera to look at "pos"
+void moveCamera(Camera3D& camera, const Vector2& pos);
+
+void moveCamera(Camera3D& camera, const Vector3& pos);
+
 enum TextAlign
 {
     LEFT = 0, //given (x,y), text is drawn starting at x, with y being the middle of the height

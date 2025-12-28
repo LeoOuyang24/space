@@ -1,4 +1,5 @@
 #include "../headers/interactives.h"
+#include "../headers/audio.h"
 
 Sign::Sign() : Object({},
                       std::make_tuple(SIGN_DIMEN.x,SIGN_DIMEN.y),
@@ -30,5 +31,5 @@ Rover::Rover() : Object({},std::make_tuple(ROVER_DIMEN.x,ROVER_DIMEN.y),std::mak
 
 void Rover::interactWith(PhysicsBody& other)
 {
-
+    SoundLibrary::toggleBGM();
 }
