@@ -1,5 +1,8 @@
 # Changelog
 
+## 12/31/2025 (mvp-12-31-2025):
+* Fixed minor bug with self-destruct UI not showing up
+
 ## 12/30/2025 (mia-test-12-30-2025):
 
 * Added music
