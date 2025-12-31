@@ -79,7 +79,7 @@ void Interface::render()
             i ++;
         }
         float height = Globals::Game.player->dying;
-        DrawRectangle(100,screenDimen.x*.9 - height,100,height,RED);
+        DrawRectangle(.1*screenDimen.x,screenDimen.y*.9 - height,100,height,RED);
 
         DrawText(std::to_string(Globals::Game.getCollects()).c_str(),.85*screenDimen.x,.9*screenDimen.y,50,WHITE);
         DrawTextureEx(Globals::Game.Sprites.getSprite("gear.png"),{.8*screenDimen.x,.91*screenDimen.y},0,0.1,WHITE);
