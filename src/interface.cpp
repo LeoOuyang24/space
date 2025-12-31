@@ -36,9 +36,9 @@ void Interface::processSign()
     justSet = false;
 
 
-    /*DrawAnime(*Globals::Game.Sprites.getSprite("right-click.png"),
-              {0,60,2,1},
-              Rectangle(0.8*Globals::screenDimen.x,0.7*Globals::screenDimen.y,100,100));*/
+    DrawAnime(Globals::Game.Sprites.getSprite("right-click.png"),
+              0,{60,2,1},
+              Rectangle(0.8*Globals::screenDimen.x,0.7*Globals::screenDimen.y,100,100));
 }
 
 void Interface::setMessage(Sign* message)
