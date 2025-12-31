@@ -34,6 +34,11 @@ void Interface::processSign()
         messageIndex ++;
     }
     justSet = false;
+
+
+    /*DrawAnime(*Globals::Game.Sprites.getSprite("right-click.png"),
+              {0,60,2,1},
+              Rectangle(0.8*Globals::screenDimen.x,0.7*Globals::screenDimen.y,100,100));*/
 }
 
 void Interface::setMessage(Sign* message)
@@ -57,31 +62,32 @@ void Interface::render()
     {
         menu.update();
     }
-
-    int i = 0;
-    Vector2 screenDimen = {GetScreenWidth(),GetScreenHeight()};
-    Texture2D& sprite = *Globals::Game.Sprites.getSprite("key.png");
-    for (auto& it : Globals::Game.player->keys)
+    else
     {
-        Vector2 point = {200 + i*100,100};
-        float dimen = 50;
-        DrawTexturePro(sprite,
-                       Rectangle(0,0,sprite.width,sprite.height),
-                       Rectangle(point.x,point.y,dimen,dimen),
-                       Vector2(dimen/2,dimen/2),
-                       0,it);
-        i ++;
-    }
-    float height = Globals::Game.player->dying;
-    DrawRectangle(100,screenDimen.x*.9 - height,100,height,RED);
+        int i = 0;
+        Vector2 screenDimen = {GetScreenWidth(),GetScreenHeight()};
+        Texture2D sprite = Globals::Game.Sprites.getSprite("key.png");
+        for (auto& it : Globals::Game.player->keys)
+        {
+            Vector2 point = {200 + i*100,100};
+            float dimen = 50;
+            DrawTexturePro(sprite,
+                           Rectangle(0,0,sprite.width,sprite.height),
+                           Rectangle(point.x,point.y,dimen,dimen),
+                           Vector2(dimen/2,dimen/2),
+                           0,it);
+            i ++;
+        }
+        float height = Globals::Game.player->dying;
+        DrawRectangle(100,screenDimen.x*.9 - height,100,height,RED);
 
-    DrawText(std::to_string(Globals::Game.getCollects()).c_str(),.85*screenDimen.x,.9*screenDimen.y,50,WHITE);
-    DrawTextureEx(*Globals::Game.Sprites.getSprite("gear.png"),{.8*screenDimen.x,.91*screenDimen.y},0,0.1,WHITE);
-   // DrawBillboard(Globals::Game.camera,*Globals::Game.Sprites.getSprite("gear.png"),{.8*GetScreenWidth(),.9*GetScreenHeight(),0},50,WHITE);
+        DrawText(std::to_string(Globals::Game.getCollects()).c_str(),.85*screenDimen.x,.9*screenDimen.y,50,WHITE);
+        DrawTextureEx(Globals::Game.Sprites.getSprite("gear.png"),{.8*screenDimen.x,.91*screenDimen.y},0,0.1,WHITE);
+       // DrawBillboard(Globals::Game.camera,*Globals::Game.Sprites.getSprite("gear.png"),{.8*GetScreenWidth(),.9*GetScreenHeight(),0},50,WHITE);
 
-    if (sign.lock().get())
-    {
-        processSign();
+        if (sign.lock().get())
+        {
+            processSign();
+        }
     }
-    Player* player = Globals::Game.player.get();
 }

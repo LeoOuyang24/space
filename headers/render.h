@@ -27,18 +27,32 @@ struct ShapeRenderer
     }
 };
 
+
 struct TextureRenderer
 {
-    Texture2D* sprite = nullptr;
-    bool facing = false; //true if facing to the right
+    Texture2D sprite = {};
+    bool facing = true; //true if facing to the right
     TextureRenderer()
     {
 
     }
-    TextureRenderer(Texture2D* sprite);
-    void setSprite(Texture2D* sprite_);
+    TextureRenderer(const Texture2D& sprite);
+    void setSprite(const Texture2D& sprite_);
     virtual void render(const Shape& shape, const Color& color);
 
 };
 
+
+class AnimeRenderer
+{
+    std::unordered_map<std::string, std::string> states; //map of state name to sprite name
+    const Anime* current = nullptr;
+    double start = -1;
+
+public:
+    //list of state and sprites. even index strings are state names, odd index strings are sprite names
+    AnimeRenderer(const std::initializer_list<std::string_view>& lst);
+    void setState(std::string_view stateName);
+    void render(const Shape& shape, const Color& color);
+};
 #endif // RENDER_H_INCLUDED

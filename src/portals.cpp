@@ -17,11 +17,11 @@ void TokenLocked::render(Shape shape)
     DrawText3D(GetFontDefault(),
                str.c_str(),
                Globals::Game.terrain.orientToVec3(shape.orient),
-               fontSize,10,0,false,unlocked() ? WHITE : RED,CENTER);
+               fontSize,10,0,false,unlocked() ? BLACK : RED,CENTER);
 
     pos.x += fontSize/2;
     pos.y += fontSize/2;
-    DrawBillboard(Globals::Game.camera,*Globals::Game.Sprites.getSprite("gear.png"),pos,fontSize,WHITE);
+    DrawBillboard(Globals::Game.getCamera(),Globals::Game.Sprites.getSprite("gear.png"),pos,fontSize,WHITE);
 }
 
 std::string TokenLocked::toString()
@@ -58,9 +58,15 @@ bool Portal::unlocked()
                        return x >= 30; //wait 30 frames (~0.5 second)
 
                        },
-                       [dest=this->destPos,start = player.getPos()](int x){
+                       [dest=this->destPos,start = player.getPos(),this](int x){
                         Player* player = static_cast<Player*>(Globals::Game.getPlayer());
                         player->setPos(start + (dest - start)*.01f*x);
+
+                       Globals::Game.lookAt(Lerp(
+                                                 Globals::Game.terrain.getZOfLayer(player->getOrient().layer),
+                                                 Globals::Game.terrain.getZOfLayer(orient.layer + layerDisp),
+                                                 x/100.0));
+
                         return Vector2Equals(player->getPos(),dest) || x >= 100; //fail safe, this can only run 100 times
                        },
                         [this](int)
@@ -83,7 +89,7 @@ bool Portal::unlocked()
         Vector4 tint = unlocked() ? Vector4{1,1,0,0} : Vector4{0.5,0.5,0.5,0};
         SetShaderValue(PortalShader,GetShaderLocation(PortalShader,"time"),&time,SHADER_UNIFORM_FLOAT);
         SetShaderValue(PortalShader,GetShaderLocation(PortalShader,"tint"),&tint,SHADER_UNIFORM_VEC4);
-        DrawBillboard(Globals::Game.camera,texture.texture,{
+        DrawBillboard(Globals::Game.getCamera(),texture.texture,{
                       orient.pos.x,orient.pos.y,
                       Globals::Game.terrain.getZOfLayer(orient.layer)},
                       collider.radius*3,WHITE);

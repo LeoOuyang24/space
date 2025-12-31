@@ -48,12 +48,14 @@
 			<Add library="pthread" />
 			<Add directory="../raylib-5.5_win64_mingw-w64/lib" />
 		</Linker>
+		<Unit filename="audio.h" />
 		<Unit filename="blocks.cpp">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="blocks.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="headers/UI.h" />
 		<Unit filename="headers/blackMagic.h" />
 		<Unit filename="headers/blocks.h" />
 		<Unit filename="headers/checkFields.h" />
@@ -83,6 +85,8 @@
 		<Unit filename="shaders/fragments/stars.h" />
 		<Unit filename="shaders/fragments/sun.h" />
 		<Unit filename="shaders/fragments/terrain.h" />
+		<Unit filename="src/UI.cpp" />
+		<Unit filename="src/audio.cpp" />
 		<Unit filename="src/blocks.cpp" />
 		<Unit filename="src/collideTriggers.cpp" />
 		<Unit filename="src/colliders.cpp" />

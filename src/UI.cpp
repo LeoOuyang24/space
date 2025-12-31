@@ -6,6 +6,7 @@
 #include "../headers/UI.h"
 
 #include "../headers/objects.h"
+#include "../headers/audio.h"
 
 
 Button::Button(const Vector2& center, const Vector2& dimen, ClickFunc func,std::string_view view) : box({center.x - dimen.x/2,
@@ -35,17 +36,18 @@ MainMenu::MainMenu() : play({0.5*Globals::screenDimen.x,0.55*Globals::screenDime
                             Globals::screenDimen*0.2,
                             [](){
                             Globals::Game.interface.setMenu(NONE);
+                            SoundLibrary::toggleBGM(true);
                             Sequences::add(true,[](int x){
                                             constexpr float its = 100.0f;
-                                            float z = lerp(Globals::Game.camera.position.z,Globals::START_Z - Globals::CAMERA_Z_DISP,1/its);
-                                            Globals::Game.camera.position.z = z;
-                                           return x > 300;
+                                            const float targetZ = Globals::Game.terrain.getZOfLayer(0);
+                                            float z = lerp(Globals::Game.getCamera().target.z,targetZ,1/its);
+                                            Globals::Game.lookAt(z); //todo: this never actually reaches targetZ because we are only moving up by 1% of our remaining distance
+                                           return x > 300 || Globals::Game.getCamera().target.z == targetZ || Debug::isDebugOn();
 
                                            },
                                            [](int x){
-
-                                           moveCamera(Globals::Game.camera,lerp({3000,3000},Globals::Game.getPlayer()->getPos(),x/100.0f));
-                                           return x > 100;
+                                           Globals::Game.moveCamera(lerp({Terrain::MAX_TERRAIN_SIZE/2,Terrain::MAX_TERRAIN_SIZE/2},Globals::Game.getPlayer()->getPos(),x/100.0f));
+                                           return x > 100 || Debug::isDebugOn();
 
                                            },
 

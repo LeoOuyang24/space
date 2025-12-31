@@ -1,14 +1,20 @@
 # Changelog
 
-## UNRELEASED:
+## 12/30/2025:
 
 * Added music
 * Created Sound Library for sounds
 * Added help text for resetting and interacting with objects
+* Getting stuck in freefall will now eventually tell the player to press Z
 * Added main menu
   * Hitting play plays a zoom out "cutscene"
   * Moved level 1 stuff around to better suit the cutscene
-  * TODO: add ability to skip cutscenes 
+* Added a tutorial sign for boosting
+* Added a (very bad) sprite for when boosting
+* Added indicator to right-click to read signs
+* Sprites no longer messes with pointers, no need!
+* Added animations, and the ability to switch between them
+  * Currently only applied to Rover
 
 ## 12/25/2025:
 

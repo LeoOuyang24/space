@@ -10,7 +10,7 @@
 void Editor::drawInterface()
 {
     Vector2 mousePos = GetMousePosition();
-    Vector2 coords = screenToWorld(mousePos,Globals::Game.camera,{GetScreenWidth(),GetScreenHeight()},
+    Vector2 coords = screenToWorld(mousePos,Globals::Game.getCamera(),{GetScreenWidth(),GetScreenHeight()},
                                     Globals::Game.getCurrentZ());
     DrawText((std::to_string(int(coords.x)) + " " + std::to_string(int(coords.y))).c_str(),mousePos.x,mousePos.y - 20,20,WHITE);
     DrawText("EDITOR",10,50,30,BLUE);
@@ -24,7 +24,7 @@ void Editor::drawInterface()
 void Editor::handleInput()
 {
     Vector2 mousePos = GetMousePosition();
-    Vector2 coords = screenToWorld(mousePos,Globals::Game.camera,{GetScreenWidth(),GetScreenHeight()},
+    Vector2 coords = screenToWorld(mousePos,Globals::Game.getCamera(),{GetScreenWidth(),GetScreenHeight()},
                                     Globals::Game.getCurrentZ());
     if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
     {
@@ -38,6 +38,10 @@ void Editor::handleInput()
         if (c)
         {
             searchText += c;
+        }
+        else if (IsKeyPressed(KEY_TAB))
+        {
+            searchText += '\t';
         }
 
         if (IsKeyPressed(KEY_ENTER))
@@ -135,7 +139,7 @@ void Cheats::drawInterface()
 
 void Cheats::handleInput()
 {
-    Vector2 mousePos = screenToWorld(GetMousePosition(),Globals::Game.camera,{GetScreenWidth(),GetScreenHeight()},Globals::Game.getCurrentZ());
+    Vector2 mousePos = screenToWorld(GetMousePosition(),Globals::Game.getCamera(),{GetScreenWidth(),GetScreenHeight()},Globals::Game.getCurrentZ());
     if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON))
     {
         switch (mode)
@@ -204,7 +208,7 @@ void Cheats::handleInput()
                                          terr->blockExists(pos,false) ? RED : BLUE);
                                 },
                                 screenToWorld(GetMousePosition(),
-                                              Globals::Game.camera,
+                                              Globals::Game.getCamera(),
                                               {GetScreenWidth(),GetScreenHeight()},
                                               Globals::Game.getCurrentZ()),2*Block::BLOCK_DIMEN);
                       });
@@ -294,31 +298,26 @@ void Debug::drawInterface()
         DrawText("PAUSED",GetScreenWidth()*.9,10,20,WHITE);
     }
     Vector2 screenDimen = {GetScreenWidth(),GetScreenHeight()};
-    Camera3D& camera = Globals::Game.camera;
 
     if (currentMode)
     {
         currentMode->drawInterface();
         if (GetMousePosition().x >= 0.9*screenDimen.x)
         {
-            camera.position.x += 10;
-            camera.target.x += 10;
+            Globals::Game.moveCamera(Globals::Game.getCamera().position + Vector3(10,0,0));
         }
         else if (GetMousePosition().x <= 0.1*screenDimen.x)
         {
-            camera.position.x -= 10;
-            camera.target.x -= 10;
+            Globals::Game.moveCamera(Globals::Game.getCamera().position + Vector3(-10,0,0));
         }
 
         if (GetMousePosition().y >= 0.9*screenDimen.y)
         {
-            camera.position.y += 10;
-            camera.target.y += 10;
+            Globals::Game.moveCamera(Globals::Game.getCamera().position + Vector3(0,10,0));
         }
         else if (GetMousePosition().y <= 0.1*screenDimen.y)
         {
-            camera.position.y -= 10;
-            camera.target.y -= 10;
+            Globals::Game.moveCamera(Globals::Game.getCamera().position + Vector3(0,-10,0));
         }
     }
 }

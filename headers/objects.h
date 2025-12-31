@@ -171,7 +171,6 @@ struct Object : public PhysicsBody
     virtual void render()
     {
         renderer.render(getShape(),tint);
-        Vector2 dimen = GetDimen(getShape());
     }
     virtual void update(Terrain& t)
     {

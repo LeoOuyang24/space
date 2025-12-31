@@ -66,7 +66,10 @@ void PlayerRenderer::render(const Shape& shape,const Color& color)
     }
 
     if (owner.state != Player::State::PORTALLING)
-    TextureRenderer::render(shape2,color);
+    {
+        sprite = Globals::Game.Sprites.getSprite(Vector2LengthSqr(owner.forces.getForce(Forces::BOOSTING)) < 1 ? "guy.png" : "guy_boosting.png");
+            TextureRenderer::render(shape2,color);
+    }
 
 }
 
@@ -85,7 +88,7 @@ void Player::update(Terrain& terrain)
     //if (!onGround)
     Object::applyForces(terrain);
 
-    tint = onGround ? WHITE : freeFall ? BLUE : RED;
+    //tint = onGround ? WHITE : freeFall ? BLUE : RED;
 
 
     float oldRotation = orient.rotation;
@@ -167,9 +170,9 @@ void Player::handleControls()
             {
                 forces.addFriction(0);
                 forces.addForce(Vector2Normalize(screenToWorld(GetMousePosition(),
-                                              Globals::Game.camera,
+                                              Globals::Game.getCamera(),
                                               {GetScreenWidth(),GetScreenHeight()},
-                                              Globals::Game.getCurrentZ()) - getPos())*5,Forces::BOOSTING);
+                                              Globals::Game.getCurrentZ()) - getPos())*3,Forces::BOOSTING);
                 boosted = true;
             }
         }

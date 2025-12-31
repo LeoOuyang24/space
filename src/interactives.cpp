@@ -24,12 +24,20 @@ size_t Sign::getMessagesSize()
     return message.size();
 }
 
-Rover::Rover() : Object({},std::make_tuple(ROVER_DIMEN.x,ROVER_DIMEN.y),std::make_tuple(Globals::Game.Sprites.getSprite(ROVER_SPRITE_PATH)))
+Rover::Rover() : Object({},std::make_tuple(ROVER_DIMEN.x,ROVER_DIMEN.y),
+                        std::make_tuple(std::initializer_list<std::string_view>{"DEFAULT",ROVER_SPRITE_PATH,"OFF","rover_off.png"}))
 {
-
+    renderer.setState("DEFAULT");
 }
 
 void Rover::interactWith(PhysicsBody& other)
 {
-    SoundLibrary::toggleBGM();
+    on = !on;
+    SoundLibrary::toggleBGM(on);
+    renderer.setState(on ? "DEFAULT" : "OFF");
+}
+
+BigSign::BigSign() : Object({},{},{})
+{
+
 }

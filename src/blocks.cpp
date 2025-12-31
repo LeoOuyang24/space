@@ -365,7 +365,7 @@ void Terrain::render(int i, int z)
 
    //BeginShaderMode(GravityFieldShader);
 
-   DrawBillboardPro(Globals::Game.camera,blocksTexture.texture,Rectangle(0,0,blocksTexture.texture.width,blocksTexture.texture.height)
+   DrawBillboardPro(Globals::Game.getCamera(),blocksTexture.texture,Rectangle(0,0,blocksTexture.texture.width,blocksTexture.texture.height)
                     ,Vector3(blocksTexture.texture.width/2,blocksTexture.texture.height/2,z),Vector3(0,-1,0),
                     Vector2(blocksTexture.texture.width,blocksTexture.texture.height),Vector2(blocksTexture.texture.width/2,blocksTexture.texture.height/2),
                     0,balls);

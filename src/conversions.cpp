@@ -93,14 +93,9 @@ Color fromString(std::string_view str)
 }
 
 template<>
-Texture2D* fromString(std::string_view str)
+Texture2D fromString(std::string_view str)
 {
-    Texture2D* sprite = Globals::Game.Sprites.getSprite(str.data());
-    if (!sprite)
-    {
-        std::cerr << "fromString: failed to fetch sprite: " << str << "\n";
-        exit(1);
-    }
+    Texture2D sprite = Globals::Game.Sprites.getSprite(str.data());
     return sprite;
 }
 
@@ -176,7 +171,7 @@ std::string toString(Color& col)
 }
 
 template<>
-std::string toString(Texture2D*& sprite)
+std::string toString(Texture2D& sprite)
 {
     return Globals::Game.Sprites.getSpritePath(sprite);
 }

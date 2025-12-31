@@ -4,27 +4,42 @@
 
 #include <iostream>
 
-void moveCamera(Camera3D& camera, const Vector2& pos)
+void DrawAnime(const Texture2D& sprite, double start, const AnimeInfo& info, const Rectangle& pos, float rotation, Color tint )
 {
+    if (info.horizFrames == 0 || info.vertFrames == 0)
+    {
+        std::cerr << "DrawAnime error: " << info.horizFrames << "x" << info.vertFrames << " spritesheet!";
+        return;
+    }
 
-    float disp = Globals::CAMERA_Z_DISP*tan(camera.fovy/2*DEG2RAD); //distance from the edge of the screen
-
-    //clamps camera to level area
-    Vector2 clampedPos = {
-        Clamp(pos.x,disp,Terrain::MAX_TERRAIN_SIZE - disp),
-        Clamp(pos.y,disp,Terrain::MAX_TERRAIN_SIZE - disp)
-    };
-    assignVector(camera.position,clampedPos);
-    assignVector(camera.target,clampedPos);
-
+    int frame = (GetTime() - start)*GetFPS()/info.speed; //the frame we are on, 0 = first
+    Vector2 frameDimens = {sprite.width/info.horizFrames,sprite.height/info.vertFrames};
+    DrawTexturePro(sprite,
+                   {frame%info.horizFrames*frameDimens.x,frame/info.vertFrames*frameDimens.y,frameDimens.x,frameDimens.y},
+                   pos,
+                   frameDimens*0.5,
+                   rotation,
+                   tint);
 }
 
-void moveCamera(Camera3D& camera, const Vector3& pos)
+void DrawAnime3D(const Texture2D& sprite, double start, const AnimeInfo& info, const Rectangle& pos, float z, float rotation, Color tint)
 {
-    moveCamera(camera,Vector2{pos.x,pos.y});
+     if (info.horizFrames == 0 || info.vertFrames == 0)
+    {
+        std::cerr << "DrawAnime3D error: " << info.horizFrames << "x" << info.vertFrames << " spritesheet!";
+        return;
+    }
 
-    camera.target.z = pos.z;
-    camera.position.z = pos.z - Globals::CAMERA_Z_DISP;
+    int frame = (GetTime() - start)*GetFPS()/info.speed; //the frame we are on, 0 = first
+    Vector2 frameDimens = {sprite.width/info.horizFrames,sprite.height/info.vertFrames};
+    DrawBillboardPro(Globals::Game.getCamera(),sprite,
+                   {frame%info.horizFrames*frameDimens.x,frame/info.vertFrames*frameDimens.y,frameDimens.x,frameDimens.y},
+                   Vector3(pos.x + pos.width/2,pos.y + pos.height/2,z),
+                   {0,-1,0},
+                   Vector2(pos.width,pos.height),
+                   Vector2(pos.width/2,pos.height/2),
+                   rotation*RAD2DEG*-1,
+                   tint);
 }
 
 std::string fitText(Font font, std::string_view text, float fontSize, float fontSpacing, float maxWidth)

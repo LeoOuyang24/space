@@ -14,6 +14,9 @@ void Globals::init()
 {
 
     Sprites.addSprites("sprites");
+    Sprites.addSprites("sprites/ui");
+    Sprites.addAnime({1,10,10},"sprites/animes/rover2_anime.png","rover2.png");
+    Sprites.addAnime({1,1,1},"sprites/animes/rover_off.png","rover_off.png");
     SoundLibrary::loadSounds("sounds");
 
     //Globals::Game.terrain.loadTerrain("sprites/layers/level2.png");
@@ -62,12 +65,12 @@ void Globals::setLayer(LayerType layer)
             terrain.addObject(player,layer);
         }
 
-        /*Sequences::add({[camera=&(this->camera),endZ=getCurrentZ()  - Globals::CAMERA_Z_DISP,startZ = camera.position.z](int runTimes){
+        Sequences::add({[camera=&(this->camera),endZ=getCurrentZ()  - Globals::CAMERA_Z_DISP,startZ = camera.position.z](int runTimes){
 
                        camera->position.z = Lerp(startZ,endZ,runTimes/50.0);
                        return runTimes >= 50;
 
-                       }},false);*/
+                       }},false);
     }
     else
     {
@@ -180,6 +183,43 @@ bool Globals::getCameraFollow()
     return cameraFollow;
 }
 
+
+void Globals::moveCamera(const Vector3& pos)
+{
+    moveCamera(Vector2{pos.x,pos.y});
+
+    camera.position.z = pos.z ;
+    camera.target.z = pos.z + Globals::CAMERA_Z_DISP;
+
+}
+
+void Globals::moveCamera(const Vector2& pos)
+{
+    float disp = Globals::CAMERA_Z_DISP*tan(camera.fovy/2*DEG2RAD); //distance from the edge of the screen
+
+    //clamps camera to level area
+    Vector2 clampedPos = {
+        Clamp(pos.x,disp,Terrain::MAX_TERRAIN_SIZE - disp),
+        Clamp(pos.y,disp,Terrain::MAX_TERRAIN_SIZE - disp)
+    };
+    assignVector(camera.position,clampedPos);
+    assignVector(camera.target,clampedPos);
+}
+
+void Globals::moveCamera(float z)
+{
+    moveCamera(Vector3(camera.position.x,camera.position.y,z));
+}
+
+void Globals::lookAt(float z)
+{
+    moveCamera(z - Globals::CAMERA_Z_DISP);
+}
+
+const Camera3D& Globals::getCamera()
+{
+    return camera;
+}
 
 Globals::Globals()
 {

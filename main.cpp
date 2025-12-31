@@ -38,9 +38,6 @@
     #define GLSL_VERSION            100
 #endif
 
-
-
-
 bool active = false;
 int main(void)
 {
@@ -48,10 +45,14 @@ int main(void)
     //--------------------------------------------------------------------------------------
     const Vector2 screenDimen = Globals::screenDimen;
 
+    SetConfigFlags( FLAG_VSYNC_HINT);
     InitWindow(screenDimen.x, screenDimen.y, "raylib [core] example - basic window");
     InitAudioDevice();
-   // SetConfigFlags(FLAG_MSAA_4X_HINT |  FLAG_FULLSCREEN_MODE );
-    SetConfigFlags(FLAG_MSAA_4X_HINT);
+
+    if constexpr (!Globals::DEBUG)
+        ToggleFullscreen();
+
+    //SetConfigFlags(FLAG_MSAA_4X_HINT);
     rlDisableBackfaceCulling();
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
@@ -59,20 +60,21 @@ int main(void)
     Globals::Game.init();
     Portal::PortalShader = LoadShader(0,TextFormat("shaders/fragments/portal.h",330));
 
-    Camera3D& camera = Globals::Game.camera;
+    const Camera3D& camera = Globals::Game.getCamera();
     //Globals::Game.loadLevel("levels/load_this.txt");
     Globals::Game.loadLevel("levels/layer0.txt");
     Globals::Game.loadLevel("levels/layer1.txt");
     Globals::Game.loadLevel("levels/layer2.txt");
 
-    moveCamera(camera,Vector3{Terrain::MAX_TERRAIN_SIZE*0.5,Terrain::MAX_TERRAIN_SIZE*0.5,Globals::BACKGROUND_Z});
+    Globals::Game.moveCamera(Vector3{Terrain::MAX_TERRAIN_SIZE*0.5,Terrain::MAX_TERRAIN_SIZE*0.5,Globals::BACKGROUND_Z*0.9});
+
 
     float accum = 0;
     float tick = 1/60.0f;
     float speed = 1;
 
 
-    /*Shader stars= LoadShader(0, TextFormat("shaders/fragments/stars.h", GLSL_VERSION));
+   /* Shader stars= LoadShader(0, TextFormat("shaders/fragments/stars.h", GLSL_VERSION));
     Shader sun = LoadShader(0,TextFormat("shaders/fragments/sun.h",GLSL_VERSION));
 
     SetShaderValue(stars, GetShaderLocation(stars,"screenDimen"), &screenDimen, SHADER_UNIFORM_VEC2);
@@ -80,20 +82,11 @@ int main(void)
     Vector4 sunEdge = {0,0.8,1,0.0};
     SetShaderValue(sun,GetShaderLocation(sun,"centerColor"),&sunCenter,SHADER_UNIFORM_VEC4);
     SetShaderValue(sun,GetShaderLocation(sun,"borderColor"),&sunEdge,SHADER_UNIFORM_VEC4);
-    auto timeLocation = GetShaderLocation(sun,"time");*/
+    auto timeLocation = GetShaderLocation(sun,"time");
 
-    RenderTexture2D bg = LoadRenderTexture(5000*2,5000);//LoadRenderTexture(Terrain::MAX_WIDTH*screenDimen.x/screenDimen.y*2,Terrain::MAX_WIDTH*2);
-    /*BeginTextureMode(bg);
-        ClearBackground(BLACK);
-        BeginShaderMode(stars);
-            DrawTexture(bg.texture,0,0,WHITE);
-        EndShaderMode();
-        BeginShaderMode(sun);
-            DrawTexture(bg.texture,0,0,WHITE);
-        EndShaderMode();
-    EndTextureMode();*/
+    RenderTexture2D bg = LoadRenderTexture(8000*2,8000);//LoadRenderTexture(Terrain::MAX_WIDTH*screenDimen.x/screenDimen.y*2,Terrain::MAX_WIDTH*2);
 
-   /* BeginTextureMode(bg);
+    BeginTextureMode(bg);
         ClearBackground(BLACK);
 
         for (int i = 0; i < 10000;i ++)
@@ -102,7 +95,7 @@ int main(void)
             float angle = rand()%10000/10000.0*360*M_PI/180;
             int a = bg.texture.width;
             int b = bg.texture.height;
-            float maxRadius = (a*b)/(sqrt(pow(b*cos(angle),2) + pow(a*sin(angle),2)));
+            float maxRadius = (a*b)/(sqrt(pow(b*cos(angle),2) + pow(a*sin(angle),2))); //radius of an ellipse at a given angle
             float dist = maxRadius/2*Lerp(0,1,randed/(randed+5));
             Vector2 center = {bg.texture.width/2 + cos(angle)*dist,bg.texture.height/2 + sin(angle)*dist};
             Vector3 color = {rand()%100/100.0,rand()%100/100.0,rand()%100/100.0};
@@ -124,7 +117,8 @@ int main(void)
     Vector2 pixelSizes = {1.0/blocks.width,1.0/blocks.height};
     SetShaderValue(Terrain::GravityFieldShader,GetShaderLocation(Terrain::GravityFieldShader,"pixelSizes"),&pixelSizes,SHADER_UNIFORM_VEC2);
 
-    SoundLibrary::loadBGM("music/world3.mp3");
+    SoundLibrary::loadBGM("music/world3.wav");
+    SoundLibrary::toggleBGM(false);
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
 
@@ -153,15 +147,16 @@ int main(void)
 
             //camera.zoom += ((float)GetMouseWheelMove()*0.05f);
             float move = GetMouseWheelMove()*5;
-            camera.position.z += move;
-            camera.target.z += move;
+            //camera.position.z += move;
+            //camera.target.z += move;
+            Globals::Game.moveCamera(Globals::Game.getCamera().position + Vector3(0,0,move));
         }
         if (!Debug::isDebugOn() && Globals::Game.player && Globals::Game.getCameraFollow())
         {
-            moveCamera(Globals::Game.camera,Globals::Game.player->orient.pos);
+            Globals::Game.moveCamera(Globals::Game.player->orient.pos);
         }
-
-        Debug::handleInput();
+        if constexpr (Globals::DEBUG)
+            Debug::handleInput();
 
         // Draw
         //----------------------------------------------------------------------------------
@@ -179,7 +174,7 @@ int main(void)
                     DrawTexture(bg.texture,0,0,WHITE);
                 EndShaderMode();*/
 
-                Texture2D& bg = *Globals::Game.Sprites.getSprite("bg_scatter.png");
+                Texture2D bg  = Globals::Game.Sprites.getSprite("bg_scatter.png");
                 DrawBillboardRec(camera,bg,Rectangle(0,0,bg.width,bg.height),
                                  Vector3(Terrain::MAX_TERRAIN_SIZE/2,Terrain::MAX_TERRAIN_SIZE/2,Globals::BACKGROUND_Z),
                                  Vector2(bg.width,bg.height),WHITE);

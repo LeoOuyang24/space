@@ -6,6 +6,15 @@
 
 #include "raylib.h"
 
+struct AnimeInfo
+{
+    float speed = 0; //frame per physics tick. For example, a value of 1 would move forward one frame per tick, basically 60 FPS
+    int horizFrames = 1;
+    int vertFrames = 1;
+};
+
+void DrawAnime(const Texture2D& sprite, double start, const AnimeInfo& info, const Rectangle& pos, float rotation = 0, Color tint = WHITE );
+void DrawAnime3D(const Texture2D& sprite, double start, const AnimeInfo& info, const Rectangle& pos, float z, float rotation = 0, Color tint = WHITE );
 
 //no idea where to put this LUL
 //moves camera to look at "pos"
