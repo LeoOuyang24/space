@@ -1,0 +1,17 @@
+sprites/layers/in-progress-1.png
+3000.000000,3180.000000
+portal	4950.000000,3517.000000	0	3164.615723,4555.000000	gear,2	100	
+portal	2946.000000,4296.000000	1	4405.965332,3541.198242	gear,5	100	
+sign	Yo ho ho! He awakens!|...I think...|I can't actually see you! But if you are reading this, I'm the Sign Painter!|And you! A probably very sore astronaut waking from cryosleep!|The most important thing when first waking up is to stretch those legs!|Try it with SPACEBAR for jump!|Even crazier, try a BOOST JUMP with CTRL at the same time!	2997.336914,3418.000000	
+sign	Damn I sure hope someone actually reads all these signs...|I wonder what they would think... ...would they even be able to read them?	3002.104004,2657.466309	
+sign	Wow that lava sure looks dangerous... Maybe this ones a bit too tough for now!|Then again Mom didn't raise no quitter!|..or did she?|Maybe Mom raised someone who isn't a quitter but knows exactly the adequate amount of trying before realizing their time is too precious!|Yes that's it!	5313.593750,3470.000000	
+gear	3000.000000,2463.365723	
+gear	3219.996582,5104.746094	
+gear	3338.744629,4217.800293	
+gear	2536.171387,4001.255859	
+gear	4399.519531,3297.916992	
+gear	5587.183105,3587.228027	
+gear	4402.182129,3976.519287	
+gear	4424.155273,4327.783691	
+
+sign	Sprint-jumping will get you far! But for more precise movements in air, RIGHT-CLICK to get a small boost in a direction of your choosing!	3100.215576,4860.152344	

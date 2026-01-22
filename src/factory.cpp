@@ -4,6 +4,7 @@
 #include "../headers/item.h"
 #include "../headers/portal.h"
 #include "../headers/interactives.h"
+#include "../headers/enemy.h"
 
 std::shared_ptr<PhysicsBody> construct(std::string cereal)
 {
@@ -40,6 +41,10 @@ std::shared_ptr<PhysicsBody> construct(std::string cereal)
         else if (params[0] == Factory<BigSign>::ObjectName)
         {
             ptr = new BigSign(Factory<BigSign>::Base::deserialize(params));
+        }
+        else if (params[0] == Factory<LaserBeamEnemy>::ObjectName)
+        {
+            ptr = new LaserBeamEnemy(Factory<LaserBeamEnemy>::Base::deserialize(params));
         }
         else
         {

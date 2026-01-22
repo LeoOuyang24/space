@@ -20,6 +20,10 @@ void TextureRenderer::render(const Shape& shape, const Color& color)
                          Vector3(shape.orient.pos.x,shape.orient.pos.y,Globals::Game.terrain.getZOfLayer(shape.orient.layer)),Vector3(0,-1,0),dimen,
                          dimen*0.5,shape.orient.rotation*RAD2DEG*-1,color);
     }
+    else
+    {
+        std::cerr << "TextureRenderer::render WARNING: invalid texture!\n";
+    }
 }
 
 AnimeRenderer::AnimeRenderer(const std::initializer_list<std::string_view>& lst)
@@ -55,7 +59,7 @@ void AnimeRenderer::render(const Shape& shape, const Color& color)
         }
         Vector2 dimen = GetDimen(shape);
         DrawAnime3D(current->spritesheet,start,current->info,
-                    Rectangle(shape.orient.pos.x - dimen.x/2,shape.orient.pos.y - dimen.y/2, dimen.x,dimen.y),
+                    Rectangle(shape.orient.pos.x,shape.orient.pos.y, dimen.x,dimen.y),
                     Globals::Game.terrain.getZOfLayer(shape.orient.layer),shape.orient.rotation,color);
     }
     //auto it = states.find(currentState.data())

@@ -51,6 +51,9 @@ struct Shape
     ShapeCollider collider;
 
 };
+//check collision between two rotated rectangles
+bool CheckCollisionPointRecRotated(const Vector2& pos, const Rectangle& rect, float angle);
+bool CheckCollisionRecsRotated(const Rectangle& r1, const Rectangle& r2, float rot1, float rot2);
 bool CheckCollision(const Shape& shape1, const Shape& shape2);
 Vector2 GetDimen(const Shape& shape1);
 

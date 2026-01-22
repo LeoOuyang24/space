@@ -13,6 +13,8 @@ struct AnimeInfo
     int vertFrames = 1;
 };
 
+//x,y of "pos" is the center of the object, not the top left for all of these Draw functions
+void DrawSprite3D(const Texture2D& sprite, const Rectangle& pos, float rotation = 0, Color tint = WHITE);
 void DrawAnime(const Texture2D& sprite, double start, const AnimeInfo& info, const Rectangle& pos, float rotation = 0, Color tint = WHITE );
 void DrawAnime3D(const Texture2D& sprite, double start, const AnimeInfo& info, const Rectangle& pos, float z, float rotation = 0, Color tint = WHITE );
 

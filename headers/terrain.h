@@ -21,12 +21,15 @@ struct ObjectLookup
     void addObject(std::shared_ptr<PhysicsBody> ptr);
     std::shared_ptr<PhysicsBody> getObject(PhysicsBody* body);
 
+    void clear();
+
 };
 
 
 
 struct GlobalTerrain
 {
+
     struct LayerInfo //carries info of this layer for when it needs to be saved
     {
         std::string configPath = ""; //path to the layer config file.
@@ -49,6 +52,7 @@ struct GlobalTerrain
     Terrain* getTerrain(LayerType layer); //null if index is not valid
     void update(LayerType layer);
     void render();
+    void clear();
 
     int getZOfLayer(LayerType index); //-1 if index is out of bounds. Returns an int because floating point values causes billboards to not be rendered
     Vector3 orientToVec3(const Orient& orient);
@@ -56,6 +60,7 @@ struct GlobalTerrain
     LayerInfo getLayerInfo(LayerType index);
     std::string serialize(LayerType index);
 private:
+
     struct Layer
     {
         Terrain terrain;
@@ -68,5 +73,15 @@ private:
 
     bool isValidObject(PhysicsBody* obj, LayerType layer); //true if obj should be updated (is alive, belongs in this layer, is not null
 };
+
+struct World
+{
+    std::vector<std::string> layers;
+    std::string bg_path = "";
+    Texture2D bg; //worlds own their backgrounds; these sprites are not accessible in Globals::Game.Sprites (just doesn't seem necessary)
+};
+
+typedef std::vector<World> Worlds;
+typedef size_t CurrentWorld;
 
 #endif // TERRAIN_H_INCLUDED

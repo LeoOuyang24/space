@@ -164,7 +164,7 @@ struct Object : public PhysicsBody
     {
         return orient.pos;
     }
-    Shape getShape()
+    virtual Shape getShape()
     {
         return {collider.getShapeType(),orient,collider.getCollider()};
     }
@@ -184,10 +184,11 @@ struct Object : public PhysicsBody
 protected:
     void stayOnGround(Terrain& terrain)
     {
-        Vector2 bruh = terrain.lineTerrainIntersect(orient.pos,orient.pos + orient.getNormal()*GetDimen(getShape()).y); //- normal*(collider.height)/2;
-        Vector2 newPos = bruh - orient.getNormal()*(GetDimen(getShape()).y/2  - 1);
+        Vector2 norm = orient.getNormal();
 
-        orient.pos = newPos;
+        Vector2 bruh = terrain.lineTerrainIntersect(orient.pos,orient.pos + norm*GetDimen(getShape()).y); //- normal*(collider.height)/2;
+        Vector2 newPos = bruh - norm*(GetDimen(getShape()).y/2  - 1);
+        setPos(newPos);
     }
 
     void adjustAngle(Terrain& terrain)
@@ -274,7 +275,6 @@ protected:
             }
         }
 
-
         if (orient.pos.x >= Terrain::MAX_TERRAIN_SIZE || orient.pos.x <= 0)
         {
             forces.addFriction({-1,1});
@@ -286,10 +286,11 @@ protected:
             forces.addForce( Vector2{0,(orient.pos.y <= 0 ) * 2 - 1},Forces::BOUNCE);
         }
 
-
         setPos(getPos() + forces.getTotalForce());
 
         forces.addFriction(onGround ? 0.5 : .99);
+
+        //forces.addForce({0,.5},Forces::GRAVITY);
 
         wasOnGround = onGround;
         onGround = collider.isOnGround(orient,terrain);

@@ -70,6 +70,12 @@ void PlayerRenderer::render(const Shape& shape,const Color& color)
         sprite = Globals::Game.Sprites.getSprite(Vector2LengthSqr(owner.forces.getForce(Forces::BOOSTING)) < 1 ? "guy.png" : "guy_boosting.png");
             TextureRenderer::render(shape2,color);
     }
+    /*Rectangle rect = owner.getOrient().getRect(GetDimen(owner.getShape()));
+    Vector2 center = owner.getPos();
+    DrawSphere(toVector3(rotatePoint({rect.x,rect.y},center,owner.getOrient().rotation)),5,RED);
+    DrawSphere(toVector3(rotatePoint({rect.x + rect.width,rect.y},center,owner.getOrient().rotation)),5,RED);
+    DrawSphere(toVector3(rotatePoint({rect.x,rect.y + rect.height},center,owner.getOrient().rotation)),5,RED);
+    DrawSphere(toVector3(rotatePoint({rect.x + rect.width,rect.y + rect.height},center,owner.getOrient().rotation)),5,RED);*/
 
 }
 
@@ -136,32 +142,36 @@ void Player::addKey(Key::KeyVal val)
 void Player::handleControls()
 {
     bool leftRight = (IsKeyDown(KEY_A) || IsKeyDown(KEY_D));
-    if (leftRight)
-    {
-        facing = IsKeyDown(KEY_D);
-    }
+
 
     switch (state)
     {
     case WALKING:
         {
             power = 0;
-            bool running = IsKeyDown(KEY_LEFT_CONTROL);
             if (leftRight)
             {
                 float accel = (onGround ? PLAYER_GROUND_ACCEL : PLAYER_AIR_ACCEL);
                 float maxSpeed = !onGround ? PLAYER_MAX_AIR_SPEED :
-                                         running ?
-                                            PLAYER_RUN_MAX_SPEED :
                                             PLAYER_MAX_SPEED;
-                speed += accel*(facing*2 - 1);
+                if (onGround) //update facing, but only on ground
+                {
+                    //on ground, we can turn on a dime
+                    facing = IsKeyDown(KEY_D);
+                    speed = (abs(speed) + accel)*(2*facing - 1);
+                }
+                else if (!onGround && (IsKeyDown(KEY_D) != facing))
+                {
+                    //if in the air and moving backwards against how we are facing, we can decelerate using PLAYER_AIR_ACCEL
+                    speed *= accel;
+                }
 
-                speed = std::min(abs(speed),maxSpeed)*((speed > 0)*2 - 1); //prevent speed from exceeding maximum
+                speed = Clamp(speed,-maxSpeed,maxSpeed);//prevent speed from exceeding maximum
 
             }
             if (IsKeyPressed(KEY_SPACE) && onGround)
             {
-                Vector2 jump = running ?
+                Vector2 jump = IsKeyDown(KEY_LEFT_CONTROL) ?
                                     orient.getNormal()*-10 + orient.getFacing()*12*(facing*2 - 1) :
                                     orient.getNormal()*-14;
                 forces.addForce(jump,Forces::JUMP);
@@ -174,6 +184,14 @@ void Player::handleControls()
                                               {GetScreenWidth(),GetScreenHeight()},
                                               Globals::Game.getCurrentZ()) - getPos())*3,Forces::BOOSTING);
                 boosted = true;
+
+                Sequences::add(false,[pos = orient.pos + orient.getNormal()*GetDimen(getShape()).y,rot=orient.rotation](int count){
+                               DrawSprite3D(Globals::Game.Sprites.getSprite("mid-air-boost.png"),
+                                              Rectangle(pos.x,pos.y,40,20),rot,Color(255,255,255,255-255*count/10.0));
+
+                                    return count >= 10;
+                               });
+
             }
         }
         break;
@@ -206,7 +224,7 @@ void Player::handleControls()
     }
     setState(state == PORTALLING ? PORTALLING : WALKING);
     //setState((IsKeyDown(KEY_LEFT_SHIFT) && onGround) ? CHARGING : WALKING);
-    if ((!leftRight || !onGround)|| state == CHARGING)
+    if ((!leftRight || !onGround) || state == CHARGING)
     {
         speed = trunc(speed*(onGround ? GROUND_FRICTION : AIR_FRICTION),3); //apply friction
     }
@@ -225,7 +243,7 @@ void Player::handleControls()
     }
     else
     {
-        dying = 0;
+        dying = std::max(dying - std::max(2.0,dying*0.1),0.0);
     }
    // std::cout << forces.getForce(Forces::MOVE) << "\n";
 }

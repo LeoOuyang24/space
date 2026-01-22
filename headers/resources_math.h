@@ -30,6 +30,8 @@ struct PossiblePoint //a point that may not exist
 };
 
 std::ostream& operator<<(std::ostream &os,const Vector2& vec);
+std::ostream& operator<<(std::ostream &os,const Vector3& vec);
+
 
 Vector2 rotatePoint(const Vector2& p, const Vector2& rotateAround, float angle);
 

@@ -41,6 +41,7 @@
 			<Add directory="../raylib-5.5_win64_mingw-w64/include" />
 		</Compiler>
 		<Linker>
+			<Add option="-static" />
 			<Add library="raylib" />
 			<Add library="opengl32" />
 			<Add library="winmm" />

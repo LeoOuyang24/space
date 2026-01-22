@@ -2,7 +2,7 @@
 #include <algorithm>
 
 #include "../headers/conversions.h"
-
+#include "../headers/enemy.h"
 #include "../headers/portal.h"
 
 std::string_view SplitString::operator[](size_t index) const
@@ -153,6 +153,17 @@ std::vector<std::string> fromString(std::string_view str)
 }
 
 template<>
+LaserBeamEnemy::RotateFunc fromString(std::string_view str)
+{
+    if (strcmp(str.data(),"SINE") == 0)
+    {
+        return LaserBeamEnemy::RotateFunc::SINE;
+    }
+    return LaserBeamEnemy::RotateFunc::CONSTANT;
+
+}
+
+template<>
 std::string toString(Vector2& vec)
 {
     return toString(vec.x) + "," + toString(vec.y);
@@ -211,4 +222,18 @@ std::string toString(std::vector<std::string>& vec)
 
 
     return answer;
+}
+
+template<>
+std::string toString(LaserBeamEnemy::RotateFunc& func)
+{
+    switch (func)
+    {
+        case LaserBeamEnemy::RotateFunc::CONSTANT:
+            return "CONSTANT";
+        case LaserBeamEnemy::RotateFunc::SINE:
+            return "SINE";
+        default:
+            return "CONSTANT";
+    }
 }

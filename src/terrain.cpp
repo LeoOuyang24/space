@@ -31,6 +31,11 @@ std::shared_ptr<PhysicsBody> ObjectLookup::getObject(PhysicsBody* body)
     return it->second;
 }
 
+void ObjectLookup::clear()
+{
+    objects.clear();
+}
+
 bool GlobalTerrain::isValidObject(PhysicsBody* obj, LayerType layer)
 {
     return obj && obj->orient.layer == layer && !obj->isDead();
@@ -176,6 +181,15 @@ void GlobalTerrain::render()
         }
     }
 
+}
+
+void GlobalTerrain::clear()
+{
+    for (auto& layer : layers)
+    {
+        layer.objects.clear();
+        layer.terrain.clear();
+    }
 }
 
 int GlobalTerrain::getZOfLayer(LayerType index)

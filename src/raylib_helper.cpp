@@ -4,6 +4,20 @@
 
 #include <iostream>
 
+void DrawSprite3D(const Texture2D& sprite, const Rectangle& pos, float rotation, Color tint)
+{
+    DrawBillboardPro(Globals::Game.getCamera(),
+                    sprite,
+                    Rectangle(0,0,sprite.width,sprite.height),
+                    toVector3({pos.x,pos.y}),
+                     Vector3(0,1,0),
+                     Vector2(pos.width,pos.height),
+                     Vector2(pos.width/2,pos.height/2),
+                     rotation*RAD2DEG,
+                     tint);
+}
+
+
 void DrawAnime(const Texture2D& sprite, double start, const AnimeInfo& info, const Rectangle& pos, float rotation, Color tint )
 {
     if (info.horizFrames == 0 || info.vertFrames == 0)
@@ -26,7 +40,7 @@ void DrawAnime3D(const Texture2D& sprite, double start, const AnimeInfo& info, c
 {
      if (info.horizFrames == 0 || info.vertFrames == 0)
     {
-        std::cerr << "DrawAnime3D error: " << info.horizFrames << "x" << info.vertFrames << " spritesheet!";
+        std::cerr << "DrawAnime3D WARNING: " << info.horizFrames << "x" << info.vertFrames << " spritesheet!";
         return;
     }
 
@@ -34,7 +48,7 @@ void DrawAnime3D(const Texture2D& sprite, double start, const AnimeInfo& info, c
     Vector2 frameDimens = {sprite.width/info.horizFrames,sprite.height/info.vertFrames};
     DrawBillboardPro(Globals::Game.getCamera(),sprite,
                    {frame%info.horizFrames*frameDimens.x,frame/info.vertFrames*frameDimens.y,frameDimens.x,frameDimens.y},
-                   Vector3(pos.x + pos.width/2,pos.y + pos.height/2,z),
+                   Vector3(pos.x,pos.y,z),
                    {0,-1,0},
                    Vector2(pos.width,pos.height),
                    Vector2(pos.width/2,pos.height/2),

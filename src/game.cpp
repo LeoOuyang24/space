@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 
 #include "../headers/terrain.h"
 #include "../headers/game.h"
@@ -12,6 +13,8 @@ Globals Globals::Game;
 
 void Globals::init()
 {
+
+    SetExitKey(DEBUG ? KEY_ESCAPE : KEY_NULL);
 
     Sprites.addSprites("sprites");
     Sprites.addSprites("sprites/ui");
@@ -65,9 +68,9 @@ void Globals::setLayer(LayerType layer)
             terrain.addObject(player,layer);
         }
 
-        Sequences::add({[camera=&(this->camera),endZ=getCurrentZ()  - Globals::CAMERA_Z_DISP,startZ = camera.position.z](int runTimes){
+        Sequences::add({[this,endZ=getCurrentZ(),startZ = camera.target.z](int runTimes){
 
-                       camera->position.z = Lerp(startZ,endZ,runTimes/50.0);
+                       lookAt(Lerp(startZ,endZ,runTimes/50.0));
                        return runTimes >= 50;
 
                        }},false);
@@ -94,16 +97,16 @@ Terrain* Globals::getCurrentTerrain()
     return terrain.getTerrain(getCurrentLayer());
 }
 
-void Globals::loadLevel(std::string path)
+void Globals::loadLevel(std::string_view path)
 {
     std::ifstream levelFile;
-    levelFile.open(path);
+    levelFile.open(path.data());
 
     if (levelFile.is_open())
     {
         std::string line;
         int lineNum = 0;
-        GlobalTerrain::LayerInfo info = {path};
+        GlobalTerrain::LayerInfo info = {path.data()};
         while(std::getline(levelFile,line))
         {
             if (line != "") //skip blank lines
@@ -139,6 +142,59 @@ void Globals::loadLevel(std::string path)
     {
         std::cerr << "ERROR Globals::loadLevel: error loading level: " << path << "\n";
     }
+}
+
+void Globals::addWorld(std::string_view path)
+{
+    World world;
+    for (const auto & entry : std::filesystem::directory_iterator(path))
+   {
+       std::string extension = entry.path().filename().extension().string();
+       if (extension == ".png")
+       {
+            world.bg_path = entry.path().string();
+            world.bg = LoadTexture(world.bg_path.c_str());
+       }
+       else if (extension == ".txt")
+       {
+            world.layers.push_back(entry.path().string());
+       }
+   }
+
+   worlds.push_back(world);
+}
+
+void Globals::loadWorld(const World& world)
+{
+    terrain.clear();
+    objects.clear();
+
+    for (std::string_view str : world.layers)
+    {
+        loadLevel(str);
+    }
+}
+
+void Globals::setCurWorld(CurrentWorld cur)
+{
+    if (curWorld != cur && cur < worlds.size())
+    {
+        loadWorld(worlds[cur]);
+    }
+
+    curWorld = cur;
+
+
+}
+
+Texture2D Globals::getBG()
+{
+    if (curWorld >= worlds.size())
+    {
+        std::cerr << "Globals::getBG ERROR: cannot return background of a world at index " << curWorld << "\n";
+        return {};
+    }
+    return worlds[curWorld].bg;
 }
 
 void Globals::addObject(PhysicsBody& body, LayerType layer)
