@@ -1,0 +1,2 @@
+sprites/layers/block.png
+3000.000000,3180.000000
