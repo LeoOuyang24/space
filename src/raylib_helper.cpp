@@ -4,6 +4,11 @@
 
 #include <iostream>
 
+Vector2 GetScreenDimen()
+{
+    return {GetScreenWidth(),GetScreenHeight()};
+}
+
 void DrawSprite3D(const Texture2D& sprite, const Rectangle& pos, float rotation, Color tint)
 {
     DrawBillboardPro(Globals::Game.getCamera(),

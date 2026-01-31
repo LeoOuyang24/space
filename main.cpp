@@ -106,7 +106,7 @@ int main(void)
     //Globals::Game.loadLevel("levels/load_this.txt");
 
     //World world1 = {{"levels/layer0.txt","levels/layer1.txt","levels/layer2.txt"}};
-    //Globals::Game.loadWorld(world1);
+    //Globals::Game.loadLevel("levels/block.txt");
 
     Globals::Game.addWorld("worlds/world1");
     Globals::Game.setCurWorld(0);

@@ -46,6 +46,18 @@ std::shared_ptr<PhysicsBody> construct(std::string cereal)
         {
             ptr = new LaserBeamEnemy(Factory<LaserBeamEnemy>::Base::deserialize(params));
         }
+        else if (params[0] == Factory<GrapplePoint>::ObjectName)
+        {
+            ptr = new GrapplePoint(Factory<GrapplePoint>::Base::deserialize(params));
+        }
+        else if (params[0] == Factory<Booster>::ObjectName)
+        {
+            ptr = new Booster(Factory<Booster>::Base::deserialize(params));
+        }
+        else if (params[0] == Factory<Barrel>::ObjectName)
+        {
+            ptr = new Barrel(Factory<Barrel>::Base::deserialize(params));
+        }
         else
         {
             std::cerr << "ERROR construct: unable to construct object: " << params[0] << "\n";

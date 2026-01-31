@@ -10,7 +10,7 @@
 void Editor::drawInterface()
 {
     Vector2 mousePos = GetMousePosition();
-    Vector2 coords = screenToWorld(mousePos,Globals::Game.getCamera(),{GetScreenWidth(),GetScreenHeight()},
+    Vector2 coords = screenToWorld(mousePos,Globals::Game.getCamera(),
                                     Globals::Game.getCurrentZ());
     DrawText((std::to_string(int(coords.x)) + " " + std::to_string(int(coords.y))).c_str(),mousePos.x,mousePos.y - 20,20,WHITE);
     DrawText("EDITOR",10,50,30,BLUE);
@@ -24,7 +24,7 @@ void Editor::drawInterface()
 void Editor::handleInput()
 {
     Vector2 mousePos = GetMousePosition();
-    Vector2 coords = screenToWorld(mousePos,Globals::Game.getCamera(),{GetScreenWidth(),GetScreenHeight()},
+    Vector2 coords = screenToWorld(mousePos,Globals::Game.getCamera(),
                                     Globals::Game.getCurrentZ());
     if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
     {
@@ -139,7 +139,7 @@ void Cheats::drawInterface()
 
 void Cheats::handleInput()
 {
-    Vector2 mousePos = screenToWorld(GetMousePosition(),Globals::Game.getCamera(),{GetScreenWidth(),GetScreenHeight()},Globals::Game.getCurrentZ());
+    Vector2 mousePos = screenToWorld(GetMousePosition(),Globals::Game.getCamera(),Globals::Game.getCurrentZ());
     if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON))
     {
         switch (mode)
@@ -209,7 +209,6 @@ void Cheats::handleInput()
                                 },
                                 screenToWorld(GetMousePosition(),
                                               Globals::Game.getCamera(),
-                                              {GetScreenWidth(),GetScreenHeight()},
                                               Globals::Game.getCurrentZ()),2*Block::BLOCK_DIMEN);
                       });
 

@@ -48,6 +48,27 @@ void KeyCollider::collideWith(PhysicsBody& self, PhysicsBody& other)
 
 }
 
+void Booster::onCollide(PhysicsBody& other)
+{
+    if (&other == Globals::Game.getPlayer())
+    {
+        Player* player = static_cast<Player*>(Globals::Game.getPlayer());
+        player->boosted  = false;
+        this->dead = true;
+    }
+}
+
+
+void Barrel::onCollide(PhysicsBody& other)
+{
+    if (&other == Globals::Game.getPlayer() && GetTime() - held >= 1)
+    {
+        Player* player = static_cast<Player*>(Globals::Game.getPlayer());
+        player->holding = Globals::Game.objects.getObject(this);
+    }
+}
+
+
 
 bool operator==(const Key::KeyVal& left, const Key::KeyVal& right)
 {

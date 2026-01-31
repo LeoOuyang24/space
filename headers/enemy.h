@@ -5,9 +5,10 @@
 #include "factory.h"
 #include "render.h"
 
-struct LaserBeam : Object<RectCollider,TextureRenderer,LaserBeam>
+struct GrapplePoint : public Object<CircleCollider,TextureRenderer,GrapplePoint>
 {
-
+    GrapplePoint();
+    void update(Terrain& terrain);
 };
 
 struct LaserBeamEnemy : Object<RectCollider,TextureRenderer,LaserBeamEnemy>
@@ -21,7 +22,7 @@ struct LaserBeamEnemy : Object<RectCollider,TextureRenderer,LaserBeamEnemy>
     float rotSpeed = 0;
     float arc = 0; //arc in degrees
     float beamLength = 100;
-    RotateFunc func = CONSTANT;
+    RotateFunc func = SINE;
 
     RenderTexture laserBeam;
     LaserBeamEnemy()
@@ -54,6 +55,15 @@ struct Factory<LaserBeamEnemy>
                                 access<LaserBeamEnemy,&LaserBeamEnemy::beamLength>,
                                 access<LaserBeamEnemy,&LaserBeamEnemy::orient,&Orient::rotation>,
                                 access<LaserBeamEnemy,&LaserBeamEnemy::func>
+                                >;
+};
+
+template<>
+struct Factory<GrapplePoint>
+{
+    static constexpr std::string ObjectName = "grapple_point";
+    using Base = FactoryBase<GrapplePoint,
+                                access<GrapplePoint,&GrapplePoint::orient,&Orient::pos>
                                 >;
 };
 

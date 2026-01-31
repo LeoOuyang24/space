@@ -60,11 +60,35 @@ struct CollectibleCollider
 
 struct Collectible : public Object<CircleCollider,TextureRenderer,Collectible,CollectibleCollider>
 {
-    Collectible() : Object({},std::make_tuple(30),std::make_tuple(Globals::Game.Sprites.getSprite("gear.png")))
+    Collectible() : Object({},std::make_tuple(15),std::make_tuple(Globals::Game.Sprites.getSprite("gear.png")))
     {
         followGravity = false;
     }
     void onRestore();
+};
+
+struct Booster : public Object<CircleCollider,TextureRenderer,Booster>
+{
+    Booster()
+    {
+        followGravity = false;
+        collider.radius = 10;
+        renderer.sprite = Globals::Game.Sprites.getSprite("grapple.png");
+    }
+    void onCollide(PhysicsBody& other);
+};
+
+struct Barrel : public Object<RectCollider,TextureRenderer,Barrel>
+{
+    double held = 0;
+    Barrel()
+    {
+        followGravity = true;
+        collider.width = 30;
+        collider.height = 60;
+        renderer.sprite = Globals::Game.Sprites.getSprite("barrel.png");
+    }
+    void onCollide(PhysicsBody& other);
 };
 
 template<>
@@ -82,6 +106,22 @@ struct Factory<Key>
   using Base = FactoryBase<Key,
                         access<Key,&Key::key>,
                         access<Key,&Key::orient,&Orient::pos>>;
+};
+
+template<>
+struct Factory<Booster>
+{
+    static constexpr std::string ObjectName = "booster";
+    using Base = FactoryBase<Booster,
+                            access<Booster,&Booster::orient,&Orient::pos>>;
+};
+
+template<>
+struct Factory<Barrel>
+{
+    static constexpr std::string ObjectName = "barrel";
+    using Base = FactoryBase<Barrel,
+                            access<Barrel,&Barrel::orient,&Orient::pos>>;
 };
 
 bool operator==(const Key::KeyVal& left, const Key::KeyVal& right);

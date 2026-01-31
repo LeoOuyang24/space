@@ -15,6 +15,37 @@
 #include "game.h"
 #include "sequencer.h"
 
+
+struct Forces
+{
+
+    enum ForceSource
+    {
+        GRAVITY = 0,
+        JUMP,
+        MOVE,
+        BOUNCE, //forces from when going out of bounds
+        SWINGING,
+        BOOSTING //from boosting, player specific
+    };
+
+    std::unordered_map<ForceSource,Vector2> forces; //mapping force source to a force
+    Vector2 totalForce = {0,0}; //total forces
+
+    void setForce(const Vector2& force, Forces::ForceSource source);
+    void addForce( Vector2 force, ForceSource source);
+    void addFriction(const Vector2& friction);
+    void addFriction(float friction);
+    void addFriction(float friction, ForceSource source);
+    Vector2 getTotalForce();
+
+    Vector2 getForce(ForceSource source) //read-only, get force from a source
+    {
+        return (forces.find(source) == forces.end()) ? Vector2{0,0} : forces[source];
+    }
+};
+
+
 struct PhysicsBody
 {
 
@@ -28,6 +59,7 @@ struct PhysicsBody
     Orient getOrient();
     void setOrient(const Orient& orient);
     void setPos(const Vector2& pos);
+    virtual Forces& getForces() = 0;
     virtual void onCollide(PhysicsBody& other)
     {
 
@@ -47,34 +79,6 @@ struct PhysicsBody
     virtual bool isDead();
 };
 
-
-struct Forces
-{
-
-    enum ForceSource
-    {
-        GRAVITY = 0,
-        JUMP,
-        MOVE,
-        BOUNCE, //forces from when going out of bounds
-        BOOSTING //from boosting, player specific
-    };
-
-    std::unordered_map<ForceSource,Vector2> forces; //mapping force source to a force
-    Vector2 totalForce = {0,0}; //total forces
-
-    void setForce(const Vector2& force, Forces::ForceSource source);
-    void addForce( Vector2 force, ForceSource source);
-    void addFriction(const Vector2& friction);
-    void addFriction(float friction);
-    void addFriction(float friction, ForceSource source);
-    Vector2 getTotalForce();
-
-    Vector2 getForce(ForceSource source) //read-only, get force from a source
-    {
-        return (forces.find(source) == forces.end()) ? Vector2{0,0} : forces[source];
-    }
-};
 
 
 //renders a suggested button press over an object
@@ -181,7 +185,12 @@ struct Object : public PhysicsBody
             stayOnGround(t);
         }
     }
+    Forces& getForces()
+    {
+        return forces;
+    }
 protected:
+
     void stayOnGround(Terrain& terrain)
     {
         Vector2 norm = orient.getNormal();
@@ -234,10 +243,9 @@ protected:
 
         if (!onGround && followGravity)
         {
-
-            int divide = 32;
+            int divide = 100;
             const int landingDivide = 5;
-            int upTo = freeFall ? divide : landingDivide;
+            int upTo = divide;//freeFall ? divide : landingDivide;
             Vector2 grav = {0,0};
             int count = 0;
             for (int i = 0; i < upTo; i ++)
@@ -258,7 +266,7 @@ protected:
                     }
                     if (terrain.isBlockType(pos,LAVA,true))
                     {
-                        force *= .5;
+                        force *= 0.5;
                     }
                     grav +=  force;
 
@@ -267,7 +275,9 @@ protected:
             }
             if (count > 0)
             {
-                forces.addForce(grav*20/count,Forces::GRAVITY);
+                //grav = Vector2Normalize(grav);
+                //forces.addForce(grav*0.2,Forces::GRAVITY);
+                forces.addForce(grav*25/count,Forces::GRAVITY);
             }
             else
             {

@@ -65,11 +65,19 @@ void PlayerRenderer::render(const Shape& shape,const Color& color)
         suggestButtonPress(owner.getShape(),"Z");
     }
 
-    if (owner.state != Player::State::PORTALLING)
+    if (owner.holding.lock().get())
+    {
+        Vector2 mousePos = screenToWorld(GetMousePosition(),Globals::Game.getCamera(),Globals::Game.getCurrentZ());
+        DrawLine3D(toVector3(shape2.orient.pos),
+                   toVector3(shape2.orient.pos + Vector2Normalize(mousePos - shape2.orient.pos)*owner.power*10),RED);
+    }
+
+    if (owner.state != Player::State::PORTALLING && owner.state != Player::State::DEAD)
     {
         sprite = Globals::Game.Sprites.getSprite(Vector2LengthSqr(owner.forces.getForce(Forces::BOOSTING)) < 1 ? "guy.png" : "guy_boosting.png");
             TextureRenderer::render(shape2,color);
     }
+
     /*Rectangle rect = owner.getOrient().getRect(GetDimen(owner.getShape()));
     Vector2 center = owner.getPos();
     DrawSphere(toVector3(rotatePoint({rect.x,rect.y},center,owner.getOrient().rotation)),5,RED);
@@ -81,7 +89,7 @@ void PlayerRenderer::render(const Shape& shape,const Color& color)
 
 bool Player::isTangible()
 {
-    return state != PORTALLING;
+    return tangible && state != PORTALLING;
 }
 
 Player::Player(const Vector2& pos_) : Object({pos_},std::make_tuple(PLAYER_DIMEN,PLAYER_DIMEN),std::make_tuple(std::ref(*this)))
@@ -92,44 +100,56 @@ Player::Player(const Vector2& pos_) : Object({pos_},std::make_tuple(PLAYER_DIMEN
 void Player::update(Terrain& terrain)
 {
     //if (!onGround)
-    Object::applyForces(terrain);
-
-    //tint = onGround ? WHITE : freeFall ? BLUE : RED;
-
-
-    float oldRotation = orient.rotation;
-    Object::adjustAngle(terrain);
-   /* if (onGround && !wasOnGround && abs(orient.rotation - oldRotation) > 3*M_PI/4)
+    if (state != DEAD)
     {
-        //flip angle upon landing
-        facing = !facing;
-    }*/
+        Object::applyForces(terrain);
 
-    if (onGround && !wasOnGround)
-    {
-        freeFallTime = -1;
-    }
+        //tint = onGround ? WHITE : freeFall ? BLUE : RED;
 
-    handleControls();
 
-    //Vector2 forwardNorm = orient.getFacing(); //perpendicular to normal vector that moves us forward on flat ground with rotation 0
-    //orient.pos += forwardNorm*speed;
+        float oldRotation = orient.rotation;
+        Object::adjustAngle(terrain);
+       /* if (onGround && !wasOnGround && abs(orient.rotation - oldRotation) > 3*M_PI/4)
+        {
+            //flip angle upon landing
+            facing = !facing;
+        }*/
 
-    if (onGround )
-    {
-        boosted = false;
-        freeFallTime = 0;
-        saveResetState();
-        stayOnGround(terrain);
-    }
-    else if (wasOnGround)
-    {
-        freeFallTime = GetTime();
-    }
+        if (onGround && !wasOnGround)
+        {
+            freeFallTime = -1;
+        }
 
-    if (terrain.isBlockType(orient.pos,LAVA))
-    {
-        setDead(true);
+        handleControls();
+
+        //Vector2 forwardNorm = orient.getFacing(); //perpendicular to normal vector that moves us forward on flat ground with rotation 0
+        //orient.pos += forwardNorm*speed;
+
+        if (onGround )
+        {
+            boosted = false;
+            freeFallTime = 0;
+            saveResetState();
+            stayOnGround(terrain);
+        }
+        else if (wasOnGround)
+        {
+            freeFallTime = GetTime();
+        }
+
+        if (terrain.isBlockType(orient.pos,LAVA))
+        {
+            setDead(true);
+        }
+
+        if (PhysicsBody* ptr = holding.lock().get())
+        {
+            Orient o = ptr->getOrient();
+            o.pos = (getPos() + orient.getNormal()*(-collider.height/2 - GetDimen(ptr->getShape()).y/2));
+            o.rotation = orient.rotation;
+
+            ptr->setOrient(o);
+        }
     }
 
 }
@@ -143,12 +163,11 @@ void Player::handleControls()
 {
     bool leftRight = (IsKeyDown(KEY_A) || IsKeyDown(KEY_D));
 
-
     switch (state)
     {
     case WALKING:
         {
-            power = 0;
+            //power = 0;
             if (leftRight)
             {
                 float accel = (onGround ? PLAYER_GROUND_ACCEL : PLAYER_AIR_ACCEL);
@@ -178,11 +197,22 @@ void Player::handleControls()
             }
             if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && !onGround && !boosted)
             {
+
+
                 forces.addFriction(0);
                 forces.addForce(Vector2Normalize(screenToWorld(GetMousePosition(),
                                               Globals::Game.getCamera(),
-                                              {GetScreenWidth(),GetScreenHeight()},
-                                              Globals::Game.getCurrentZ()) - getPos())*3,Forces::BOOSTING);
+                                              Globals::Game.getCurrentZ()) - getPos())*5,Forces::BOOSTING);
+                /*Vector2 boostForce =Vector2Normalize(screenToWorld(GetMousePosition(),
+                                              Globals::Game.getCamera(),
+                                              Globals::Game.getCurrentZ()) - getPos())*10;*/
+                //forces.setForce(boostForce,Forces::GRAVITY);
+                /*Sequences::add(true,[boostForce,this](int frames){
+                               setPos(getPos() + boostForce);
+
+                               return frames >= 10;
+                               });*/
+
                 boosted = true;
 
                 Sequences::add(false,[pos = orient.pos + orient.getNormal()*GetDimen(getShape()).y,rot=orient.rotation](int count){
@@ -192,6 +222,25 @@ void Player::handleControls()
                                     return count >= 10;
                                });
 
+            }
+            if (PhysicsBody* body = holding.lock().get())
+            {
+                Vector2 mousePos = screenToWorld(GetMousePosition(),Globals::Game.getCamera(),Globals::Game.getCurrentZ());
+                body->getForces().addFriction(0);
+                if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+                {
+                    power = std::min(power + 1,100.0f);
+
+                }
+                else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && power > 0)
+                {
+                    //Debug::togglePaused();
+                    static_cast<Barrel*>(body)->held = GetTime();
+                    float angle = atan2(mousePos.y - orient.pos.y,mousePos.x - orient.pos.x);
+                    body->getForces().addForce(Vector2Normalize(mousePos - orient.pos)*(power)*0.5,Forces::MOVE);
+                    holding.reset();
+                    power = 0;
+                }
             }
         }
         break;
@@ -222,9 +271,8 @@ void Player::handleControls()
         }
     break;
     }
-    setState(state == PORTALLING ? PORTALLING : WALKING);
     //setState((IsKeyDown(KEY_LEFT_SHIFT) && onGround) ? CHARGING : WALKING);
-    if ((!leftRight || !onGround) || state == CHARGING)
+    if (((!leftRight || !onGround) || state == CHARGING))
     {
         speed = trunc(speed*(onGround ? GROUND_FRICTION : AIR_FRICTION),3); //apply friction
     }
@@ -266,20 +314,44 @@ void Player::addResetObject(PhysicsBody& body)
 
 void Player::resetPlayer()
 {
-    forces.addFriction(0);
-    std::for_each(resetState.restoreThese.begin(),resetState.restoreThese.end(),[](const RestoreObject& restore){
-
-                  if (restore.ptr.get())
-                  {
-                        restore.ptr->setDead(false);
-                        restore.ptr->setOrient(restore.orient);
-                        restore.ptr->onRestore();
-                        Globals::Game.addObject(restore.ptr);
-                  }
-
-                  });
-    resetState.restoreThese.clear();
-    orient = resetState.orient;
+    tangible = false;
     setDead(false);
+    setState(DEAD);
+
+    Sequences::add(false,[start=GetTime(),rect=Rectangle(getPos().x, getPos().y, 500, 500)](int frames){
+                   const Anime* a = Globals::Game.Sprites.getAnime("death.png");
+                   if (a)
+                   {
+
+                        DrawAnime3D(a->spritesheet,start,a->info,rect,Globals::Game.getCurrentZ());
+                        return frames > a->info.horizFrames*a->info.vertFrames/a->info.speed;
+                   }
+                    return frames >= 60;
+                   },[this](int frames){
+
+                    forces.addFriction(0);
+                    std::for_each(resetState.restoreThese.begin(),resetState.restoreThese.end(),[](const RestoreObject& restore){
+
+                                  if (restore.ptr.get())
+                                  {
+                                        restore.ptr->setDead(false);
+                                        restore.ptr->setOrient(restore.orient);
+                                        restore.ptr->onRestore();
+                                        Globals::Game.addObject(restore.ptr);
+                                  }
+
+                                  });
+                    resetState.restoreThese.clear();
+                    orient = resetState.orient;
+
+                    holding.reset(); //drop what we're holding
+                    setState(WALKING);
+                    tangible = true;
+                   return true;
+                   });
+
+
+
 
 }
+

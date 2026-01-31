@@ -18,6 +18,8 @@ void Globals::init()
 
     Sprites.addSprites("sprites");
     Sprites.addSprites("sprites/ui");
+
+    Sprites.addAnime({1,30,1},"sprites/animes/death.png","death.png");
     Sprites.addAnime({1,10,10},"sprites/animes/rover2_anime.png","rover2.png");
     Sprites.addAnime({1,1,1},"sprites/animes/rover_off.png","rover_off.png");
     SoundLibrary::loadSounds("sounds");
@@ -191,8 +193,7 @@ Texture2D Globals::getBG()
 {
     if (curWorld >= worlds.size())
     {
-        std::cerr << "Globals::getBG ERROR: cannot return background of a world at index " << curWorld << "\n";
-        return {};
+        return Globals::Game.Sprites.getSprite("bg_scatter.png");
     }
     return worlds[curWorld].bg;
 }

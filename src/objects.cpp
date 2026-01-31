@@ -90,7 +90,7 @@ void Forces::addFriction(float friction, Forces::ForceSource source)
 
 Vector2 Forces::getTotalForce()
 {
-    return Vector2LengthSqr(totalForce) > 100 ? Vector2Normalize(totalForce)*10 : totalForce;
+    return Vector2LengthSqr(totalForce) > 400 ? Vector2Normalize(totalForce)*20 : totalForce;
 }
 
 void suggestButtonPress(const Shape& shape, std::string_view str)

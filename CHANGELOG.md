@@ -2,17 +2,20 @@
 
 ## UNRELEASED
 
-## 1/21/2026:
-
-* Self destruct now ticks down as opposed to going down straight to 0. 
-* TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
 * TODO: Make right click more intuitive/obvious
 * TODO: Make ESCAPE open a pause menu
 * TODO: Make ALT-TAB work
+* TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
+* Removed non-freefall gravity being different from freefall gravity
+
+## 1/21/2026:
+
+* Self destruct now ticks down as opposed to going down straight to 0. 
 * Removed running and increased time it takes to reach max speed
 * Can no longer change facing while in the air, moving against the direction of facing will not slow air force
 * Added a (slightly better) visual indicator for boosting
 * Added laser beamer
+* Added World loading
 * woo 2026!
 
 ## 12/31/2025 (mvp-12-31-2025):

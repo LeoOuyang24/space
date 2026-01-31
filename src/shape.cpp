@@ -103,7 +103,7 @@ Vector2 GetDimen(const Shape& shape)
     switch(shape.type)
     {
     case CIRCLE:
-        return {shape.collider.radius,shape.collider.radius};
+        return {shape.collider.radius*2,shape.collider.radius*2};
     case RECT:
         return shape.collider.dimens;
     default:
