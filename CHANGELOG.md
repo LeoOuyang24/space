@@ -8,10 +8,17 @@
 
 ## 2/17/2026:
 * Removed non-freefall gravity being different from freefall gravity
+  * Freefall now instead determines whether or not the player faces the direction of gravity. 
+  * All 360 degrees of gravity will be accounted for, regardless of freefall status
+  * Freefall is now no longer a result of not being affected by ground gravity, and instead is a player-unique mechanic
+    * Player is significantly more likely to leave planet gravity when in freefall
+    * Freefall is automatically turned on when long jumping and boosting and lasts until landing
+* Jumping normally now causes the player to face in the direction of gravity, making sticking to planets easier
 * Added barrels and the ability to throw them
 * Added death animation
 * improved controls when in the air
 * Added moving terrain!
+* lasers!
 
 ## 1/21/2026:
 
