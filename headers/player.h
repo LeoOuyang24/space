@@ -54,10 +54,10 @@ struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
 
     static constexpr float PLAYER_MAX_SPEED = 5;
     static constexpr float PLAYER_RUN_MAX_SPEED = 5; //currently unused
-    static constexpr float PLAYER_MAX_AIR_SPEED = 4.5;
+    static constexpr float PLAYER_MAX_AIR_SPEED = 3.5;
 
     static constexpr float PLAYER_GROUND_ACCEL = 0.2; //added to player force every frame
-    static constexpr float PLAYER_AIR_ACCEL = 0.9; //unlike the above acceleration, this is MULTIPLED every frame
+    static constexpr float PLAYER_AIR_ACCEL = 0.05; //unlike the above acceleration, this is MULTIPLED every frame
 
     static constexpr float AIR_FRICTION = 0.99; //number to multiply to speed every frame. Bigger number = less friction
     static constexpr float GROUND_FRICTION = 0.85;
@@ -75,18 +75,11 @@ struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
     State state = WALKING;
     PlayerState resetState;
 
-    float speed = 0;
-
-    float aimAngle = 0; //aim for charging
-    float power = 0; //charging power
-    int dying = 0; //press and hold to die
-
     double freeFallTime = 0;
 
     bool boosted = false;
 
     bool facing = true;
-    bool tangible = true; //player-specific cuz currently there's not really a reason other objects should be intangible
 
     std::weak_ptr<PhysicsBody> holding;
 
@@ -104,6 +97,20 @@ struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
     void saveResetState();
     void addResetObject(PhysicsBody& body);
     void resetPlayer();
+
+    PhysicsBody* getHolding();
+
+    make_getter(aimAngle,float);
+    make_getter(dying,int);
+    make_getter(power,float);
+private:
+
+    float speed = 0;
+
+    float aimAngle = 0; //aim for charging
+    float power = 0; //charging power
+    int dying = 0; //press and hold to die
+
 
 };
 

@@ -40,6 +40,14 @@ Portal::Portal() :  Object({Vector2(0,0),0},
 
 }
 
+Portal::Portal(const Vector2& pos, LayerType layer, const Vector2& destPos_, LayerType layerDisp_) : Portal()
+{
+    cond.reset();
+    setOrient({pos,layer});
+    destPos = destPos_;
+    layerDisp = layerDisp_;
+}
+
 bool Portal::unlocked()
 {
     return !cond.get() || cond->unlocked();

@@ -11,6 +11,7 @@
 
 Globals Globals::Game;
 
+
 void Globals::init()
 {
 
@@ -203,6 +204,7 @@ void Globals::addObject(PhysicsBody& body, LayerType layer)
     body.setOrient({body.getPos(),layer});
     objects.addObject(body);
     terrain.addObject(objects.getObject(&body),layer);
+    body.onAdd();
 }
 
 void Globals::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
@@ -212,6 +214,7 @@ void Globals::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
         ptr->setOrient({ptr->getPos(),layer});
         objects.addObject(ptr);
         terrain.addObject(ptr,layer);
+        ptr->onAdd();
     }
 
 }

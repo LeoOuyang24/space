@@ -19,6 +19,9 @@ struct ObjectLookup
 
     void addObject(PhysicsBody& obj);
     void addObject(std::shared_ptr<PhysicsBody> ptr);
+    //removes an object from "objects". If there are any other shared pointers, the object will not be destroyed
+    //for example, this commonly happens when the player dies after picking up a gear and the gear has to be reset
+    void eraseObject(PhysicsBody& obj);
     std::shared_ptr<PhysicsBody> getObject(PhysicsBody* body);
 
     void clear();

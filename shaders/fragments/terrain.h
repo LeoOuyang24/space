@@ -3,7 +3,7 @@
 
 //shader for rendering gravity fields, incomplete
 
-uniform vec2 pixelSizes;
+uniform vec2 finalColorSizes;
 uniform sampler2D sprite;
 
 // Input vertex attributes (from vertex shader)
@@ -13,34 +13,38 @@ in vec4 fragColor;
 // Output fragment color
 out vec4 finalColor;
 
+uniform float outline_thickness = 10;
+uniform vec3 outline_colour = vec3(0, 0, 1);
+uniform float outline_threshold = .5;
 
 void main()
 {
+    finalColor = texture(sprite, fragTexCoord);
 
-    int outline = 20;
+    if (finalColor.a <= outline_threshold) {
+        ivec2 size = textureSize(sprite, 0);
 
+        float uv_x = fragTexCoord.x * size.x;
+        float uv_y = fragTexCoord.y * size.y;
 
-    vec4 texColor = texture(sprite,fragTexCoord);
-    float maxA = texColor.a;
-    float minA = texColor.a;
-
-    float minDist = outline;
-
-    for (int i = 0; i < 4; i ++)
-    {
-        vec2 dir = vec2((i%2*2- 1)*int(i<2),(i%2*2 - 1)*int(i>1));
-
-        for (int j = 1; j < outline - 1; j ++)
-        {
-            minDist = mix(minDist,min(minDist,j),float(texture(sprite,fragTexCoord + dir*j*pixelSizes).a > 0));
+        float sum = 0.0;
+        for (int n = 0; n < 9; ++n) {
+            uv_y = (fragTexCoord.y * size.y) + (outline_thickness * float(n - 4.5));
+            float h_sum = 0.0;
+            h_sum += texelFetch(sprite, ivec2(uv_x - (4.0 * outline_thickness), uv_y), 0).a;
+            h_sum += texelFetch(sprite, ivec2(uv_x - (3.0 * outline_thickness), uv_y), 0).a;
+            h_sum += texelFetch(sprite, ivec2(uv_x - (2.0 * outline_thickness), uv_y), 0).a;
+            h_sum += texelFetch(sprite, ivec2(uv_x - outline_thickness, uv_y), 0).a;
+            h_sum += texelFetch(sprite, ivec2(uv_x, uv_y), 0).a;
+            h_sum += texelFetch(sprite, ivec2(uv_x + outline_thickness, uv_y), 0).a;
+            h_sum += texelFetch(sprite, ivec2(uv_x + (2.0 * outline_thickness), uv_y), 0).a;
+            h_sum += texelFetch(sprite, ivec2(uv_x + (3.0 * outline_thickness), uv_y), 0).a;
+            h_sum += texelFetch(sprite, ivec2(uv_x + (4.0 * outline_thickness), uv_y), 0).a;
+            sum += h_sum / 9.0;
         }
 
-        float trans = texture(sprite,fragTexCoord + dir*outline*pixelSizes).a;
-
-        maxA = max(maxA,trans);
-        minA = min(minA,trans);
+        if (sum / 9.0 >= 0.0001) {
+            finalColor = vec4(outline_colour, 1);
+        }
     }
-
-    finalColor = mix(texColor,vec4(0,1,1,minDist/outline),min(maxA - minA,1 - texColor.a));
-
 }

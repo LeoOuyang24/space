@@ -130,6 +130,7 @@ int main(void)
     SoundLibrary::loadBGM("music/world3.wav");
     SoundLibrary::toggleBGM(false);
 
+    Vector2 point = {3000,3000};
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         //SoundLibrary::update();
@@ -146,6 +147,15 @@ int main(void)
             //player.update(*Globals::Game.getCurrentTerrain());
             Globals::Game.terrain.update(Globals::Game.getCurrentLayer());
             Sequences::runPhysics();
+          /*  if (GetTime() > 10)
+            {
+                Globals::Game.terrain.getTerrain(0)->remove(point,100);
+                //std::cout << "REMOVAL: " << GetTime() - time << "\n";
+                point.y = 3000 + 50*sin(GetTime());
+
+                Globals::Game.terrain.getTerrain(0)->generatePlanet(point,100,GREEN);
+            }*/
+           // std::cout << "ADDING: " << GetTime() - time << "\n";
 
             accum -= tick/speed;
             frames ++;
@@ -200,6 +210,7 @@ int main(void)
                 Globals::Game.terrain.render();
 
                 Sequences::runRenders();
+            if constexpr (Globals::DEBUG)
                 Debug::renderDefers();
 
 

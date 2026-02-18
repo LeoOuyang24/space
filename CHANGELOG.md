@@ -1,12 +1,17 @@
 # Changelog
 
 ## UNRELEASED
-
 * TODO: Make right click more intuitive/obvious
 * TODO: Make ESCAPE open a pause menu
 * TODO: Make ALT-TAB work
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
+
+## 2/17/2026:
 * Removed non-freefall gravity being different from freefall gravity
+* Added barrels and the ability to throw them
+* Added death animation
+* improved controls when in the air
+* Added moving terrain!
 
 ## 1/21/2026:
 

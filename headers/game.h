@@ -9,6 +9,7 @@
 #include "sprites.h"
 #include "interface.h"
 
+typedef uint16_t Frame;
 
 class Player;
 struct Globals
@@ -71,7 +72,6 @@ struct Globals
 private:
     bool cameraFollow = false;
     Camera3D camera;
-
     Globals();
 };
 

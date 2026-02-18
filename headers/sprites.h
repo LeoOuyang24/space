@@ -14,6 +14,9 @@ struct Anime
     Texture2D spritesheet;
 };
 
+//returns true if "frames" is greater than the total number of frames it takes to render a spritesheet
+bool isAnimeDone(const AnimeInfo&, size_t frames);
+
 class SpritesGlobal
 {
     std::unordered_map<std::string,Texture2D> sprites;

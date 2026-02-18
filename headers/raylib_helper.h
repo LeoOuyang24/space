@@ -6,11 +6,14 @@
 
 #include "raylib.h"
 
+
+void DrawLine3D(Vector3 startPos,Vector3 endPos, Color color, int width);
+
 Vector2 GetScreenDimen();
 
 struct AnimeInfo
 {
-    float speed = 0; //frame per physics tick. For example, a value of 1 would move forward one frame per tick, basically 60 FPS
+    float speed = 0; //frame per render tick. For example, a value of 1 would move forward one frame per main loop run
     int horizFrames = 1;
     int vertFrames = 1;
 };

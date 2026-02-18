@@ -78,7 +78,7 @@ void Interface::render()
                            0,it);
             i ++;
         }
-        float height = Globals::Game.player->dying;
+        float height = Globals::Game.player->get_dying();
         DrawRectangle(.1*screenDimen.x,screenDimen.y*.9 - height,100,height,RED);
 
         DrawText(std::to_string(Globals::Game.getCollects()).c_str(),.85*screenDimen.x,.9*screenDimen.y,50,WHITE);

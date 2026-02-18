@@ -79,6 +79,14 @@ struct PossibleBlock
     Vector2 pos;
 };
 
+struct Planet
+{
+    Vector2 pos;
+    float radius;
+    BlockType type = AIR;
+};
+struct MovingTerrain;
+
 struct Terrain
 {
     static constexpr int MAX_WIDTH = 2000; //maximum number of blocks in the width direction
@@ -91,6 +99,7 @@ struct Terrain
     //typedef std::vector<bool> TerrainMap;
     TerrainMap terrain{Block::BLOCK_DIMEN,MAX_WIDTH};
     RenderTexture blocksTexture;
+    RenderTexture gravityTexture;
 
     Terrain();
 
@@ -166,9 +175,19 @@ struct Terrain
     bool blockExists(const Vector2& pos, bool checkEdge = false); //true if block at position is not AIR
     bool isBlockType(const Vector2& pos,BlockType type, bool checkEdges = false); //true if block at position is "type". "checkEdges" will check neighbors if point is on edge
 
+    void addPlanet(MovingTerrain& planet);
+
     //"i" is index relative to current layer (0 if we are on layer 2 and rendering layer 2)
     //"z" is z coordinate to render at (absolute)
     void render(int i = 0, int z = 0);
+    std::vector<std::weak_ptr<MovingTerrain>> planets;
+
+private:
+    bool isDrawing = false; //true if BeginTextureMode has been called, allowing us to batch draw planets
+
+
+    void drawBlocks();
+    void endDrawBlocks();
 };
 
 

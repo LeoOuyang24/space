@@ -33,10 +33,14 @@ void LaserBeamEnemy::render()
 
     Shape laser = getShape();
 
-    //DrawLine3D(toVector3(orient.pos),toVector3(endPos),RED);
-    DrawSprite3D(laserBeam.texture,
+        DrawLine3D(toVector3(getPos()),
+               toVector3(getPos() + Vector2(cos(orient.rotation),sin(orient.rotation))*laser.collider.dimens.x),
+               RED,laser.collider.dimens.y);
+
+
+    /*DrawSprite3D(laserBeam.texture,
                  Rectangle(laser.orient.pos.x,laser.orient.pos.y,laser.collider.dimens.x,laser.collider.dimens.y),
-                 orient.rotation);
+                 orient.rotation);*/
     //DrawSphere(toVector3(laser.orient.pos),10,BLACK);
 }
 
@@ -45,8 +49,8 @@ void LaserBeamEnemy::update(Terrain& t)
     Object<RectCollider,TextureRenderer,LaserBeamEnemy>::update(t);
 
     orient.rotation = (func == SINE ?
-                        arc/2*DEG2RAD*(sin(GetTime())) :
-                        fmod(GetTime(),std::max(1.0f,arc*DEG2RAD))
+                        startingRot*DEG2RAD + arc/2*DEG2RAD*(sin(GetTime())) :
+                        fmod(startingRot*DEG2RAD + GetTime(),std::max(1.0f,arc*DEG2RAD))
                         );
    // orient.rotation += 0.01;
 
@@ -69,4 +73,23 @@ void LaserBeamEnemy::collideWith(PhysicsBody& other)
         //std::cout << "collided " << GetTime() << "\n";
         Globals::Game.getPlayer()->setDead(true);
     }
+}
+
+void MovingTerrain::onAdd()
+{
+    Globals::Game.terrain.getTerrain(orient.layer)->addPlanet(*this);
+}
+
+void MovingTerrain::update(Terrain& t)
+{
+    Vector2 newPos = calcNewPos(getOrient(),starting,speed);
+    if (newPos != getPos())
+    {
+        setPos(newPos);
+    }
+}
+
+Planet MovingTerrain::getPlanet()
+{
+    return {getPos(),collider.radius,SOLID};
 }

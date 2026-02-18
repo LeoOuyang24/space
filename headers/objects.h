@@ -48,10 +48,16 @@ struct Forces
 
 struct PhysicsBody
 {
-
+    size_t keyVal = 0; //a value that is sometimes used for object-object interactions
     bool dead = false;
     Orient orient;
+    bool onGround = false;
+    bool wasOnGround = false;
+    bool tangible = true;
+    bool freeFall = false; //freefall is true if we have not yet experienced gravity and stays true until we land
 
+    bool followGravity = true; //true if object follows gravity and can not be inside terrain
+    Forces forces;
     virtual Shape getShape() = 0;
     virtual void render() = 0;
     virtual void update(Terrain&) = 0;
@@ -72,11 +78,20 @@ struct PhysicsBody
     {
         return EMPTY_SERIAL;
     }
+    size_t getKeyVal();
     void setDead(bool val);
     bool getDead();
 
+    void setTangible(bool val);
     virtual bool isTangible(); //can be collided with. If false, will not call "onCollide"
     virtual bool isDead();
+    virtual bool isOnGround(Terrain& t) = 0;
+    virtual void onAdd() //called upon being added to terrain, when all fields have been set and object is ready to go
+    {
+
+    }
+
+    void applyForces(Terrain& t);
 };
 
 
@@ -89,14 +104,14 @@ struct Object : public PhysicsBody
 {
     Collider collider;
     Renderer renderer;
+    typedef GET_TYPE_WITH_collideWith<More...>::type CollideTrigger;
+    [[no_unique_address]] std::conditional<
+                            std::is_same<CollideTrigger,EMPTY_TYPE>::value,
+                                EMPTY_TYPE,
+                                CollideTrigger>::type collideTrigger;
 
     Color tint = WHITE;
-    bool onGround = false;
-    bool wasOnGround = false;
-    bool freeFall = false; //freefall is true if we have not yet experienced gravity and stays true until we land
 
-    bool followGravity = true;
-    Forces forces;
 
     template<typename... CollArgs, typename... RenderArgs>
     Object(const Orient& pos, std::tuple<CollArgs...> colliderArgs, std::tuple<RenderArgs...> renderArgs) : tint(WHITE),
@@ -117,6 +132,11 @@ struct Object : public PhysicsBody
     Object()
     {
 
+    }
+
+    bool isOnGround(Terrain& t)
+    {
+        return collider.isOnGround(orient,t);
     }
 
     void onCollide(PhysicsBody& other)
@@ -142,16 +162,14 @@ struct Object : public PhysicsBody
         }
         else
         {
-            using collideTrigger = GET_TYPE_WITH_collideWith<More...>::type;
-            if constexpr(!std::is_same<collideTrigger,EMPTY_TYPE>::value)
+            if constexpr(!std::is_same<CollideTrigger,EMPTY_TYPE>::value)
             {
-                collideTrigger::collideWith(*this,other);
+                collideTrigger.collideWith(*this,other);
             }
         }
     }
 
     //calls the corresponding Factory<>::Base::serialize
-    //we do this by figuring out which of our parameters is a descendant of PhysicsBody (because it has a "dead" field)
     std::string serialize()
     {
         if constexpr(!std::is_same<Descendant,EMPTY_TYPE>::value)
@@ -160,7 +178,7 @@ struct Object : public PhysicsBody
         }
         else
         {
-            return "";
+            return EMPTY_SERIAL;
         }
     }
 
@@ -179,7 +197,7 @@ struct Object : public PhysicsBody
     virtual void update(Terrain& t)
     {
         applyForces(t);
-        if (onGround)
+        if (onGround && followGravity)
         {
             adjustAngle(t);
             stayOnGround(t);
@@ -237,75 +255,7 @@ protected:
             }
         }
     }
-    void applyForces(Terrain& terrain)
-    {
-        int searchRad = freeFall ? 400 : 200;
 
-        if (!onGround && followGravity)
-        {
-            int divide = 100;
-            const int landingDivide = 5;
-            int upTo = divide;//freeFall ? divide : landingDivide;
-            Vector2 grav = {0,0};
-            int count = 0;
-            for (int i = 0; i < upTo; i ++)
-            {
-                float angle =  2*M_PI/divide*i + M_PI/2-M_PI/(divide)*(landingDivide-1) + orient.rotation;
-                auto pos = terrain.lineBlockIntersect(orient.pos, orient.pos + Vector2(cos(angle),sin(angle))*searchRad,false);
-                /*Debug::addDeferRender([pos,&terrain](){
-
-                                      DrawCircle3D(Vector3(pos.x,pos.y,Globals::Game.getCurrentZ()),10,{0,1,0},0,terrain.isBlockType(pos,ANTI,true) ? BLUE : RED);
-
-                                      });*/
-                if (terrain.blockExists(pos,true) && !Vector2Equals(pos,orient.pos))
-                {
-                    Vector2 force = Vector2Normalize(pos - orient.pos)/pow(Vector2Length(pos - orient.pos),1);
-                    if (terrain.isBlockType(pos,ANTI,true))
-                    {
-                        force *= -1;
-                    }
-                    if (terrain.isBlockType(pos,LAVA,true))
-                    {
-                        force *= 0.5;
-                    }
-                    grav +=  force;
-
-                    count ++;
-                }
-            }
-            if (count > 0)
-            {
-                //grav = Vector2Normalize(grav);
-                //forces.addForce(grav*0.2,Forces::GRAVITY);
-                forces.addForce(grav*25/count,Forces::GRAVITY);
-            }
-            else
-            {
-                freeFall = true;
-            }
-        }
-
-        if (orient.pos.x >= Terrain::MAX_TERRAIN_SIZE || orient.pos.x <= 0)
-        {
-            forces.addFriction({-1,1});
-            forces.addForce( Vector2{(orient.pos.x <= 0 ) * 2 - 1,0},Forces::BOUNCE);
-        }
-        else if (orient.pos.y >= Terrain::MAX_TERRAIN_SIZE || orient.pos.y <= 0)
-        {
-            forces.addFriction({1,-1});
-            forces.addForce( Vector2{0,(orient.pos.y <= 0 ) * 2 - 1},Forces::BOUNCE);
-        }
-
-        setPos(getPos() + forces.getTotalForce());
-
-        forces.addFriction(onGround ? 0.5 : .99);
-
-        //forces.addForce({0,.5},Forces::GRAVITY);
-
-        wasOnGround = onGround;
-        onGround = collider.isOnGround(orient,terrain);
-
-    }
 
 };
 

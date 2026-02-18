@@ -21,6 +21,7 @@ struct SplitString
 
     //construct our split string
     SplitString(std::string_view str, char delimit = ',');
+    SplitString(SplitString& other, size_t index); //create a SplitString
 
     //only indicies 0 - nums.size() - 1 are valid. All other indicies return "". Valid indicies return the index-th valid substring
     std::string_view operator[](size_t index) const;
@@ -45,6 +46,8 @@ T fromString(std::string_view);
 template<typename T>
 std::string toString(T&);
 
+template<typename T>
+std::string toString(T*);
 
 template<typename T>
 concept Arith = std::is_arithmetic_v<T>;
@@ -56,5 +59,10 @@ std::string toString(A& f)
     return std::to_string(f);
 }
 
+template<typename T>
+std::string toString(std::unique_ptr<T>& ptr)
+{
+    return toString(ptr.get());
+}
 
 #endif // CONVERSIONS_H_INCLUDED

@@ -2,6 +2,15 @@
 
 #include "../headers/sprites.h"
 
+bool isAnimeDone(const AnimeInfo& info, size_t frames)
+{
+    if (info.speed == 0)
+    {
+        return false;
+    }
+    return frames >= info.horizFrames*info.vertFrames/info.speed;
+}
+
 void SpritesGlobal::addAnime(const AnimeInfo& info, std::string_view fullPath, std::string_view fileName)
 {
 

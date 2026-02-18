@@ -4,6 +4,29 @@
 
 #include <iostream>
 
+void DrawLine3D(Vector3 startPos,Vector3 endPos, Color color, int width)
+{
+    Vector3 centerPos = (startPos + endPos)/2;
+    Vector2 size = Vector2(Vector3Length(endPos - startPos),width);
+    rlPushMatrix();
+        rlTranslatef(centerPos.x, centerPos.y, centerPos.z);
+        rlRotatef(atan2(endPos.y - startPos.y,endPos.x - startPos.x)*RAD2DEG,0,0,0.5);
+        rlScalef(size.x, size.y, 1.0f);
+
+        rlBegin(RL_TRIANGLES);
+            rlColor4ub(color.r, color.g, color.b, color.a);
+
+            rlVertex3f(-0.5f, -0.5f, 0.0f);
+            rlVertex3f(-0.5f, 0.5f, 0.0f);
+            rlVertex3f(0.5f, 0.5f, 0.0f);
+
+            rlVertex3f(-0.5f, -0.5f, 0.0f);
+            rlVertex3f(0.5f, 0.5f, 0.0f);
+            rlVertex3f(0.5f, -0.5f, 0.0f);
+        rlEnd();
+    rlPopMatrix();
+}
+
 Vector2 GetScreenDimen()
 {
     return {GetScreenWidth(),GetScreenHeight()};
@@ -15,7 +38,7 @@ void DrawSprite3D(const Texture2D& sprite, const Rectangle& pos, float rotation,
                     sprite,
                     Rectangle(0,0,sprite.width,sprite.height),
                     toVector3({pos.x,pos.y}),
-                     Vector3(0,1,0),
+                     Vector3(0,-1,0),
                      Vector2(pos.width,pos.height),
                      Vector2(pos.width/2,pos.height/2),
                      rotation*RAD2DEG,

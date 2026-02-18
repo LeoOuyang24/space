@@ -50,32 +50,32 @@ auto& access(Obj& thing)
 }
 
 //sets a field. For most fields, this is pretty simple; simply set it to the serialized version
-template<size_t index, typename Accessed>
-void setValue(const SplitString& params, Accessed& accessed)
+template<typename Accessed>
+void setValue(const SplitString& params, Accessed& accessed, size_t index)
 {
-    if (index + 1 < params.size())
+    if (index< params.size())
     {
-        accessed = fromString<Accessed>(params[index + 1]);
+        accessed = fromString<Accessed>(params[index]);
     }
 }
 
+//Look for specializations below class declarations. Each object we want to be able to serialize/deserialize has a specialization
+template<typename Obj>
+struct Factory;
+
 //specialization for unique_ptr. We instead reset it to the raw pointer of the deserialized object
-template<size_t index,typename T >
-void setValue(const SplitString& params, std::unique_ptr<T>& ptr)
+template<typename T >
+void setValue(const SplitString& params, std::unique_ptr<T>& ptr, size_t index)
 {
-    if (index + 1 < params.size())
+    if (index < params.size())
     {
-        ptr.reset(fromString<T*>(params[index + 1]));
+        ptr.reset(fromString<T*>(params[index]));
     }
 }
 
 class PhysicsBody;
 //given a string, create the corresponding Object based on the name in the first part of the string.
 std::shared_ptr<PhysicsBody> construct(std::string cereal);
-
-//Look for specializations below class declarations. Each object we want to be able to serialize/deserialize has a specialization
-template<typename Obj>
-struct Factory;
 
 //default definition for objects that really should never be serialized
 template<typename Obj>
@@ -102,18 +102,22 @@ For this to work, "Obj" must be able to have a blank constructor
 template<typename Obj, auto... Accessors>
 struct FactoryBase
 {
+    //number of accessors
+    static constexpr size_t size = sizeof...(Accessors);
+
     //string* because we are usually taking in the contiguous strings of a std::vector<string> in "construct"
-    static Obj deserialize(const SplitString& params)
+    //we can start at any index, however, we usually start at 1 because index 0 is usually the name of the object
+    static Obj deserialize(const SplitString& params,size_t start = 1)
     {
         Obj obj;
-        [&obj,&params]<size_t... Index>(std::index_sequence<Index...>)
+        [&obj,&params,start]<size_t... Index>(std::index_sequence<Index...>)
         {
             //set each field to a value that is converted from a string
             //"Accessors(obj)" returns a reference to the corresponding field
             //decltype lets us decide what type to convert into, based on the type of the field in "Obj"
             //if fewer than required fields are provided, we go up as high as we can, based on length
             //we start at index + 1 because the first string is always the name of the object
-            (setValue<Index>(params,Accessors(obj)),...);
+            (setValue(params,Accessors(obj),start + Index),...);
 
         }(std::make_index_sequence<sizeof...(Accessors)>{}); //<-- allows us to iterate through each accessor. "Index" is 0 - however many Accessors
         return obj;
@@ -121,16 +125,30 @@ struct FactoryBase
 
     //if an Object is defined with itself as part of the Object template parameters, its "serialize" function will automatically call this.
     //so for example if Key = public Object<Collider,Renderer,Key>, Key::serialize will be Factory<Key>::serialize
-    static std::string serialize(Obj& object)
+    static std::string serialize(Obj& object,std::string objName = Factory<Obj>::ObjectName)
     {
         std::string cereal = "";
         //concatenate each serialized version of each field
         ((cereal += (toString(Accessors(object)) + "\t")),...);
 
-        return Factory<Obj>::ObjectName + "\t" + cereal;
+        return objName + "\t" + cereal;
     }
 };
 
+template<typename Obj,auto SetFunc, auto... Accessors>
+struct Setter
+{
+    using FieldType = decltype(access<Accessors...>(std::declval<Obj>()));
+    FieldType& value;
+    void operator=(FieldType&& other)
+    {
+        SetFunc(value,other);
+    }
+    static Setter CustomSetter(Obj& obj)
+    {
+        return Setter{access<Accessors...>(obj)};
+    }
+};
 
 
 #endif // FACTORY_H_INCLUDED

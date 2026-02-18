@@ -26,8 +26,8 @@ SplitString::SplitString(std::string_view str, char delimit)
         nums.push_back(ind + 1);
         start = ind + 1;
     }
-    if (nums[nums.size() -1] != str.size()) [[likely]] //false if the string ends with a delimit, in which case we can skip this
-    {
+    if (nums[nums.size()-1] != str.size()) //true if the string doesn't end with a delimit, in which case we simply add position after the end of the string (+1 because normally the next index is the position of the next string)
+    {                                           //if this is false, that means the string DOES end with a delimit, in which case the last position was already added in the while loop
         nums.push_back(str.size() + 1);
     }
     this->str = str;
@@ -55,6 +55,12 @@ template<>
 size_t fromString(std::string_view str)
 {
     return str.size() > 0 ? fromString<int>(str) : 0;
+}
+
+template<>
+double fromString(std::string_view str)
+{
+    return str.size() > 0 ? std::stod(str.data()) : 0;
 }
 
 template<>
@@ -111,6 +117,18 @@ PortalCondition* fromString(std::string_view str)
 }
 
 template<>
+OnTrigger* fromString(std::string_view str)
+{
+    SplitString split(str,'|');
+
+    if (split[0] == "trigger_spawn_planets")
+    {
+        return new TriggerSpawnPlanets(split);
+    }
+    return nullptr;
+}
+
+template<>
 std::string fromString(std::string_view str)
 {
     std::string answer = "";
@@ -155,12 +173,43 @@ std::vector<std::string> fromString(std::string_view str)
 template<>
 LaserBeamEnemy::RotateFunc fromString(std::string_view str)
 {
-    if (strcmp(str.data(),"SINE") == 0)
+    if (strncmp(str.data(),"SINE",strlen("SINE")) == 0)
     {
         return LaserBeamEnemy::RotateFunc::SINE;
     }
     return LaserBeamEnemy::RotateFunc::CONSTANT;
 
+}
+
+template<>
+MovingTerrain::MoveFunc fromString(std::string_view str)
+{
+    //basically return two functions, one is how we move, the other is how to serialize
+    SplitString split(str,'|');
+    auto toString = [cereal=std::string(str.data())]() -> std::string {return cereal;}; //toString function each of these guys will have, which is just returning the string that was used to deserialize them
+    if (split[0] == "LINE") //LINE|<distance>|<angle in degrees>
+    {
+        return { //linear movement, can be diagonal based on 3rd parameter
+            [distance = fromString<float>(split[1]),
+            degrees = fromString<float>(split[2])]
+                (const Orient& o,const Vector2& starting,uint16_t frame,float speed) -> Vector2
+                    {
+                    return starting + Vector2(cos(degrees*DEG2RAD),sin(degrees*DEG2RAD))*sin(frame*speed/1000.0f)*distance;
+                    },
+            toString
+        };
+    }
+    else if (split[0] == "CIRCLE") //CIRCLE|<radius>
+    {
+        return {
+            [radius=fromString<float>(split[1])](const Orient& o,const Vector2& starting,uint16_t frame,float speed){
+                float angle = frame/1000.0f*speed;
+                return starting + Vector2(cos(angle),sin(angle))*radius;
+            },
+            toString
+        };
+    }
+    return {};
 }
 
 template<>
@@ -187,6 +236,7 @@ std::string toString(Texture2D& sprite)
     return Globals::Game.Sprites.getSpritePath(sprite);
 }
 
+template<>
 std::string toString(PortalCondition* cond)
 {
     if (cond)
@@ -197,10 +247,18 @@ std::string toString(PortalCondition* cond)
 }
 
 template<>
-std::string toString(std::unique_ptr<PortalCondition>& ptr)
+std::string toString(OnTrigger* trigger)
 {
-    return toString(ptr.get());
+    if (trigger)
+    {
+        return trigger->to_string();
+    }
+    return "null";
 }
+
+template<typename T>
+std::string toString(T* ptr);
+
 
 template<>
 std::string toString(std::string& str)
@@ -236,4 +294,10 @@ std::string toString(LaserBeamEnemy::RotateFunc& func)
         default:
             return "CONSTANT";
     }
+}
+
+template<>
+std::string toString(MovingTerrain::MoveFunc& moveFunc)
+{
+    return moveFunc.toString();
 }

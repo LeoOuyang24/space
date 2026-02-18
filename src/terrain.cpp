@@ -21,6 +21,16 @@ void ObjectLookup::addObject(std::shared_ptr<PhysicsBody> ptr)
         objects[ptr.get()] = ptr;
     }
 }
+
+void ObjectLookup::eraseObject(PhysicsBody& obj)
+{
+    auto it = objects.find(&obj);
+    if (it != objects.end())
+    {
+        objects.erase(it);
+    }
+}
+
 std::shared_ptr<PhysicsBody> ObjectLookup::getObject(PhysicsBody* body)
 {
     auto it = objects.find(body);
@@ -134,8 +144,8 @@ void GlobalTerrain::update(LayerType layer)
                 {
                     for (auto jt = objects.begin(); jt != it; ++jt)
                     {
-                        PhysicsBody* obj2 = jt->lock().get(); //guaranteed to be non-null and in this layer, since jt < it;
-                        if (obj2->isTangible() && CheckCollision(obj->getShape(),obj2->getShape()))
+                        PhysicsBody* obj2 = jt->lock().get();
+                        if (isValidObject(obj2,layer) && obj2->isTangible() && CheckCollision(obj->getShape(),obj2->getShape()))
                         {
                             obj->onCollide(*obj2);
                             obj2->onCollide(*obj);
@@ -151,6 +161,7 @@ void GlobalTerrain::update(LayerType layer)
             else //otherwise, remove it
             {
                 it = objects.erase(it);
+                Globals::Game.objects.eraseObject(*obj);
             }
         }
     }

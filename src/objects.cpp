@@ -35,7 +35,17 @@ bool PhysicsBody::isDead()
 
 bool PhysicsBody::isTangible()
 {
-    return true;
+    return tangible;
+}
+
+void PhysicsBody::setTangible(bool val)
+{
+    tangible = val;
+}
+
+size_t PhysicsBody::getKeyVal()
+{
+    return keyVal;
 }
 
 void Forces::setForce(const Vector2& force, Forces::ForceSource source)
@@ -91,6 +101,77 @@ void Forces::addFriction(float friction, Forces::ForceSource source)
 Vector2 Forces::getTotalForce()
 {
     return Vector2LengthSqr(totalForce) > 400 ? Vector2Normalize(totalForce)*20 : totalForce;
+}
+
+void PhysicsBody::applyForces(Terrain& terrain)
+{
+    int searchRad = freeFall ? 220 : 120;
+
+    if (!onGround && followGravity)
+    {
+        int divide = 100;
+        const int landingDivide = 11;
+        int upTo =  divide;// freeFall ? divide : landingDivide;
+        Vector2 grav = {0,0};
+        int count = 0;
+        for (int i = 0; i < upTo; i ++)
+        {
+            float angle =  2*M_PI/divide*i + (M_PI/2)-M_PI/(divide)*(landingDivide-1) + orient.rotation;
+            auto pos = terrain.lineBlockIntersect(orient.pos, orient.pos + Vector2(cos(angle),sin(angle))*searchRad,false);
+            Debug::addDeferRender([pos,&terrain](){
+
+                                  DrawCircle3D(Vector3(pos.x,pos.y,Globals::Game.getCurrentZ()),10,{0,1,0},0,terrain.isBlockType(pos,ANTI,true) ? BLUE : RED);
+
+                                  });
+            if (terrain.blockExists(pos,true) && !Vector2Equals(pos,orient.pos))
+            {
+                Vector2 force = Vector2Normalize(pos - orient.pos)/pow(Vector2Length(pos - orient.pos),1);
+                if (terrain.isBlockType(pos,ANTI,true))
+                {
+                    force *= -1;
+                }
+                if (terrain.isBlockType(pos,LAVA,true))
+                {
+                    force *= 0.1;
+                }
+                grav +=  force;
+
+                count ++;
+            }
+        }
+        if (count > 0)
+        {
+            Vector2 norm = Vector2Normalize(grav);
+            //std::cout << Vector2Length(grav) << "\n";
+            forces.addForce(norm*0.25,Forces::GRAVITY);
+           // forces.addForce(grav*23/count,Forces::GRAVITY);
+        }
+        else
+        {
+            //freeFall = true;
+        }
+    }
+
+    if (orient.pos.x >= Terrain::MAX_TERRAIN_SIZE || orient.pos.x <= 0)
+    {
+        forces.addFriction({-1,1});
+        forces.addForce( Vector2{(orient.pos.x <= 0 ) * 2 - 1,0},Forces::BOUNCE);
+    }
+    else if (orient.pos.y >= Terrain::MAX_TERRAIN_SIZE || orient.pos.y <= 0)
+    {
+        forces.addFriction({1,-1});
+        forces.addForce( Vector2{0,(orient.pos.y <= 0 ) * 2 - 1},Forces::BOUNCE);
+    }
+
+    setPos(getPos() + forces.getTotalForce());
+    forces.addFriction(onGround ? 0.5 : .99);
+
+    //forces.addForce({0,.5},Forces::GRAVITY);
+
+    wasOnGround = onGround;
+    onGround = isOnGround(terrain);
+    freeFall = freeFall && !onGround;
+
 }
 
 void suggestButtonPress(const Shape& shape, std::string_view str)

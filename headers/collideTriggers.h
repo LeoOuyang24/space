@@ -4,10 +4,13 @@
 #include <functional>
 #include "raylib.h"
 
-//#include "item.h"
-
 //things to do on collide
+
 #include <iostream>
+
+#include "conversions.h"
+#include "factory.h"
+
 class PhysicsBody;
 struct HoldThis
 {
@@ -44,6 +47,33 @@ struct InteractComponent
     }
 };
 
+struct OnTrigger
+{
+    virtual void operator()(PhysicsBody& owner) = 0;
+    virtual std::string to_string() = 0;
+};
 
+//on trigger, spawn planets at each of the given points
+struct TriggerSpawnPlanets : public OnTrigger
+{
+    double duration = 0; //how long the terrain should persist, negative if you want forever.
+    struct Circle
+    {
+        Vector2 center;
+        int radius;
+        Color color;
+        bool absolute = false; //true if position is absolute, false if relative to object that calls this
+        using Factory = FactoryBase<Circle,
+                            access<Circle,&Circle::center>,
+                            access<Circle,&Circle::radius>,
+                            access<Circle,&Circle::color>,
+                            access<Circle,&Circle::absolute>>;
+    };
+    std::vector<Circle> points;
+
+    TriggerSpawnPlanets(const SplitString& split);
+    std::string to_string();
+    void operator()(PhysicsBody&);
+};
 
 #endif // COLLIDETRIGGERS_H_INCLUDED

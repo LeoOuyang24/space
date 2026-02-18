@@ -58,17 +58,75 @@ void Booster::onCollide(PhysicsBody& other)
     }
 }
 
-
-void Barrel::onCollide(PhysicsBody& other)
+void PickupComponent::collideWith(PhysicsBody& owner, PhysicsBody& other)
 {
-    if (&other == Globals::Game.getPlayer() && GetTime() - held >= 1)
+    Player* player = static_cast<Player*>(Globals::Game.getPlayer());
+    if (player->getHolding() == &owner)
     {
-        Player* player = static_cast<Player*>(Globals::Game.getPlayer());
-        player->holding = Globals::Game.objects.getObject(this);
+        lastHeld = GetTime();
+    }
+    else if (&other == player && GetTime() - lastHeld >= 1)
+    {
+        player->holding = Globals::Game.objects.getObject(&owner);
     }
 }
 
+void Barrel::update(Terrain& terrain)
+{
+    Object<RectCollider,TextureRenderer,Barrel,PickupComponent>::update(terrain);
 
+    if (onGround && collideTrigger.lastHeld > 0 && Globals::Game.player->getHolding() != this) //last two conditions are only true if we have been dropped
+    {
+        setDead(true);
+        Sequences::add(false,[start=GetTime(),pos=getPos()](int frames){
+                       const Anime* anime = Globals::Game.Sprites.getAnime("death.png");
+                       DrawAnime3D(anime->spritesheet,start,anime->info,{pos.x,pos.y,500,500},Globals::Game.getCurrentZ(),0,YELLOW);
+                       return isAnimeDone(anime->info,frames);
+                       });
+    }
+}
+
+void BarrelSpawner::update(Terrain& terrain)
+{
+    if (!baby.lock().get())
+    {
+        Barrel* barrel = new Barrel();
+        barrel->setPos(orient.pos + Vector2(10,0));
+        Globals::Game.addObject(*barrel,orient.layer);
+        baby = std::static_pointer_cast<Barrel>(Globals::Game.objects.getObject(barrel));
+    }
+    Object::update(terrain);
+}
+
+void BarrelSpawner::interactWith(PhysicsBody& other)
+{
+    if (Barrel* brah = baby.lock().get())
+    {
+        brah->setDead(true);
+    }
+}
+
+void BarrelReceiver::onCollide(PhysicsBody& other)
+{
+    if (other.getKeyVal() == this->getKeyVal() && !activated)
+    {
+        other.setDead(true);
+        activated = true;
+        if (onTrigger.get())
+        {
+            std::cout << "triggered\n";
+            (*onTrigger)(*this);
+        }
+        //onTrigger(*this);
+        /*Globals::Game.addObject(*(new Portal(this->getPos() + this->orient.getNormal()*-100,
+                                             this->orient.layer,
+                                             {},
+                                             this->orient.layer
+                                             )),this->orient.layer);*/
+        double start = GetTime();
+       // onTrigger(*this);
+    }
+}
 
 bool operator==(const Key::KeyVal& left, const Key::KeyVal& right)
 {

@@ -5,6 +5,7 @@
 #include "objects.h"
 #include "render.h"
 #include "factory.h"
+#include "collideTriggers.h"
 
 class HoldThis;
 
@@ -78,17 +79,59 @@ struct Booster : public Object<CircleCollider,TextureRenderer,Booster>
     void onCollide(PhysicsBody& other);
 };
 
-struct Barrel : public Object<RectCollider,TextureRenderer,Barrel>
+struct PickupComponent
+{
+    double lastHeld = 0;
+    bool held = false; //true if currently held
+    void collideWith(PhysicsBody& owner, PhysicsBody& other);
+
+};
+
+struct Barrel : public Object<RectCollider,TextureRenderer,Barrel,PickupComponent>
 {
     double held = 0;
     Barrel()
     {
+        keyVal = 1;
         followGravity = true;
         collider.width = 30;
         collider.height = 60;
         renderer.sprite = Globals::Game.Sprites.getSprite("barrel.png");
     }
+    void update(Terrain& terrain);
+    //void onCollide(PhysicsBody& other);
+};
+
+struct BarrelSpawner : public Object<RectCollider,TextureRenderer,BarrelSpawner>
+{
+    BarrelSpawner()
+    {
+        collider.width = 100;
+        collider.height = 150;
+        renderer.sprite = Globals::Game.Sprites.getSprite("barrel_spawner.png");
+    }
+    void update(Terrain& terrain);
+    void interactWith(PhysicsBody& other);
+
+private:
+    std::weak_ptr<Barrel> baby; //if our baby is dead, respawn!
+};
+
+struct BarrelReceiver : public Object<RectCollider,TextureRenderer,BarrelReceiver>
+{
+    std::unique_ptr<OnTrigger> onTrigger;
+
+    BarrelReceiver()
+    {
+        this->keyVal = 1;
+        this->followGravity = true;
+        this->collider.width = 100;
+        this->collider.height = 40;
+        this->renderer.sprite = Globals::Game.Sprites.getSprite("barrel_receiver.png");
+    }
     void onCollide(PhysicsBody& other);
+private:
+    bool activated = false;
 };
 
 template<>
@@ -122,6 +165,24 @@ struct Factory<Barrel>
     static constexpr std::string ObjectName = "barrel";
     using Base = FactoryBase<Barrel,
                             access<Barrel,&Barrel::orient,&Orient::pos>>;
+};
+
+template<>
+struct Factory<BarrelReceiver>
+{
+    static constexpr std::string ObjectName = "barrel_receiver";
+    using Base = FactoryBase<BarrelReceiver,
+                            access<BarrelReceiver,&BarrelReceiver::orient,&Orient::pos>,
+                            access<BarrelReceiver,&BarrelReceiver::keyVal>,
+                            access<BarrelReceiver,&BarrelReceiver::onTrigger>>;
+};
+
+template<>
+struct Factory<BarrelSpawner>
+{
+    static constexpr std::string ObjectName = "barrel_spawner";
+    using Base = FactoryBase<BarrelSpawner,
+                            access<BarrelSpawner,&BarrelSpawner::orient,&Orient::pos>>;
 };
 
 bool operator==(const Key::KeyVal& left, const Key::KeyVal& right);

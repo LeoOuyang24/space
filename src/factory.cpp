@@ -58,6 +58,18 @@ std::shared_ptr<PhysicsBody> construct(std::string cereal)
         {
             ptr = new Barrel(Factory<Barrel>::Base::deserialize(params));
         }
+        else if (params[0] == Factory<BarrelReceiver>::ObjectName)
+        {
+            ptr = new BarrelReceiver(Factory<BarrelReceiver>::Base::deserialize(params));
+        }
+        else if (params[0] == Factory<BarrelSpawner>::ObjectName)
+        {
+            ptr = new BarrelSpawner(Factory<BarrelSpawner>::Base::deserialize(params));
+        }
+        else if (params[0] == Factory<MovingTerrain>::ObjectName)
+        {
+            ptr = new MovingTerrain(Factory<MovingTerrain>::Base::deserialize(params));
+        }
         else
         {
             std::cerr << "ERROR construct: unable to construct object: " << params[0] << "\n";

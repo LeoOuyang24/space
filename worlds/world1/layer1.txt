@@ -1,0 +1,5 @@
+sprites/layers/world1/center.png
+3010.000000,3200.000000
+barrel_spawner	3000,2000
+moving_terrain	3000,3000	100	1	CIRCLE|1000
+moving_terrain	3000,3000	25	1	CIRCLE|500

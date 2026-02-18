@@ -8,6 +8,8 @@
 #include "../headers/blocks.h"
 #include "../headers/resources_math.h"
 #include "../headers/game.h"
+#include "../headers/enemy.h"
+
 #include "rlgl.h"
 
 Shader Terrain::GravityFieldShader;
@@ -29,6 +31,7 @@ Vector2 Terrain::nearestPos(const Vector2& vec)
 Terrain::Terrain()
 {
     blocksTexture = LoadRenderTexture(MAX_TERRAIN_SIZE,MAX_TERRAIN_SIZE);
+    //gravityTexture = LoadRenderTexture(MAX_TERRAIN_SIZE,MAX_TERRAIN_SIZE);
     //terrain.data.reserve(MAX_WIDTH*MAX_WIDTH*TerrainMap::PALETTE_SIZE);
 //    upScaled.resize(upScaled.maxWidth*upScaled.maxWidth);
     //gravityFields.resize(gravityFields.maxWidth*gravityFields.maxWidth);
@@ -36,6 +39,9 @@ Terrain::Terrain()
     BeginTextureMode(blocksTexture);
         ClearBackground(BLANK);
     EndTextureMode();
+   /* BeginTextureMode(gravityTexture);
+        ClearBackground(BLANK);
+    EndTextureMode();*/
 }
 
 Rectangle Terrain::getBlockRect(const Vector2& pos)
@@ -43,9 +49,9 @@ Rectangle Terrain::getBlockRect(const Vector2& pos)
     Vector2 rounded = roundPos(pos);
     return {rounded.x,rounded.y,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN};
 }
-
 void Terrain::addBlock(const Vector2& pos, const Block& block)
 {
+
     int index = pointToIndex(pos);
 
     if (index < 0 || index >= pointToIndex({MAX_TERRAIN_SIZE - 1,MAX_TERRAIN_SIZE - 1}))
@@ -56,7 +62,7 @@ void Terrain::addBlock(const Vector2& pos, const Block& block)
     {
         terrain.resize((index + 1)*TerrainMap::PALETTE_SIZE);
     }
-    terrain.setVal(index,block.type);
+    terrain.setVal(index,AIR);
     //std::cout << pos << "  " << index << " "<< terrain.size()<< "\n";
 
     Color color;
@@ -76,10 +82,11 @@ void Terrain::addBlock(const Vector2& pos, const Block& block)
         color = block.color;
         break;
     }
-
     Vector2 rounded = roundPos(pos);
-    BeginTextureMode(blocksTexture);
-
+    if (!isDrawing) //true if this is was called as part of another function, so don't start/stop drawing to texture because that is controlled by the outer function
+    {
+        BeginTextureMode(blocksTexture);
+    }
             for (int i = 0; i < 9; i ++)
             {
                 Vector2 neighbor = {rounded.x + Block::BLOCK_DIMEN*(i%3 - 1),rounded.y + Block::BLOCK_DIMEN*(i/3 - 1)};
@@ -87,32 +94,44 @@ void Terrain::addBlock(const Vector2& pos, const Block& block)
                     neighbor.x < blocksTexture.texture.width && neighbor.y < blocksTexture.texture.height &&
                     !blockExists(neighbor))
                     {
-                        DrawRectangle(neighbor.x,blocksTexture.texture.height - neighbor.y -  Block::BLOCK_DIMEN,
-                                      Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,
-                                      Color(color.r*.5,color.g*.5,color.b*.5,255));
+                        Vector2 pos = {neighbor.x,blocksTexture.texture.height - neighbor.y -  Block::BLOCK_DIMEN};
+
+                            DrawRectangle(pos.x,pos.y,
+                                              Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,
+                                              Color(color.r*.5,color.g*.5,color.b*.5,255));
+
+
                     }
             }
+            terrain.setVal(pointToIndex(rounded),block.type);
+
             DrawRectangle(rounded.x,blocksTexture.texture.height - rounded.y - Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,color);
-    EndTextureMode();
+            /*DrawCircle(rounded.x + Block::BLOCK_DIMEN/2,
+                       blocksTexture.texture.height - rounded.y - Block::BLOCK_DIMEN + Block::BLOCK_DIMEN/2,
+                       200,Color(0,200,200,100));*/
+    if (!isDrawing)
+    {
+        EndTextureMode();
+    }
 }
 
 void Terrain::remove(const Vector2& pos, int radius)
 {
+    drawBlocks();
+        rlSetBlendMode(BLEND_CUSTOM);
+    //double time = GetTime();
     forEachPos([this](const Vector2& pos){
-               //DrawCircle(pos.x,pos.y,10,GREEN);
-                //clear the texture
-                BeginTextureMode(blocksTexture);
-                    rlSetBlendMode(BLEND_CUSTOM);
-                        DrawRectangle(pos.x,blocksTexture.texture.height - pos.y,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,Fade(BLACK, 0.0f));
-                    rlSetBlendMode(BLEND_ALPHA);
-                EndTextureMode();
-               if (blockExists(pos))
-               {
-                  //terrain[pointToIndex(pos)] = false;//{Color(0,0,0,0)};
-                  terrain.setVal(pointToIndex(pos),BlockType::AIR);
-               }
-               },pos,radius);
+            //for (int i = 0; i < 9; i ++)
+            {
+                Vector2 neighbor = pos;//{pos.x + Block::BLOCK_DIMEN*(i%3 - 1),pos.y + Block::BLOCK_DIMEN*(i/3 - 1)};
+                terrain.setVal(pointToIndex(neighbor),BlockType::AIR);
+                DrawRectangle(neighbor.x,blocksTexture.texture.height - neighbor.y-  Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,Fade(BLACK, 0.0f));
 
+            }
+               },pos,radius+Block::BLOCK_DIMEN*2);
+        rlSetBlendMode(BLEND_ALPHA);
+    endDrawBlocks();
+   // std::cout << GetTime() - time << "\n";
 }
 
 void Terrain::clear()
@@ -249,13 +268,15 @@ Vector2 Terrain::indexToPoint(size_t index,int blockDimen, int maxWidth)
 
 void Terrain::generatePlanet(const Vector2& center, int radius, const Color& color )
 {
+    drawBlocks();
+
     forEachPos([this,&center,radius,color](const Vector2& pos){
 
                     addBlock(pos,{color});
 
                },center,radius);
 
-
+    endDrawBlocks();
 
 }
 
@@ -267,20 +288,22 @@ void Terrain::generatePlanets()
     terrain.clear();
 
     int numPlanets = rand()%3 + 3;
+    drawBlocks();
+        for (int i = 0; i < numPlanets; i++)
+        {
+            Vector2 randomCenter = Vector2(rand()%MAX_WIDTH,rand()%MAX_WIDTH);
+            int radius = rand()%(100) + 100;
 
-    for (int i = 0; i < numPlanets; i++)
-    {
-        Vector2 randomCenter = Vector2(rand()%MAX_WIDTH,rand()%MAX_WIDTH);
-        int radius = rand()%(100) + 100;
-
-        generatePlanet(randomCenter,radius,RED);
-    }
+            generatePlanet(randomCenter,radius,RED);
+        }
+    endDrawBlocks();
 }
 
 void Terrain::generateRect(const Rectangle& rect, const Color& color)
 {
     Vector2 origin = roundPos({rect.x,rect.y});
 
+    drawBlocks();
     for (int i = origin.x; i <= rect.x + rect.width; i += Block::BLOCK_DIMEN)
     {
         for (int j = origin.y; j <= rect.y + rect.height; j+= Block::BLOCK_DIMEN)
@@ -288,6 +311,7 @@ void Terrain::generateRect(const Rectangle& rect, const Color& color)
             addBlock({i,j},{color});
         }
     }
+    endDrawBlocks();
 }
 
 void Terrain::generateRightTriangle(const Vector2& corner, float height, const Color& color)
@@ -295,7 +319,7 @@ void Terrain::generateRightTriangle(const Vector2& corner, float height, const C
     Vector2 origin = roundPos({corner.x,corner.y - height});
     int modHeight = height/Block::BLOCK_DIMEN;
 
-
+    drawBlocks();
     for (int i = 0; i <= modHeight; i += 1)
     {
         for (int j = i; j <= modHeight; j+= 1)
@@ -304,13 +328,25 @@ void Terrain::generateRightTriangle(const Vector2& corner, float height, const C
             addBlock({i,j},{color});
         }
     }
+    endDrawBlocks();
 }
 
 bool Terrain::blockExists(const Vector2& pos, bool checkEdge)
 {
-
+    for (std::weak_ptr<MovingTerrain> terr : planets) //first check against planets, they can be anywhere
+    {
+        if (terr.lock().get())
+        {
+            Planet pl = terr.lock().get()->getPlanet();
+            if (pl.type != AIR && Vector2DistanceSqr(pos,pl.pos) <= pl.radius*pl.radius)
+            {
+                return true;
+            }
+        }
+    }
     size_t index = pointToIndex(pos);
-    if (index >= terrain.size())
+
+    if (index >= terrain.size()) //past this point, there is no way a point that is outside of our terrain.size can have collision
     {
         return false;
     }
@@ -327,12 +363,29 @@ bool Terrain::blockExists(const Vector2& pos, bool checkEdge)
             answer = (pos.y > 0 && terrain[index - MAX_WIDTH] != AIR);
         }
     }
+    if (!answer)
+    {
+
+    }
 
     return answer;
 }
 
 bool Terrain::isBlockType(const Vector2& pos, BlockType type, bool checkEdge)
 {
+
+    for (std::weak_ptr<MovingTerrain> terr : planets)
+    {
+        if (terr.lock().get())
+        {
+            Planet pl = terr.lock().get()->getPlanet();
+            if (pl.type == type && Vector2DistanceSqr(pos,pl.pos) <= pl.radius*pl.radius)
+            {
+                return true;
+            }
+        }
+    }
+
     size_t index = pointToIndex(pos);
     if (index >= terrain.size())
     {
@@ -350,8 +403,14 @@ bool Terrain::isBlockType(const Vector2& pos, BlockType type, bool checkEdge)
             answer = (pos.y > 0 && terrain[index - MAX_WIDTH] == type);
         }
     }
+
     return answer;
 
+}
+
+void Terrain::addPlanet(MovingTerrain& planet)
+{
+    planets.push_back(std::static_pointer_cast<MovingTerrain>(Globals::Game.objects.getObject(&planet)));
 }
 
 void Terrain::render(int i, int z)
@@ -370,4 +429,20 @@ void Terrain::render(int i, int z)
                     Vector2(blocksTexture.texture.width,blocksTexture.texture.height),Vector2(blocksTexture.texture.width/2,blocksTexture.texture.height/2),
                     0,balls);
     //EndShaderMode();
+   //BeginShaderMode(GravityFieldShader);
+    //DrawSprite3D(gravityTexture.texture,Rectangle(MAX_TERRAIN_SIZE/2,MAX_TERRAIN_SIZE/2,MAX_TERRAIN_SIZE,MAX_TERRAIN_SIZE));
+    //EndShaderMode();
+
+}
+
+void Terrain::drawBlocks()
+{
+    isDrawing = true;
+    BeginTextureMode(blocksTexture);
+}
+
+void Terrain::endDrawBlocks()
+{
+    isDrawing = false;
+    EndTextureMode();
 }
