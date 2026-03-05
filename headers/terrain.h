@@ -2,6 +2,7 @@
 #define TERRAIN_H_INCLUDED
 
 #include "blocks.h"
+#include "checkFields.h"
 
 #include <list>
 
@@ -32,7 +33,7 @@ struct ObjectLookup
 
 struct GlobalTerrain
 {
-
+    static constexpr float GRAVITY_CONSTANT = 0.25f;
     struct LayerInfo //carries info of this layer for when it needs to be saved
     {
         std::string configPath = ""; //path to the layer config file.
@@ -62,7 +63,18 @@ struct GlobalTerrain
 
     LayerInfo getLayerInfo(LayerType index);
     std::string serialize(LayerType index);
+    enum GravityMode
+    {
+        PLANET, //gravity is based on nearby terrain
+        DOWN //gravity moves down
+    };
+
+    make_getter(gravityMode,GravityMode);
+    make_setter(gravityMode,GravityMode);
+    void flipGravity(); //swap between planet and down gravity
+
 private:
+    GravityMode gravityMode = PLANET;
 
     struct Layer
     {
@@ -75,6 +87,7 @@ private:
     std::vector<Layer> layers;
 
     bool isValidObject(PhysicsBody* obj, LayerType layer); //true if obj should be updated (is alive, belongs in this layer, is not null
+
 };
 
 struct World

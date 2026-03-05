@@ -9,7 +9,6 @@ sign	In my travels, I've come to take great interest in cold metals.|There is a 
 sign	Drat! They're exactly that heavy!	2090.039551,3139.732910	
 sign	These barrels sure seem heavy...|I hope they aren't heavy enough to interfere with my boosting and sprint jumping capabilities!	1660.866455,3115.017334	
 
-barrel	1501.090210,3064.000000	
 gear	1943.947632,3455.919189	
 gear	2187.555664,3862.697998	
 gear	2621.333252,3885.809082	

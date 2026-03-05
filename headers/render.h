@@ -31,7 +31,6 @@ struct ShapeRenderer
 struct TextureRenderer
 {
     Texture2D sprite = {};
-    bool facing = true; //true if facing to the right
     TextureRenderer()
     {
 

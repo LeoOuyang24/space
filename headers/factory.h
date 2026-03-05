@@ -73,10 +73,6 @@ void setValue(const SplitString& params, std::unique_ptr<T>& ptr, size_t index)
     }
 }
 
-class PhysicsBody;
-//given a string, create the corresponding Object based on the name in the first part of the string.
-std::shared_ptr<PhysicsBody> construct(std::string cereal);
-
 //default definition for objects that really should never be serialized
 template<typename Obj>
 struct Factory
@@ -135,6 +131,8 @@ struct FactoryBase
     }
 };
 
+//used to define a custom setter function for a particular field
+//use this the same way you'd use access, but replace access with Setter<obj,setFunc,accessors...>::CustomSetter
 template<typename Obj,auto SetFunc, auto... Accessors>
 struct Setter
 {
@@ -150,5 +148,49 @@ struct Setter
     }
 };
 
+template<size_t N>
+struct StringWrapper
+{
+  char str[N];
+  constexpr StringWrapper(const char (&s)[N])
+  {
+      for (int i = 0; i < N; i ++)
+      {
+          str[i] = s[i];
+      }
+  }
+};
 
+//handles how objects are deserialized
+class ClassDeserializer
+{
+    //stores every object and its deserialization function
+   static std::unordered_map<std::string,std::function<PhysicsBody*(const SplitString& params)>> funcs;
+public:
+    //add an object and its name to our list
+    template<typename Obj>
+    static void registerName()
+    {
+        funcs[Factory<Obj>::ObjectName] = [](const SplitString& params){
+            return new Obj(Factory<Obj>::Base::deserialize(params));
+        };
+    }
+    //sometimes I'm too lazy to make a Factory. This registers an object at a name and just returns it with the default constructor
+    template<typename Obj>
+    static void registerName(std::string_view name)
+    {
+        funcs[name.data()] = [](const SplitString& params){
+            return new Obj();
+        };
+    }
+    //add all objects we need
+    static void init();
+
+    //construct from string
+    static std::shared_ptr<PhysicsBody> construct(std::string_view cereal);
+};
+
+class PhysicsBody;
+//given a string, create the corresponding Object based on the name in the first part of the string.
+std::shared_ptr<PhysicsBody> construct(std::string cereal);
 #endif // FACTORY_H_INCLUDED

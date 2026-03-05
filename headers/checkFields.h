@@ -13,5 +13,9 @@ CHECK_FOR(key);
 #define make_getter(field,type) \
 type get_##field() { return field; }
 
+//same thing for setters
+#define make_setter(field,type) \
+void set_##field(type value) { field = value; }
+
 
 #endif // CHECKFUNCTIONS_H_INCLUDED

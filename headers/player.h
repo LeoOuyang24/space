@@ -52,14 +52,15 @@ struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
     static Texture2D PlayerSprite;
     static constexpr int PLAYER_DIMEN = 30;
 
-    static constexpr float PLAYER_MAX_SPEED = 5;
+    static constexpr float PLAYER_MAX_SPEED = 6;
     static constexpr float PLAYER_RUN_MAX_SPEED = 5; //currently unused
-    static constexpr float PLAYER_MAX_AIR_SPEED = 3.5;
+    static constexpr float PLAYER_MAX_AIR_SPEED = 4;//3.5;
+    static constexpr float PLAYER_MAX_AIR_FREEFALL_SPEED = PLAYER_MAX_SPEED; //max air speed when freefalling
 
     static constexpr float PLAYER_GROUND_ACCEL = 0.2; //added to player force every frame
     static constexpr float PLAYER_AIR_ACCEL = 0.05; //unlike the above acceleration, this is MULTIPLED every frame
 
-    static constexpr float AIR_FRICTION = 0.99; //number to multiply to speed every frame. Bigger number = less friction
+    static constexpr float AIR_FRICTION = 0.98; //number to multiply to speed every frame. Bigger number = less friction
     static constexpr float GROUND_FRICTION = 0.85;
 
     static constexpr float PLAYER_MAX_POWER = 100;
@@ -78,9 +79,6 @@ struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
     double freeFallTime = 0;
 
     bool boosted = false;
-
-    bool facing = true;
-
     std::weak_ptr<PhysicsBody> holding;
 
     std::unordered_set<Key::KeyVal> keys;
@@ -98,6 +96,7 @@ struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
     void addResetObject(PhysicsBody& body);
     void resetPlayer();
 
+    void setHolding(PhysicsBody& obj);
     PhysicsBody* getHolding();
 
     make_getter(aimAngle,float);

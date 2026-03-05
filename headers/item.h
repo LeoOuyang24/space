@@ -84,7 +84,10 @@ struct PickupComponent
     double lastHeld = 0;
     bool held = false; //true if currently held
     void collideWith(PhysicsBody& owner, PhysicsBody& other);
-
+    bool isThrown(PhysicsBody& owner); //true if we have been thrown at least once
+    void setPickupable(bool val);
+private:
+    bool pickupable = true; //set this to false if you want an object to no longer be pickup-able
 };
 
 struct Barrel : public Object<RectCollider,TextureRenderer,Barrel,PickupComponent>
@@ -102,19 +105,36 @@ struct Barrel : public Object<RectCollider,TextureRenderer,Barrel,PickupComponen
     //void onCollide(PhysicsBody& other);
 };
 
-struct BarrelSpawner : public Object<RectCollider,TextureRenderer,BarrelSpawner>
+template<typename PhysicsBodyType>
+struct GenericSpawner : public Object<RectCollider,TextureRenderer,GenericSpawner<PhysicsBodyType>>
 {
-    BarrelSpawner()
+    GenericSpawner()
     {
-        collider.width = 100;
-        collider.height = 150;
-        renderer.sprite = Globals::Game.Sprites.getSprite("barrel_spawner.png");
+        this->collider.width = 100;
+        this->collider.height = 150;
+        this->renderer.sprite = Globals::Game.Sprites.getSprite("barrel_spawner.png");
     }
-    void update(Terrain& terrain);
-    void interactWith(PhysicsBody& other);
+    void update(Terrain& terrain)
+    {
+        if (!baby.lock().get())
+        {
+            PhysicsBodyType* obj = new PhysicsBodyType();
+            obj->setPos(this->orient.pos + Vector2(10,0));
+            Globals::Game.addObject(*obj,this->orient.layer);
+            this->baby = std::static_pointer_cast<PhysicsBodyType>(Globals::Game.objects.getObject(obj));
+        }
+        Object<RectCollider,TextureRenderer,GenericSpawner<PhysicsBodyType>>::update(terrain);
+    }
+    void interactWith(PhysicsBody& other)
+    {
+        if (PhysicsBodyType* brah = baby.lock().get())
+        {
+            brah->setDead(true);
+        }
+    }
 
 private:
-    std::weak_ptr<Barrel> baby; //if our baby is dead, respawn!
+    std::weak_ptr<PhysicsBodyType> baby; //if our baby is dead, respawn!
 };
 
 struct BarrelReceiver : public Object<RectCollider,TextureRenderer,BarrelReceiver>
@@ -130,6 +150,19 @@ struct BarrelReceiver : public Object<RectCollider,TextureRenderer,BarrelReceive
         this->renderer.sprite = Globals::Game.Sprites.getSprite("barrel_receiver.png");
     }
     void onCollide(PhysicsBody& other);
+private:
+    bool activated = false;
+};
+
+struct AntiGravPod :  public Object<CircleCollider,TextureRenderer,AntiGravPod,PickupComponent>
+{
+    AntiGravPod()
+    {
+        this->followGravity = true;
+        this->collider.radius = 25;
+        this->renderer.sprite = Globals::Game.Sprites.getSprite("grapple.png");
+    }
+    void update(Terrain&);
 private:
     bool activated = false;
 };
@@ -177,12 +210,14 @@ struct Factory<BarrelReceiver>
                             access<BarrelReceiver,&BarrelReceiver::onTrigger>>;
 };
 
+typedef GenericSpawner<Barrel> BarrelSpawner;
+
 template<>
-struct Factory<BarrelSpawner>
+struct Factory<GenericSpawner<Barrel>>
 {
     static constexpr std::string ObjectName = "barrel_spawner";
-    using Base = FactoryBase<BarrelSpawner,
-                            access<BarrelSpawner,&BarrelSpawner::orient,&Orient::pos>>;
+    using Base = FactoryBase<GenericSpawner<Barrel>,
+                            access<GenericSpawner<Barrel>,&GenericSpawner<Barrel>::orient,&Orient::pos>>;
 };
 
 bool operator==(const Key::KeyVal& left, const Key::KeyVal& right);

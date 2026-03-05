@@ -131,7 +131,7 @@ void Globals::loadLevel(std::string_view path)
                         break;
                     }
                 default:
-                    addObject(construct(line),terrain.getLayerCount() - 1);
+                    addObject(ClassDeserializer::construct(line),terrain.getLayerCount() - 1);
                     break;
                 }
                 lineNum ++;
@@ -211,7 +211,7 @@ void Globals::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
 {
     if (ptr.get())
     {
-        ptr->setOrient({ptr->getPos(),layer});
+        ptr->setOrient({ptr->getPos(),layer,ptr->orient.rotation,ptr->orient.facing});
         objects.addObject(ptr);
         terrain.addObject(ptr,layer);
         ptr->onAdd();

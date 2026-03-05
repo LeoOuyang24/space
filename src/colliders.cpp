@@ -19,29 +19,51 @@ bool RectCollider::isOnGround(const Orient& o, Terrain& t)
 {
     //calculate collision based on if any of our 4 sides intersects with terrain
 
-    Vector2 last = o.pos;
-    Vector2 prevCorner = o.pos + Vector2Rotate(Vector2(-width/2,-height/2),o.rotation); //top left
-
-    for (int i = 0; i < 4; i ++) //top right, bot right, bot left, top left
+     if (Globals::Game.terrain.get_gravityMode() == GlobalTerrain::DOWN)
     {
-        int index =(i + 1)%4;
-        Vector2 corner = o.pos + Vector2Rotate(Vector2(width/2,height/2)*Vector2(((index%3) != 0)*2 - 1,index/2*2 - 1),o.rotation);
+       /* Vector2 botLeft = o.pos + Vector2Normalize(o.getNormal() - o.getFacingVector())*sqrt(width*width+height*height)/2;
+        Vector2 botRight = o.pos + Vector2Normalize(o.getNormal() + o.getFacingVector())*sqrt(width*width+height*height)/2;
+        Vector2 intersect = t.lineBlockIntersect(botLeft,botRight,true);
+        Debug::addDeferRender([intersect,botLeft,botRight,pos=o.pos](){
+                              DrawSphere(toVector3(botLeft),2,RED);
+                              DrawSphere(toVector3(botRight),2,BLUE);
+                              DrawSphere(toVector3(pos),2,BLACK);
+                              DrawSphere(toVector3(intersect),2,PURPLE);
 
-        //PossiblePoint intersect = t.lineIntersectWithTerrain(prevCorner,corner);
-        Vector2 intersect = t.lineBlockIntersect(prevCorner,corner,true);
+                              });
+        return  !Vector2Equals(botRight,intersect);*/
 
-        //if (intersect.exists)
-        if (!Vector2Equals(intersect,corner)) //something is in the way!
-        {
-            //std::cout << "INTERSECT: " << intersect << " " << corner << " " << prevCorner << "\n";
-            //std::cout << t.blockExists(corner) << " " << t.blockExists(prevCorner) << "\n";
+        Debug::addDeferRender([pos=o.pos + Vector2(0,height/2)](){
 
-            return true;
-        }
+                            DrawSphere(toVector3(pos),1,PURPLE);
 
-        prevCorner = corner;
+                              });
+
+        return t.isBlockType(o.pos + Vector2(0,height/2),SOLID);
     }
-    return false;
+    else
+    {
+        Vector2 last = o.pos;
+        Vector2 prevCorner = o.pos + Vector2Rotate(Vector2(-width/2,-height/2),o.rotation); //top left
+
+        for (int i = 0; i < 4; i ++) //top right, bot right, bot left, top left
+        {
+            int index =(i + 1)%4;
+            Vector2 corner = o.pos + Vector2Rotate(Vector2(width/2,height/2)*Vector2(((index%3) != 0)*2 - 1,index/2*2 - 1),o.rotation);
+
+            //PossiblePoint intersect = t.lineIntersectWithTerrain(prevCorner,corner);
+            Vector2 intersect = t.lineBlockIntersect(prevCorner,corner,true);
+
+            //if (intersect.exists)
+            if (!Vector2Equals(intersect,corner)) //something is in the way!
+            {
+                return true;
+            }
+
+            prevCorner = corner;
+        }
+        return false;
+    }
 }
 
 float RectCollider::getLandingAngle(Orient& o, Terrain& terrain)
@@ -57,40 +79,18 @@ float RectCollider::getLandingAngle(Orient& o, Terrain& terrain)
         Vector2 intersect = terrain.lineBlockIntersect(corner,prevCorner,true);
 
        if (terrain.isBlockType(intersect,SOLID,true))
+        //if (terrain.blockExists(intersect,true,true))
         {
-                        Debug::addDeferRender([intersect,corner,prevCorner](){
-
-                                  DrawCircle3D(toVector3(intersect),2,{},0,RED);
-                                  DrawSphere(toVector3(corner),1,BLUE);
-                                  DrawSphere(toVector3(prevCorner),1,BLUE);
-                                  //DrawSphere(toVector3(intersect),1,RED);
-
-                                  });
             //ground += o.pos - intersect2.pos;
-            ground += o.pos - corner;
+            ground += intersect - o.pos;
         }
-      /*  bool existed = terrain.blockExists(corner,true);
-                std::cout << "CORNER: " << corner << " " << existed << "\n";
-                Debug::addDeferRender([corner,existed](){
-                                    DrawCircle3D(toVector3(corner),2,{},0,existed ? RED: BLUE);
-
-                                  });*/
 
         prevCorner = corner;
     }
-   /* Debug::addDeferRender([o,ground](){
-                            DrawSphere(toVector3(o.pos),2,PURPLE);
-                              DrawSphere(toVector3(o.pos + ground),2,WHITE);
-                          });*/
     if (Vector2Equals(ground,{}))
         {
             return o.rotation;
         }
-        Debug::addDeferRender([o,ground](){
-                                  DrawCircle3D(toVector3(rotatePoint(o.pos + Vector2{10,0},o.pos,atan2(ground.y,ground.x) + M_PI/2)),2,{},0,PURPLE);
-
-
-                              });
-    return atan2(ground.y,ground.x) + M_PI/4;
+    return atan2(ground.y,ground.x) + M_PI*3/2;
 }
 

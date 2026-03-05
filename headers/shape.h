@@ -21,11 +21,12 @@ struct Orient
     LayerType layer = -1;
 
     float rotation = 0; // IN RADIANS
+    bool facing = true; //true if facing to the right
 
 
-    inline Vector2 getFacing() const
+    inline Vector2 getFacingVector() const
     {
-        return Vector2Rotate(Vector2(1,0),rotation);
+        return Vector2Rotate(Vector2(facing*2 - 1,0),rotation);
     }
     inline Vector2 getNormal() const
     {
@@ -51,10 +52,12 @@ struct Shape
     ShapeCollider collider;
 
 };
-//check collision between two rotated rectangles
+bool CheckCollisionPointShape(const Vector2& pos, const Shape& shape1);
 bool CheckCollisionPointRecRotated(const Vector2& pos, const Rectangle& rect, float angle);
+//check collision between two rotated rectangles
 bool CheckCollisionRecsRotated(const Rectangle& r1, const Rectangle& r2, float rot1, float rot2);
 bool CheckCollision(const Shape& shape1, const Shape& shape2);
+
 Vector2 GetDimen(const Shape& shape1);
 
 

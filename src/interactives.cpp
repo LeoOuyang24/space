@@ -41,3 +41,14 @@ BigSign::BigSign() : Object({},{},{})
 {
 
 }
+
+GravitySwitch::GravitySwitch()
+{
+    collider.width = 100;
+    collider.height = 100;
+}
+
+void GravitySwitch::interactWith(PhysicsBody& other)
+{
+    Globals::Game.terrain.flipGravity();
+}

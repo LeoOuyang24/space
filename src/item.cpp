@@ -2,6 +2,7 @@
 #include "../headers/collideTriggers.h"
 #include "../headers/sequencer.h"
 #include "../headers/player.h"
+#include "../headers/enemy.h"
 
 
 void Collectible::onRestore()
@@ -60,22 +61,36 @@ void Booster::onCollide(PhysicsBody& other)
 
 void PickupComponent::collideWith(PhysicsBody& owner, PhysicsBody& other)
 {
-    Player* player = static_cast<Player*>(Globals::Game.getPlayer());
-    if (player->getHolding() == &owner)
+    if (pickupable)
     {
-        lastHeld = GetTime();
+        Player* player = static_cast<Player*>(Globals::Game.getPlayer());
+        if (player->getHolding() == &owner)
+        {
+            lastHeld = GetTime();
+        }
+        else if (&other == player && GetTime() - lastHeld >= 1)
+        {
+            player->setHolding(owner);
+        }
     }
-    else if (&other == player && GetTime() - lastHeld >= 1)
-    {
-        player->holding = Globals::Game.objects.getObject(&owner);
-    }
+}
+
+bool PickupComponent::isThrown(PhysicsBody& owner)
+{
+    //if we were held at one point but no longer, we must've been thrown at some point
+    return lastHeld > 0 && static_cast<Player*>(Globals::Game.getPlayer())->getHolding() != &owner;
+}
+
+void PickupComponent::setPickupable(bool val)
+{
+    pickupable = val;
 }
 
 void Barrel::update(Terrain& terrain)
 {
-    Object<RectCollider,TextureRenderer,Barrel,PickupComponent>::update(terrain);
+    Object::update(terrain);
 
-    if (onGround && collideTrigger.lastHeld > 0 && Globals::Game.player->getHolding() != this) //last two conditions are only true if we have been dropped
+    if (onGround && collideTrigger.isThrown(*this)) //last two conditions are only true if we have been dropped
     {
         setDead(true);
         Sequences::add(false,[start=GetTime(),pos=getPos()](int frames){
@@ -83,26 +98,6 @@ void Barrel::update(Terrain& terrain)
                        DrawAnime3D(anime->spritesheet,start,anime->info,{pos.x,pos.y,500,500},Globals::Game.getCurrentZ(),0,YELLOW);
                        return isAnimeDone(anime->info,frames);
                        });
-    }
-}
-
-void BarrelSpawner::update(Terrain& terrain)
-{
-    if (!baby.lock().get())
-    {
-        Barrel* barrel = new Barrel();
-        barrel->setPos(orient.pos + Vector2(10,0));
-        Globals::Game.addObject(*barrel,orient.layer);
-        baby = std::static_pointer_cast<Barrel>(Globals::Game.objects.getObject(barrel));
-    }
-    Object::update(terrain);
-}
-
-void BarrelSpawner::interactWith(PhysicsBody& other)
-{
-    if (Barrel* brah = baby.lock().get())
-    {
-        brah->setDead(true);
     }
 }
 
@@ -114,7 +109,6 @@ void BarrelReceiver::onCollide(PhysicsBody& other)
         activated = true;
         if (onTrigger.get())
         {
-            std::cout << "triggered\n";
             (*onTrigger)(*this);
         }
         //onTrigger(*this);
@@ -123,8 +117,23 @@ void BarrelReceiver::onCollide(PhysicsBody& other)
                                              {},
                                              this->orient.layer
                                              )),this->orient.layer);*/
-        double start = GetTime();
        // onTrigger(*this);
+    }
+}
+
+void AntiGravPod::update(Terrain& t)
+{
+    Object::update(t);
+    if (collideTrigger.isThrown(*this))
+    {
+        if (!activated && IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+        {
+            activated = true;
+            followGravity = false;
+            collideTrigger.setPickupable(false);
+            tint = YELLOW;
+            Globals::Game.terrain.getTerrain(orient.layer)->addPlanet(*this,ANTI);
+        }
     }
 }
 

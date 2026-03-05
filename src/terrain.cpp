@@ -101,12 +101,17 @@ void GlobalTerrain::loadTerrain(LayerType layer, std::string imagePath)
             {
                 type = LAVA;
             }
+            else if (color.r == 0 && color.g == 0 && color.b == 255)
+            {
+                type = WATER;
+            }
             if (color.a > 0)
                 {
                     terr->addBlock(point,{color,type});
                 }
         }
     }
+
     delete[] colors;
 
 
@@ -243,5 +248,9 @@ std::string GlobalTerrain::serialize(LayerType index)
         }
     }
     return cereal;
+}
 
+void GlobalTerrain::flipGravity()
+{
+    gravityMode = (gravityMode == DOWN ? PLANET : DOWN);
 }

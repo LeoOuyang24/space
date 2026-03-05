@@ -13,14 +13,16 @@
 #include "resources_math.h"
 #include "debug.h"
 
-enum BlockType : uint8_t
+enum BlockType
 {
     AIR = 0,
     SOLID,
     LAVA,
     ANTI,
+    WATER,
     BLOCK_TYPES
 };
+
 struct Block
 {
     constexpr static int BLOCK_DIMEN=3;
@@ -32,7 +34,7 @@ struct Block
 struct TerrainMap
 {
     //how many bits correspond to one block
-    constexpr static size_t PALETTE_SIZE = std::max(SOLID,static_cast<BlockType>(std::log2(static_cast<uint8_t>((BLOCK_TYPES)))));
+    constexpr static size_t PALETTE_SIZE = std::max(1.0,ceil(std::log2(static_cast<uint8_t>((BLOCK_TYPES)))));
     const int blockDimen;
     const int maxWidth;
 
@@ -79,13 +81,7 @@ struct PossibleBlock
     Vector2 pos;
 };
 
-struct Planet
-{
-    Vector2 pos;
-    float radius;
-    BlockType type = AIR;
-};
-struct MovingTerrain;
+struct PhysicsBody;
 
 struct Terrain
 {
@@ -172,15 +168,28 @@ struct Terrain
             }
         }
     }
-    bool blockExists(const Vector2& pos, bool checkEdge = false); //true if block at position is not AIR
-    bool isBlockType(const Vector2& pos,BlockType type, bool checkEdges = false); //true if block at position is "type". "checkEdges" will check neighbors if point is on edge
+    //"checkEdges" will check neighbors if point is on edge
+    //checkPlanets will check planets as well as terrain. Usually you want this, but in the case of lineTerrainIntersect and other functions that call this A LOT, it eats perforamnce like a bitch
+    //  such functions should try to resolve planet checking with line collision detection functions
+    bool blockExists(const Vector2& pos, bool checkEdge = true, bool checkPlanets = true); //true if block at position is not AIR
+    bool isBlockType(const Vector2& pos,BlockType type, bool checkEdges = true, bool checkPlanets = true); //true if block at position is "type".
 
-    void addPlanet(MovingTerrain& planet);
+    //returns true if pos is intersecting with any planet
+    bool isOnPlanet(const Vector2& pos);
+
+    void addPlanet(PhysicsBody& planet, BlockType type);
 
     //"i" is index relative to current layer (0 if we are on layer 2 and rendering layer 2)
     //"z" is z coordinate to render at (absolute)
     void render(int i = 0, int z = 0);
-    std::vector<std::weak_ptr<MovingTerrain>> planets;
+
+
+    struct EntityPlanet
+    {
+        std::weak_ptr<PhysicsBody> ptr;
+        BlockType type;
+    };
+    std::vector<EntityPlanet> planets;
 
 private:
     bool isDrawing = false; //true if BeginTextureMode has been called, allowing us to batch draw planets

@@ -11,19 +11,22 @@ void TextureRenderer::setSprite(const Texture2D& sprite_)
 }
 void TextureRenderer::render(const Shape& shape, const Color& color)
 {
-    if (IsTextureValid(sprite))
+    if (!IsTextureValid(sprite))
     {
-        Vector2 dimen = GetDimen(shape);
-        int flip = (facing)*2 - 1;
+        sprite = Globals::Game.Sprites.getSprite("squares.png");
+        if (!IsTextureValid(sprite))
+        {
+            std::cerr << "ERROR: TextureRenderer::render: We're cooked! Not only is sprite invalid, the error sprite is too!\n";
+        }
+    }
+    Vector2 dimen = GetDimen(shape);
+    int flip = (shape.orient.facing)*2 - 1;
 
-        DrawBillboardPro(Globals::Game.getCamera(),sprite,Rectangle(0,0,sprite.width*flip,sprite.height),
-                         Vector3(shape.orient.pos.x,shape.orient.pos.y,Globals::Game.terrain.getZOfLayer(shape.orient.layer)),Vector3(0,-1,0),dimen,
-                         dimen*0.5,shape.orient.rotation*RAD2DEG*-1,color);
-    }
-    else
-    {
-        std::cerr << "TextureRenderer::render WARNING: invalid texture!\n";
-    }
+    DrawBillboardPro(Globals::Game.getCamera(),sprite,Rectangle(0,0,sprite.width*flip,sprite.height),
+                     Vector3(shape.orient.pos.x,shape.orient.pos.y,Globals::Game.terrain.getZOfLayer(shape.orient.layer)),Vector3(0,-1,0),dimen,
+                     dimen*0.5,shape.orient.rotation*RAD2DEG*-1,color);
+
+
 }
 
 AnimeRenderer::AnimeRenderer(const std::initializer_list<std::string_view>& lst)

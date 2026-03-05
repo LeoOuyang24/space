@@ -77,6 +77,9 @@ void Terrain::addBlock(const Vector2& pos, const Block& block)
     case ANTI:
         color = WHITE;
         break;
+    case WATER:
+        color = BLUE;
+        break;
     case SOLID:
     default:
         color = block.color;
@@ -208,10 +211,13 @@ Vector2 Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, bool i
 
     Vector2 newA = a;
     Vector2 dir = Vector2Normalize(b - a);
-    if ( (isSolid && isBlockType(newA,SOLID) || blockExists(newA))  && !Vector2Equals(dir,{0,0}))
+    if ( (isSolid && isBlockType(newA,SOLID,false,true) || blockExists(newA,false,true))  && !Vector2Equals(dir,{0,0}))
     {
         Vector2 oldA;
-        while ((isSolid && isBlockType(newA,SOLID) || blockExists(newA))) //move "A" backwards until we encounter non-solid block
+        //it's kind of okay for thsi function to expensively check for planets
+        //it's primarily only used for adusting angle, which only calls this twice per frame per entity
+        //and it's rare for this to loop for long
+        while ((isSolid && isBlockType(newA,SOLID,false,true) || blockExists(newA,false,true))) //move "A" backwards until we encounter non-solid block
         {
             oldA = newA;
             newA -= dir*Block::BLOCK_DIMEN;
@@ -240,7 +246,7 @@ Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, bool isS
     Vector2 current = a;
     bool past = false;
     //loop until we have gone past b or we hit a wall
-    while (((isSolid && !isBlockType(current,SOLID,true)) || !blockExists(current,true)) && !past)
+    while (((isSolid && !isBlockType(current,SOLID,true,false)) || !blockExists(current,true,false)) && !past)
     {
         current = pointBoxEdgeIntersect(current,dir,Block::BLOCK_DIMEN);
         past = abs(current.y - a.y) > abs(b.y - a.y) || abs(current.x - a.x) > abs(b.x - a.x);
@@ -252,7 +258,20 @@ Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, bool isS
                               });*/
     }
 
-    return past ? b : current;
+
+    Vector2 answer = past ? b : current;
+    for (EntityPlanet& terr : planets)
+        {
+            if (terr.ptr.lock().get() && (isSolid && terr.type == SOLID) || (!isSolid && terr.type != AIR))
+            {
+                PossiblePoint pos = segmentIntersectCircle(a,b,terr.ptr.lock()->getPos(),GetDimen(terr.ptr.lock()->getShape()).x/2);
+                if (pos.exists)
+                {
+                    answer = Vector2DistanceSqr(answer,a) > Vector2DistanceSqr(pos.pos,a) ? pos.pos : answer ;
+                }
+            }
+        }
+    return answer;
 
 }
 size_t Terrain::pointToIndex(const Vector2& vec,int blockDimen, int maxWidth)
@@ -331,14 +350,13 @@ void Terrain::generateRightTriangle(const Vector2& corner, float height, const C
     endDrawBlocks();
 }
 
-bool Terrain::blockExists(const Vector2& pos, bool checkEdge)
+bool Terrain::blockExists(const Vector2& pos, bool checkEdge, bool checkPlanets)
 {
-    for (std::weak_ptr<MovingTerrain> terr : planets) //first check against planets, they can be anywhere
+    if (checkPlanets)
     {
-        if (terr.lock().get())
+        for (EntityPlanet& terr : planets)
         {
-            Planet pl = terr.lock().get()->getPlanet();
-            if (pl.type != AIR && Vector2DistanceSqr(pos,pl.pos) <= pl.radius*pl.radius)
+            if (terr.ptr.lock().get() && terr.type != AIR && CheckCollisionPointShape(pos,terr.ptr.lock().get()->getShape()))
             {
                 return true;
             }
@@ -363,23 +381,17 @@ bool Terrain::blockExists(const Vector2& pos, bool checkEdge)
             answer = (pos.y > 0 && terrain[index - MAX_WIDTH] != AIR);
         }
     }
-    if (!answer)
-    {
-
-    }
 
     return answer;
 }
 
-bool Terrain::isBlockType(const Vector2& pos, BlockType type, bool checkEdge)
+bool Terrain::isBlockType(const Vector2& pos, BlockType type, bool checkEdge, bool checkPlanets)
 {
-
-    for (std::weak_ptr<MovingTerrain> terr : planets)
+    if (checkPlanets)
     {
-        if (terr.lock().get())
+        for (EntityPlanet& terr : planets)
         {
-            Planet pl = terr.lock().get()->getPlanet();
-            if (pl.type == type && Vector2DistanceSqr(pos,pl.pos) <= pl.radius*pl.radius)
+            if (terr.ptr.lock().get() && terr.type == type && CheckCollisionPointShape(pos,terr.ptr.lock().get()->getShape()))
             {
                 return true;
             }
@@ -408,9 +420,27 @@ bool Terrain::isBlockType(const Vector2& pos, BlockType type, bool checkEdge)
 
 }
 
-void Terrain::addPlanet(MovingTerrain& planet)
+bool Terrain::isOnPlanet(const Vector2& pos)
 {
-    planets.push_back(std::static_pointer_cast<MovingTerrain>(Globals::Game.objects.getObject(&planet)));
+    for (auto it = planets.begin(); it < planets.end();)
+    {
+        if (it->ptr.lock().get())
+        {
+            if (CheckCollisionPointShape(pos,it->ptr.lock().get()->getShape()))
+            {
+                return true;
+            }
+        }
+        else
+        {
+            it = planets.erase(it);
+        }
+    }
+}
+
+void Terrain::addPlanet(PhysicsBody& planet, BlockType type)
+{
+    planets.push_back({Globals::Game.objects.getObject(&planet),type});
 }
 
 void Terrain::render(int i, int z)

@@ -46,7 +46,7 @@ void Editor::handleInput()
 
         if (IsKeyPressed(KEY_ENTER))
         {
-            auto ptr = construct(searchText);
+            auto ptr = ClassDeserializer::construct(searchText);
 
             if (ptr.get())
             {
@@ -135,6 +135,7 @@ void Cheats::drawInterface()
     }
 
     DrawText(("CHEATS: " + modeString).c_str(),10,50,30,RED);
+    DrawText(Globals::Game.terrain.get_gravityMode() == GlobalTerrain::PLANET ? "PLANET" : "DOWN",GetScreenDimen().x*.8,50,30,GREEN);
 }
 
 void Cheats::handleInput()
@@ -149,6 +150,8 @@ void Cheats::handleInput()
             break;
         case OBJECTS:
             {
+                if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
+                {
                 Color color = {255,255,255,100};
                 if (rand()%2)
                     Globals::Game.addObject(*(new Object<RectCollider,
@@ -160,6 +163,7 @@ void Cheats::handleInput()
                                               ShapeRenderer<ShapeType::CIRCLE>,EMPTY_TYPE>(
                                                 {mousePos},
                                                 std::make_tuple(10),{})),Globals::Game.getCurrentLayer());
+                }
                 break;
             }
         case PLAYER:
@@ -187,7 +191,18 @@ void Cheats::handleInput()
     {
        setMode(static_cast<Mode>(((int)mode + 1)%Mode::SIZE));
     }
-
+    else if (IsKeyPressed(KEY_EQUAL))
+    {
+        Globals::Game.setLayer(Globals::Game.getCurrentLayer() + 1);
+    }
+    else if (IsKeyPressed(KEY_MINUS))
+    {
+        Globals::Game.setLayer(Globals::Game.getCurrentLayer() - 1);
+    }
+    else if (IsKeyPressed(KEY_G))
+    {
+        Globals::Game.terrain.set_gravityMode(Globals::Game.terrain.get_gravityMode() == GlobalTerrain::DOWN ? GlobalTerrain::PLANET : GlobalTerrain::DOWN);
+    }
     if (mode == ENDPOINT)
     {
         Debug::addDeferRender([this,mousePos](){
@@ -273,14 +288,6 @@ void Debug::handleInput()
         {
             currentMode = nullptr;
         }
-    }
-    else if (IsKeyPressed(KEY_EQUAL))
-    {
-        Globals::Game.setLayer(Globals::Game.getCurrentLayer() + 1);
-    }
-    else if (IsKeyPressed(KEY_MINUS))
-    {
-        Globals::Game.setLayer(Globals::Game.getCurrentLayer() - 1);
     }
 
     if (currentMode)

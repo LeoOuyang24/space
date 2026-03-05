@@ -1,5 +1,6 @@
 #include "../headers/enemy.h"
 #include "../headers/player.h"
+#include "../headers/portal.h"
 
 GrapplePoint::GrapplePoint()
 {
@@ -77,7 +78,16 @@ void LaserBeamEnemy::collideWith(PhysicsBody& other)
 
 void MovingTerrain::onAdd()
 {
-    Globals::Game.terrain.getTerrain(orient.layer)->addPlanet(*this);
+    setPos(starting);
+    Globals::Game.terrain.getTerrain(orient.layer)->addPlanet(*this,type);
+}
+
+void MovingTerrain::collideWith(PhysicsBody& other)
+{
+    if (other.get_followGravity())
+    {
+        other.setPos(other.getPos() + moved);
+    }
 }
 
 void MovingTerrain::update(Terrain& t)
@@ -85,11 +95,58 @@ void MovingTerrain::update(Terrain& t)
     Vector2 newPos = calcNewPos(getOrient(),starting,speed);
     if (newPos != getPos())
     {
+        moved = newPos - getPos();
         setPos(newPos);
     }
 }
 
-Planet MovingTerrain::getPlanet()
+void PushBot::update(Terrain& t)
 {
-    return {getPos(),collider.radius,SOLID};
+    double time = GetTime();
+    Object::update(t);
+   // std::cout << getPos() << "\n";
+    //std::cout << GetTime() - time << " " << onGround << "\n";
+    forces.setForce(orient.getFacingVector(),Forces::MOVE);
+}
+
+
+void PushBot::onCollide(PhysicsBody& other)
+{
+    if (other.get_followGravity())
+    {
+        other.forces.addForce(Vector2Normalize(other.getPos()-getPos()),Forces::ENEMY);
+        other.forces.setForce({},Forces::MOVE);
+        Sequences::add(false,[pos=getPos(),radius=collider.width](int){
+                       DrawCircle3D(toVector3(pos),radius,{},0,WHITE);return true;
+                       });
+    }
+}
+
+void LargePushBot::activate(int pushAmount)
+{
+    push = pushAmount;
+}
+
+void LargePushBot::update(Terrain& t)
+{
+    if (push > 0)
+    {
+        forces.addForce(orient.getFacingVector()*5,Forces::MOVE);
+        push --;
+    }
+    Object::update(t);
+}
+
+void GlowStone::onCollide(PhysicsBody& other)
+{
+    if (Vector2LengthSqr(forces.getForce(Forces::ENEMY)) > 0)
+    {
+        setDead(true);
+        Globals::Game.addObject(*(new Portal(getPos(),orient.layer,{},orient.layer)),orient.layer);
+        Sequences::add(false,[start=GetTime(),pos=getPos()](int frames){
+                   const Anime* anime = Globals::Game.Sprites.getAnime("death.png");
+                   DrawAnime3D(anime->spritesheet,start,anime->info,{pos.x,pos.y,500,500},Globals::Game.getCurrentZ(),0,GRAY);
+                   return isAnimeDone(anime->info,frames);
+                   });
+    }
 }

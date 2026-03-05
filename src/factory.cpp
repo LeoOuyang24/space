@@ -6,76 +6,44 @@
 #include "../headers/interactives.h"
 #include "../headers/enemy.h"
 
-std::shared_ptr<PhysicsBody> construct(std::string cereal)
+std::unordered_map<std::string,std::function<PhysicsBody*(const SplitString& params)>> ClassDeserializer::funcs;
+
+void ClassDeserializer::init()
+{
+    registerName<Key>();
+    registerName<Portal>();
+    registerName<Collectible>();
+    registerName<Sign>();
+    registerName<Rover>();
+    registerName<BigSign>();
+    registerName<LaserBeamEnemy>();
+    registerName<Barrel>();
+    registerName<BarrelReceiver>();
+    registerName<BarrelSpawner>();
+    registerName<MovingTerrain>();
+    registerName<AntiGravPod>("antigravpod");
+    registerName<PushBot>();
+    registerName<LargePushBot>();
+    registerName<GlowStone>("glowstone");
+    registerName<GravitySwitch>();
+}
+
+std::shared_ptr<PhysicsBody> ClassDeserializer::construct(std::string_view cereal)
 {
     SplitString params(cereal,'\t');
     PhysicsBody* ptr = nullptr;
     if (params.size() > 0)
     {
-        if (params[0] == Factory<Key>::ObjectName)
+        std::string str2(params[0]);
+        if (funcs.find(str2) != funcs.end())
         {
-            Key* key = (new Key(Factory<Key>::Base::deserialize(params)));
-            key->tint = key->key;
-            ptr = key;
-        }
-        /*else if (params[0] == Factory<PortalSpawner>::ObjectName)
-        {
-            ptr = new PortalSpawner(Factory<PortalSpawner>::Base::deserialize(params));
-        }*/
-        else if (params[0] == Factory<Portal>::ObjectName)
-        {
-            ptr = new Portal(Factory<Portal>::Base::deserialize(params));
-        }
-        else if (params[0] == Factory<Collectible>::ObjectName)
-        {
-            ptr = new Collectible(Factory<Collectible>::Base::deserialize(params));
-        }
-        else if (params[0] == Factory<Sign>::ObjectName)
-        {
-            ptr = new Sign(Factory<Sign>::Base::deserialize(params));
-        }
-        else if (params[0] == Factory<Rover>::ObjectName)
-        {
-            ptr = new Rover(Factory<Rover>::Base::deserialize(params));
-        }
-        else if (params[0] == Factory<BigSign>::ObjectName)
-        {
-            ptr = new BigSign(Factory<BigSign>::Base::deserialize(params));
-        }
-        else if (params[0] == Factory<LaserBeamEnemy>::ObjectName)
-        {
-            ptr = new LaserBeamEnemy(Factory<LaserBeamEnemy>::Base::deserialize(params));
-        }
-        else if (params[0] == Factory<GrapplePoint>::ObjectName)
-        {
-            ptr = new GrapplePoint(Factory<GrapplePoint>::Base::deserialize(params));
-        }
-        else if (params[0] == Factory<Booster>::ObjectName)
-        {
-            ptr = new Booster(Factory<Booster>::Base::deserialize(params));
-        }
-        else if (params[0] == Factory<Barrel>::ObjectName)
-        {
-            ptr = new Barrel(Factory<Barrel>::Base::deserialize(params));
-        }
-        else if (params[0] == Factory<BarrelReceiver>::ObjectName)
-        {
-            ptr = new BarrelReceiver(Factory<BarrelReceiver>::Base::deserialize(params));
-        }
-        else if (params[0] == Factory<BarrelSpawner>::ObjectName)
-        {
-            ptr = new BarrelSpawner(Factory<BarrelSpawner>::Base::deserialize(params));
-        }
-        else if (params[0] == Factory<MovingTerrain>::ObjectName)
-        {
-            ptr = new MovingTerrain(Factory<MovingTerrain>::Base::deserialize(params));
+            ptr = funcs[str2](params);
         }
         else
         {
             std::cerr << "ERROR construct: unable to construct object: " << params[0] << "\n";
         }
     }
-
     return std::shared_ptr<PhysicsBody>(ptr);
 }
 

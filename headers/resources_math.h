@@ -44,6 +44,7 @@ Vector2 screenToWorld(const Vector2& screenPoint, const Camera3D& camera,  float
 PossiblePoint segmentIntersect(const Vector2& a1, const Vector2& a2, const Vector2& b1, const Vector2& b2); //returns false if the lines segments don't exist
 PossiblePoint segmentIntersectRect(const Vector2& a1, const Vector2& a2, const Rectangle& rect); //true if a1-a2 intersects with "rect"
 PossiblePoint segmentIntersectTriangle(const Vector2& a1, const Vector2& a2, const Vector2& t1, const Vector2& t2, const Vector2& t3);
+PossiblePoint segmentIntersectCircle(const Vector2& a1, const Vector2& a2, const Vector2& center, float radius); //returns point closest to a1 that is on the circle
 
 Vector3 toVector3(const Vector2& vector2);
 

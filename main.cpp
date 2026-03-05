@@ -99,7 +99,9 @@ int main(void)
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
 
+    ClassDeserializer::init();
     Globals::Game.init();
+
     Portal::PortalShader = LoadShader(0,TextFormat("shaders/fragments/portal.h",GLSL_VERSION));
 
     const Camera3D& camera = Globals::Game.getCamera();
@@ -215,6 +217,16 @@ int main(void)
 
 
             EndMode3D();
+
+            /*Vector2 circle = {300,300};
+            float radius = 100;
+            DrawCircleLines(circle.x,circle.y,radius,WHITE);
+            auto pos = segmentIntersectCircle({450,450},GetMousePosition(),circle,radius);
+            if (pos.exists)
+            {
+                DrawCircle(pos.pos.x,pos.pos.y,5,RED);
+            }
+            DrawLine(450,450,GetMousePosition().x,GetMousePosition().y,WHITE);*/
 
             Globals::Game.interface.render();
             Debug::drawInterface();

@@ -6,6 +6,14 @@
 
 #include "raylib.h"
 
+template<>
+struct std::equal_to<Color>
+{
+    bool operator()(const Color& a, const Color& b) const
+    {
+        return a.r == b.r && a.b == b.b && a.g == b.g && a.a == b.a;
+    }
+};
 
 void DrawLine3D(Vector3 startPos,Vector3 endPos, Color color, int width);
 

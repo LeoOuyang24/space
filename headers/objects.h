@@ -2,6 +2,7 @@
 #define OBJECTS_H_INCLUDED
 
 #include <tuple>
+#include <array>
 
 #include <raylib.h>
 
@@ -19,17 +20,19 @@
 struct Forces
 {
 
-    enum ForceSource
+    enum ForceSource : uint8_t
     {
         GRAVITY = 0,
         JUMP,
         MOVE,
+        ENEMY, //misc for any forces applied by enemies
         BOUNCE, //forces from when going out of bounds
         SWINGING,
-        BOOSTING //from boosting, player specific
+        BOOSTING, //from boosting, player specific
+        FORCE_SOURCE_SIZE //number of force sources, should always be the last member
     };
 
-    std::unordered_map<ForceSource,Vector2> forces; //mapping force source to a force
+    std::array<Vector2,FORCE_SOURCE_SIZE> forces; //mapping force source to a force
     Vector2 totalForce = {0,0}; //total forces
 
     void setForce(const Vector2& force, Forces::ForceSource source);
@@ -41,22 +44,16 @@ struct Forces
 
     Vector2 getForce(ForceSource source) //read-only, get force from a source
     {
-        return (forces.find(source) == forces.end()) ? Vector2{0,0} : forces[source];
+        return (source >= forces.size()) ? Vector2{0,0} : forces[source];
     }
 };
 
 
 struct PhysicsBody
 {
-    size_t keyVal = 0; //a value that is sometimes used for object-object interactions
-    bool dead = false;
     Orient orient;
-    bool onGround = false;
-    bool wasOnGround = false;
-    bool tangible = true;
-    bool freeFall = false; //freefall is true if we have not yet experienced gravity and stays true until we land
+    size_t keyVal = 0; //a value that is sometimes used for object-object interactions
 
-    bool followGravity = true; //true if object follows gravity and can not be inside terrain
     Forces forces;
     virtual Shape getShape() = 0;
     virtual void render() = 0;
@@ -86,12 +83,30 @@ struct PhysicsBody
     virtual bool isTangible(); //can be collided with. If false, will not call "onCollide"
     virtual bool isDead();
     virtual bool isOnGround(Terrain& t) = 0;
+    virtual bool isUnderwater(Terrain& t);
     virtual void onAdd() //called upon being added to terrain, when all fields have been set and object is ready to go
     {
 
     }
 
     void applyForces(Terrain& t);
+
+    make_getter(followGravity,bool);
+    bool followGravity = true; //true if object follows gravity and can not be inside terrain
+
+protected:
+    void downGravity(Terrain&);
+    void planetGravity(Terrain&);
+
+    void adjustAngle(Terrain& terrain);
+    void stayOnGround(Terrain& terrain);
+
+    bool dead = false;
+    bool onGround = false;
+    bool wasOnGround = false;
+    bool tangible = true;
+    bool freeFall = false; //freefall is true if we have not yet experienced gravity and stays true until we land
+    float gravRadius = 130;
 };
 
 
@@ -108,7 +123,7 @@ struct Object : public PhysicsBody
     [[no_unique_address]] std::conditional<
                             std::is_same<CollideTrigger,EMPTY_TYPE>::value,
                                 EMPTY_TYPE,
-                                CollideTrigger>::type collideTrigger;
+                                CollideTrigger>::type collideTrigger; //if no collideTrigger, then try not to take up any space with this field
 
     Color tint = WHITE;
 
@@ -196,11 +211,14 @@ struct Object : public PhysicsBody
     }
     virtual void update(Terrain& t)
     {
-        applyForces(t);
-        if (onGround && followGravity)
+        if (followGravity)
         {
-            adjustAngle(t);
-            stayOnGround(t);
+            applyForces(t);
+            if (onGround)
+            {
+                adjustAngle(t);
+                stayOnGround(t);
+            }
         }
     }
     Forces& getForces()
@@ -209,18 +227,9 @@ struct Object : public PhysicsBody
     }
 protected:
 
-    void stayOnGround(Terrain& terrain)
-    {
-        Vector2 norm = orient.getNormal();
-
-        Vector2 bruh = terrain.lineTerrainIntersect(orient.pos,orient.pos + norm*GetDimen(getShape()).y); //- normal*(collider.height)/2;
-        Vector2 newPos = bruh - norm*(GetDimen(getShape()).y/2  - 1);
-        setPos(newPos);
-    }
-
     void adjustAngle(Terrain& terrain)
     {
-        //if on ground, adjust our angle based on the angle of the terrain
+            //if on ground, adjust our angle based on the angle of the terrain
         if (onGround)
         {
             if (!wasOnGround) //just landed
@@ -230,32 +239,10 @@ protected:
             }
             else //otherwise adjust angle based on terrain angle
             {
-                Vector2 dimen = GetDimen(getShape());
-                Vector2 botLeft = orient.pos +Vector2Rotate(Vector2(-dimen.x/2,dimen.y/2),orient.rotation);
-                Vector2 botRight = orient.pos + Vector2Rotate(Vector2(dimen.x/2,dimen.y/2),orient.rotation);
-
-                Vector2 normal = orient.getNormal();
-
-                botLeft = terrain.lineTerrainIntersect(botLeft,botLeft + normal );//.pos;
-                botRight = terrain.lineTerrainIntersect(botRight,botRight + normal);//.pos;
-
-                /*Debug::addDeferRender([botLeft,botRight](){
-
-                                      DrawCircle3D({botLeft.x,botLeft.y,Globals::Game.getCurrentZ()},10,{},0,BLUE);
-                                      DrawCircle3D({botRight.x,botRight.y,Globals::Game.getCurrentZ()},10,{},0,BLUE);
-
-                                      });*/
-
-                float newAngle = trunc(atan2(botRight.y - botLeft.y, botRight.x - botLeft.x),3);
-
-                if (trunc(abs(newAngle - orient.rotation),2) > .001)
-                {
-                    orient.rotation = newAngle;
-                }
+                PhysicsBody::adjustAngle(terrain);
             }
         }
     }
-
 
 };
 

@@ -16,6 +16,15 @@ struct Sign : public Object<RectCollider,TextureRenderer,Sign>
     std::string getMessage(size_t index) const;
     size_t getMessagesSize();
 };
+template<>
+struct Factory<Sign>
+{
+    static constexpr std::string ObjectName = "sign";
+    using Base = FactoryBase<Sign,
+                                access<Sign,&Sign::message>,
+                                access<Sign,&Sign::orient,&Orient::pos>>;
+};
+
 
 struct Rover : public Object<RectCollider,AnimeRenderer,Rover>
 {
@@ -26,26 +35,17 @@ struct Rover : public Object<RectCollider,AnimeRenderer,Rover>
     void interactWith(PhysicsBody& other);
 };
 
-struct BigSign : public Object<RectCollider,TextureRenderer,BigSign>
-{
-    BigSign();
-};
-
-template<>
-struct Factory<Sign>
-{
-    static constexpr std::string ObjectName = "sign";
-    using Base = FactoryBase<Sign,
-                                access<Sign,&Sign::message>,
-                                access<Sign,&Sign::orient,&Orient::pos>>;
-};
-
 template<>
 struct Factory<Rover>
 {
     static constexpr std::string ObjectName = "rover";
     using Base = FactoryBase<Rover,
                                 access<Rover,&Rover::orient,&Orient::pos>>;
+};
+
+struct BigSign : public Object<RectCollider,TextureRenderer,BigSign>
+{
+    BigSign();
 };
 
 template<>
@@ -57,6 +57,20 @@ struct Factory<BigSign>
                                 access<BigSign,&BigSign::collider,&RectCollider::width>,
                                 access<BigSign,&BigSign::collider,&RectCollider::height>,
                                 access<BigSign,&BigSign::renderer,&TextureRenderer::sprite>>;
+};
+
+struct GravitySwitch : public Object<RectCollider,TextureRenderer,GravitySwitch>
+{
+    GravitySwitch();
+    void interactWith(PhysicsBody& other);
+};
+
+template<>
+struct Factory<GravitySwitch>
+{
+    static constexpr std::string ObjectName = "gravity_switch";
+    using Base = FactoryBase<GravitySwitch,
+                                access<GravitySwitch,&GravitySwitch::orient,&Orient::pos>>;
 };
 
 #endif // INTERACTIVES_H_INCLUDED

@@ -174,6 +174,38 @@ PossiblePoint segmentIntersectTriangle(const Vector2& a1, const Vector2& a2, con
     return answer;
 }
 
+PossiblePoint segmentIntersectCircle(const Vector2& a1, const Vector2& a2, const Vector2& center, float radius)
+{
+    //maybe not the best way, but an easy to visualize way to calculate line segment to cirlce intersection is to rotate the segment
+    //around the circle, so that it is flat at an angle of 0.
+    //From there it is trivial to calculate the point closest to a1 that is on the circle (if there is one)
+
+    //idiot test, check if either point is in the circle
+    if (Vector2DistanceSqr(a1,center) <= radius*radius)
+    {
+        return {true,a1};
+    }
+
+    float angle = atan2(a2.y - a1.y, a2.x - a1.x);
+    Vector2 r1 = rotatePoint(a1,center,-angle);
+    Vector2 r2 = rotatePoint(a2,center,-angle);
+
+    if (abs(r1.y - center.y) > radius || center.x  > std::max(r2.x,r1.x) + radius*2 || center.x < std::min(r2.x,r1.x) - radius*2) //if after rotation circle is too far away, it's cooked
+    {
+        return {false,a1};
+    }
+
+    //otherwise calculate the point
+    //this is the point post intersection, it is in line with r1 and r2 so the y is trivial.
+    //the rest is pythagoras
+    //One small caveat is that if r1 is on the right of r2, we have to move to the right as opposed to the left (add instead of subtract)
+    Vector2 intersect = Vector2(center.x - sqrt(radius*radius - pow(center.y - r1.y,2))*(2*(r2.x > r1.x) - 1),r1.y);
+    //rotate back around before returning
+    return {true,rotatePoint(intersect,center,angle)};
+
+
+}
+
 Vector3 toVector3(const Vector2& vector2)
 {
     return {vector2.x,vector2.y,Globals::Game.getCurrentZ()};

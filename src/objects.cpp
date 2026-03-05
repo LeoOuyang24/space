@@ -33,6 +33,11 @@ bool PhysicsBody::isDead()
     return dead;
 }
 
+bool PhysicsBody::isUnderwater(Terrain& t)
+{
+    return t.isBlockType(getPos(),WATER,true);
+}
+
 bool PhysicsBody::isTangible()
 {
     return tangible;
@@ -47,7 +52,6 @@ size_t PhysicsBody::getKeyVal()
 {
     return keyVal;
 }
-
 void Forces::setForce(const Vector2& force, Forces::ForceSource source)
 {
     Vector2 old = getForce(source);
@@ -58,14 +62,7 @@ void Forces::setForce(const Vector2& force, Forces::ForceSource source)
 
 void Forces::addForce(Vector2 force, Forces::ForceSource source)
 {
-    if (forces.find(source) != forces.end())
-    {
-        forces[source] += force;
-    }
-    else
-    {
-        forces[source] = force;
-    }
+    forces[source] += force;
 
     totalForce += force;
 }
@@ -74,7 +71,7 @@ void Forces::addFriction(const Vector2& friction)
 {
     for (auto& source : forces)
     {
-        source.second *= friction;
+        source *= friction;
     }
     totalForce *= friction;
 }
@@ -83,19 +80,16 @@ void Forces::addFriction(float friction)
 {
     for (auto& source : forces)
     {
-        source.second *= friction;
+        source *= friction;
     }
     totalForce *= friction;
 }
 
 void Forces::addFriction(float friction, Forces::ForceSource source)
 {
-    if (forces.find(source) != forces.end())
-    {
-        totalForce -= forces[source];
-        forces[source] *= friction;
-        totalForce += forces[source];
-    }
+    totalForce -= forces[source];
+    forces[source] *= friction;
+    totalForce += forces[source];
 }
 
 Vector2 Forces::getTotalForce()
@@ -105,51 +99,14 @@ Vector2 Forces::getTotalForce()
 
 void PhysicsBody::applyForces(Terrain& terrain)
 {
-    int searchRad = freeFall ? 220 : 120;
-
-    if (!onGround && followGravity)
+    switch (Globals::Game.terrain.get_gravityMode())
     {
-        int divide = 100;
-        const int landingDivide = 11;
-        int upTo =  divide;// freeFall ? divide : landingDivide;
-        Vector2 grav = {0,0};
-        int count = 0;
-        for (int i = 0; i < upTo; i ++)
-        {
-            float angle =  2*M_PI/divide*i + (M_PI/2)-M_PI/(divide)*(landingDivide-1) + orient.rotation;
-            auto pos = terrain.lineBlockIntersect(orient.pos, orient.pos + Vector2(cos(angle),sin(angle))*searchRad,false);
-            Debug::addDeferRender([pos,&terrain](){
-
-                                  DrawCircle3D(Vector3(pos.x,pos.y,Globals::Game.getCurrentZ()),10,{0,1,0},0,terrain.isBlockType(pos,ANTI,true) ? BLUE : RED);
-
-                                  });
-            if (terrain.blockExists(pos,true) && !Vector2Equals(pos,orient.pos))
-            {
-                Vector2 force = Vector2Normalize(pos - orient.pos)/pow(Vector2Length(pos - orient.pos),1);
-                if (terrain.isBlockType(pos,ANTI,true))
-                {
-                    force *= -1;
-                }
-                if (terrain.isBlockType(pos,LAVA,true))
-                {
-                    force *= 0.1;
-                }
-                grav +=  force;
-
-                count ++;
-            }
-        }
-        if (count > 0)
-        {
-            Vector2 norm = Vector2Normalize(grav);
-            //std::cout << Vector2Length(grav) << "\n";
-            forces.addForce(norm*0.25,Forces::GRAVITY);
-           // forces.addForce(grav*23/count,Forces::GRAVITY);
-        }
-        else
-        {
-            //freeFall = true;
-        }
+    case GlobalTerrain::GravityMode::PLANET:
+        planetGravity(terrain);
+        break;
+    case GlobalTerrain::GravityMode::DOWN:
+        downGravity(terrain);
+        break;
     }
 
     if (orient.pos.x >= Terrain::MAX_TERRAIN_SIZE || orient.pos.x <= 0)
@@ -166,12 +123,113 @@ void PhysicsBody::applyForces(Terrain& terrain)
     setPos(getPos() + forces.getTotalForce());
     forces.addFriction(onGround ? 0.5 : .99);
 
-    //forces.addForce({0,.5},Forces::GRAVITY);
-
     wasOnGround = onGround;
     onGround = isOnGround(terrain);
     freeFall = freeFall && !onGround;
 
+}
+
+void PhysicsBody::downGravity(Terrain& )
+{
+
+    float mult = (onGround && orient.rotation < -M_PI/4) ? abs(sin(orient.rotation)) : 1;
+    forces.addForce(Vector2(0,GlobalTerrain::GRAVITY_CONSTANT)*(mult),Forces::GRAVITY);
+}
+
+void PhysicsBody::planetGravity(Terrain& terrain)
+{
+    int searchRad = freeFall ? 220 : 220;
+
+    if (!onGround && followGravity)
+    {
+        int divide = 25;
+        const int landingDivide = 9;
+        int upTo = divide;//freeFall ? divide : landingDivide;
+        Vector2 grav = {0,0};
+        int count = 0;
+       // Vector2 down = {};
+        for (int i = 0; i < upTo; i ++)
+        {
+            float angle =  2*M_PI/divide*i + (M_PI/2)-M_PI/(divide)*(landingDivide-1) + orient.rotation;
+            Vector2 endpoint = orient.pos + Vector2(cos(angle),sin(angle))*searchRad;
+            Vector2 pos = terrain.lineBlockIntersect(orient.pos, endpoint,false);
+                   Debug::addDeferRender([pos,&terrain,landingDivide,i](){
+
+                                  DrawCircle3D(Vector3(pos.x,pos.y,Globals::Game.getCurrentZ()),10,{0,1,0},0,i < landingDivide ? BLUE : RED);
+
+                                  });
+            if (!Vector2Equals(pos,endpoint) && !Vector2Equals(pos,orient.pos))
+            {
+
+                Vector2 force = Vector2Normalize(pos - orient.pos)/pow(Vector2Length(pos - orient.pos),2);
+                if (terrain.isBlockType(pos,ANTI,true))
+                {
+                    force *= -1;
+                }
+                else if (terrain.isBlockType(pos,LAVA,true))
+                {
+                    force *= 0.1;
+                }
+                else if (terrain.isBlockType(pos,WATER,true))
+                {
+                    force *= 0.1;
+                }
+                if (i < landingDivide)
+                {
+                   // force *= 1.1;
+                }
+                grav +=  force;
+
+                count ++;
+            }
+        }
+        if (count > 0)
+        {
+            Vector2 norm = Vector2Normalize(grav);
+            //std::cout << Vector2Length(grav) << "\n";
+            forces.addForce(norm*GlobalTerrain::GRAVITY_CONSTANT,Forces::GRAVITY);
+            //forces.addForce(grav,Forces::GRAVITY);
+        }
+        else if (count == 0)
+        {
+            //freeFall = true;
+        }
+    }
+}
+
+void PhysicsBody::adjustAngle(Terrain& terrain)
+{
+    Vector2 dimen = GetDimen(getShape());
+    Vector2 botLeft = orient.pos +Vector2Rotate(Vector2(-dimen.x/2,dimen.y/2),orient.rotation);
+    Vector2 botRight = orient.pos + Vector2Rotate(Vector2(dimen.x/2,dimen.y/2),orient.rotation);
+
+    Vector2 normal = orient.getNormal();
+
+    botLeft = terrain.lineTerrainIntersect(botLeft,botLeft + normal,false);//.pos;
+    botRight = terrain.lineTerrainIntersect(botRight,botRight + normal,false);//.pos;
+
+    /*Debug::addDeferRender([botLeft,botRight](){
+
+                          DrawCircle3D({botLeft.x,botLeft.y,Globals::Game.getCurrentZ()},10,{},0,BLUE);
+                          DrawCircle3D({botRight.x,botRight.y,Globals::Game.getCurrentZ()},10,{},0,BLUE);
+
+                          });*/
+
+    float newAngle = trunc(atan2(botRight.y - botLeft.y, botRight.x - botLeft.x),3);
+
+    if (trunc(abs(newAngle - orient.rotation),2) > .001)
+    {
+        orient.rotation = newAngle;
+    }
+}
+
+void PhysicsBody::stayOnGround(Terrain& terrain)
+{
+    Vector2 norm = orient.getNormal();
+
+    Vector2 bruh = terrain.lineTerrainIntersect(orient.pos,orient.pos + norm*GetDimen(getShape()).y,true); //- normal*(collider.height)/2;
+    Vector2 newPos = bruh - norm*(GetDimen(getShape()).y/2  - 1);
+    setPos(newPos);
 }
 
 void suggestButtonPress(const Shape& shape, std::string_view str)

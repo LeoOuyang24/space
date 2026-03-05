@@ -50,6 +50,16 @@
 			<Add directory="../raylib-5.5_win64_mingw-w64/lib" />
 		</Linker>
 		<Unit filename="audio.h" />
+		<Unit filename="bin/Debug/shaders/fragments/portal.h" />
+		<Unit filename="bin/Debug/shaders/fragments/shooting-star.h" />
+		<Unit filename="bin/Debug/shaders/fragments/stars.h" />
+		<Unit filename="bin/Debug/shaders/fragments/sun.h" />
+		<Unit filename="bin/Debug/shaders/fragments/terrain.h" />
+		<Unit filename="bin/Release/shaders/fragments/portal.h" />
+		<Unit filename="bin/Release/shaders/fragments/shooting-star.h" />
+		<Unit filename="bin/Release/shaders/fragments/stars.h" />
+		<Unit filename="bin/Release/shaders/fragments/sun.h" />
+		<Unit filename="bin/Release/shaders/fragments/terrain.h" />
 		<Unit filename="blocks.cpp">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
@@ -57,6 +67,7 @@
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="headers/UI.h" />
+		<Unit filename="headers/audio.h" />
 		<Unit filename="headers/blackMagic.h" />
 		<Unit filename="headers/blocks.h" />
 		<Unit filename="headers/checkFields.h" />
@@ -64,6 +75,7 @@
 		<Unit filename="headers/colliders.h" />
 		<Unit filename="headers/conversions.h" />
 		<Unit filename="headers/debug.h" />
+		<Unit filename="headers/enemy.h" />
 		<Unit filename="headers/factories.h" />
 		<Unit filename="headers/factory.h" />
 		<Unit filename="headers/game.h" />
@@ -80,6 +92,7 @@
 		<Unit filename="headers/shape.h" />
 		<Unit filename="headers/sprites.h" />
 		<Unit filename="headers/terrain.h" />
+		<Unit filename="headers/triggers.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="shaders/fragments/portal.h" />
 		<Unit filename="shaders/fragments/shooting-star.h" />
@@ -93,6 +106,7 @@
 		<Unit filename="src/colliders.cpp" />
 		<Unit filename="src/conversions.cpp" />
 		<Unit filename="src/debug.cpp" />
+		<Unit filename="src/enemy.cpp" />
 		<Unit filename="src/factory.cpp" />
 		<Unit filename="src/game.cpp" />
 		<Unit filename="src/interactives.cpp" />

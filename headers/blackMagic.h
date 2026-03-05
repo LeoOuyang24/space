@@ -108,5 +108,4 @@ Class createFromArgs(Head head, Tail... t) //given a class and a list of potenti
 }
 
 
-
 #endif // BLACKMAGIC_H_INCLUDED

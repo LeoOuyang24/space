@@ -23,7 +23,7 @@ struct Globals
     static constexpr int SPACE_Z = .01*MAX_Z; //distance between layers if there are 50 layers
     static constexpr int BACKGROUND_Z = MAX_Z - SPACE_Z; //z coordinate of background
     static constexpr int START_Z = BACKGROUND_Z - SPACE_Z*50;
-    static constexpr int CAMERA_Z_DISP = 400; //how far the camera is at all times from getCurrentZ(). Constant magic number
+    static constexpr int CAMERA_Z_DISP = 500; //how far the camera is at all times from getCurrentZ(). Constant magic number    static constexpr int CAMERA_Z_DISP = 500; //how far the camera is at all times from getCurrentZ(). Constant magic number
 
 
 

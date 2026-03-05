@@ -4,6 +4,7 @@
 #include "../headers/conversions.h"
 #include "../headers/enemy.h"
 #include "../headers/portal.h"
+#include "../headers/blocks.h"
 
 std::string_view SplitString::operator[](size_t index) const
 {
@@ -182,6 +183,37 @@ LaserBeamEnemy::RotateFunc fromString(std::string_view str)
 }
 
 template<>
+std::string toString(BlockType& type) //this has to be declared before from string since we use it there
+{
+    switch (type)
+    {
+    case AIR:
+        return "AIR";
+    case SOLID:
+        return "SOLID";
+    case LAVA:
+        return "LAVA";
+    case ANTI:
+        return "ANTI";
+    }
+    return "AIR";
+}
+template<>
+BlockType fromString(std::string_view str)
+{
+    //iterate through each possible block type and see which string matches
+    //It's a bit of a weird implementation, but it does mean that we don't have to define the string variants twice
+    for (BlockType type = AIR; type < BLOCK_TYPES; type=static_cast<BlockType>(static_cast<uint8_t>(type) + 1))
+    {
+        if (toString(type) == str)
+        {
+            return type;
+        }
+    }
+    return AIR;
+}
+
+template<>
 MovingTerrain::MoveFunc fromString(std::string_view str)
 {
     //basically return two functions, one is how we move, the other is how to serialize
@@ -194,7 +226,9 @@ MovingTerrain::MoveFunc fromString(std::string_view str)
             degrees = fromString<float>(split[2])]
                 (const Orient& o,const Vector2& starting,uint16_t frame,float speed) -> Vector2
                     {
-                    return starting + Vector2(cos(degrees*DEG2RAD),sin(degrees*DEG2RAD))*sin(frame*speed/1000.0f)*distance;
+                        if (distance > 0)
+                            return starting + Vector2(cos(degrees*DEG2RAD),sin(degrees*DEG2RAD))*sin(frame*speed/10.0f/distance)*distance;
+                        return starting;
                     },
             toString
         };
@@ -299,5 +333,8 @@ std::string toString(LaserBeamEnemy::RotateFunc& func)
 template<>
 std::string toString(MovingTerrain::MoveFunc& moveFunc)
 {
-    return moveFunc.toString();
+    if (moveFunc.toString)
+        return moveFunc.toString();
+    return "null";
 }
+

@@ -4,6 +4,22 @@
 #include "../headers/objects.h"
 #include "../headers/colliders.h"
 
+bool CheckCollisionPointShape(const Vector2& pos, const Shape& shape1)
+{
+    switch (shape1.type)
+    {
+    case CIRCLE:
+        return Vector2DistanceSqr(pos,shape1.orient.pos) <= shape1.collider.radius*shape1.collider.radius;
+    case RECT:
+        return pointInRectAngle(pos,{
+                                shape1.orient.pos.x - shape1.collider.dimens.x/2,
+                                shape1.orient.pos.y - shape1.collider.dimens.y/2,
+                                shape1.collider.dimens.x,
+                                shape1.collider.dimens.y});
+    }
+    return false;
+}
+
 bool CheckCollisionPointRecRotated(const Vector2& pos, const Rectangle& rect, float angle)
 {
     Vector2 rotated = rotatePoint(pos,{rect.x + rect.width/2, rect.y + rect.height/2},-angle);
