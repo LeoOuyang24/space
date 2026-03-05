@@ -4,7 +4,10 @@
 * TODO: Make right click more intuitive/obvious
 * TODO: Make ESCAPE open a pause menu
 * TODO: Make ALT-TAB work
-* TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
+* TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is 
+
+## 3/4/2026:
+strong, its not intuitive like normal gravity
 * Added a very cute push bot, and its big brotehr
 * Added support for water, though no player-specific controls
 * Added the glowstone, which spawns a portal upon being pushed by a pushbot.
