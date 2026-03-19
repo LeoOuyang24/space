@@ -4,16 +4,20 @@
 * TODO: Make right click more intuitive/obvious
 * TODO: Make ESCAPE open a pause menu
 * TODO: Make ALT-TAB work
-* TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is 
+* TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
+
+## 3/18/2026:
+* Added destroy lasers and the big gravity room
+* Added down gravity and point gravity
 
 ## 3/4/2026:
-strong, its not intuitive like normal gravity
 * Added a very cute push bot, and its big brotehr
 * Added support for water, though no player-specific controls
 * Added the glowstone, which spawns a portal upon being pushed by a pushbot.
 * Removed angle being determined by gravity
 * Invalid sprites now have an "error" sprite as opposed to a warning message
 * Improved how to add new factories
+* Player can slow down in the air by pressing backwards 
 
 ## 2/17/2026:
 * Removed non-freefall gravity being different from freefall gravity

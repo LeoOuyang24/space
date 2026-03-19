@@ -1,13 +1,14 @@
 #include "../headers/colliders.h"
 #include "../headers/game.h"
 #include "../headers/raylib_helper.h"
+#include "../headers/objects.h"
 
-bool CircleCollider::isOnGround(const Orient& orient, Terrain& terrain)
+bool CircleCollider::isOnGround(const PhysicsBody& body, Terrain& terrain)
 {
 
-    return  terrain.blockExists(orient.pos + Vector2Rotate(orient.getNormal(),+ M_PI/4)*radius) ||
-            terrain.blockExists(orient.pos + orient.getNormal()*radius) ||
-            terrain.blockExists(orient.pos + Vector2Rotate(orient.getNormal(),- M_PI/4)*radius);
+    return  terrain.blockExists(body.orient.pos + Vector2Rotate(body.orient.getNormal(),+ M_PI/4)*radius) ||
+            terrain.blockExists(body.orient.pos + body.orient.getNormal()*radius) ||
+            terrain.blockExists(body.orient.pos + Vector2Rotate(body.orient.getNormal(),- M_PI/4)*radius);
 }
 
 float CircleCollider::getLandingAngle(Orient& o, Terrain& terrain)
@@ -15,41 +16,52 @@ float CircleCollider::getLandingAngle(Orient& o, Terrain& terrain)
     return o.rotation;
 }
 
-bool RectCollider::isOnGround(const Orient& o, Terrain& t)
-{
-    //calculate collision based on if any of our 4 sides intersects with terrain
 
-     if (Globals::Game.terrain.get_gravityMode() == GlobalTerrain::DOWN)
+bool RectCollider::isOnGround(PhysicsBody& body, Terrain& t)
+{
+    Orient o = body.getOrient();
+
+    //if gravity is down and we are not jumping, we are considered onGround if a bottom side (nonrotated) is in the ground
+    //however, if gravity is down and we are jumping, use regular onGround checking; this prevents an issue where we are still "on the ground"
+    //one frame after jumping and don't end up going anywhere.
+    if (Globals::Game.terrain.get_gravityMode() == GlobalTerrain::DOWN &&
+        Vector2LengthSqr(body.getForces().getForce(Forces::JUMP)) <= Vector2LengthSqr(body.getForces().getForce(Forces::GRAVITY)))
     {
-       /* Vector2 botLeft = o.pos + Vector2Normalize(o.getNormal() - o.getFacingVector())*sqrt(width*width+height*height)/2;
-        Vector2 botRight = o.pos + Vector2Normalize(o.getNormal() + o.getFacingVector())*sqrt(width*width+height*height)/2;
-        Vector2 intersect = t.lineBlockIntersect(botLeft,botRight,true);
-        Debug::addDeferRender([intersect,botLeft,botRight,pos=o.pos](){
+        Vector2 botLeft = o.pos + Vector2(-width/2,height/2);
+        Vector2 botRight = o.pos + Vector2(width/2,height/2);
+        Vector2 botCenter = o.pos + Vector2(0,height/2);
+
+        Debug::addDeferRender([botLeft,botRight,pos=o.pos](){
                               DrawSphere(toVector3(botLeft),2,RED);
                               DrawSphere(toVector3(botRight),2,BLUE);
-                              DrawSphere(toVector3(pos),2,BLACK);
-                              DrawSphere(toVector3(intersect),2,PURPLE);
-
-                              });
-        return  !Vector2Equals(botRight,intersect);*/
-
-        Debug::addDeferRender([pos=o.pos + Vector2(0,height/2)](){
-
-                            DrawSphere(toVector3(pos),1,PURPLE);
+                              //DrawSphere(toVector3(pos),2,BLACK);
+                             // DrawSphere(toVector3(intersect),2,PURPLE);
 
                               });
 
-        return t.isBlockType(o.pos + Vector2(0,height/2),SOLID);
+        return t.isBlockType(botLeft,SOLID) || t.isBlockType(botRight,SOLID) || t.isBlockType(botCenter,SOLID);
     }
-    else
+    else     //calculate collision based on if any of our 4 sides intersects with terrain
     {
         Vector2 last = o.pos;
-        Vector2 prevCorner = o.pos + Vector2Rotate(Vector2(-width/2,-height/2),o.rotation); //top left
-
+       // bool down = Globals::Game.terrain.get_gravityMode() == GlobalTerrain::DOWN;
+        //int start = down ? int((abs(o.rotation*RAD2DEG)/45) + 1 ) % 4: 0;
+        //int upTo = down ? (start + 2) : 4;
         for (int i = 0; i < 4; i ++) //top right, bot right, bot left, top left
         {
+            int prev = (i);
             int index =(i + 1)%4;
+
+            Vector2 prevCorner = o.pos + Vector2Rotate(Vector2(width/2,height/2)*Vector2(((prev%3) != 0)*2 - 1,prev/2*2 - 1),o.rotation); //top left
             Vector2 corner = o.pos + Vector2Rotate(Vector2(width/2,height/2)*Vector2(((index%3) != 0)*2 - 1,index/2*2 - 1),o.rotation);
+
+            Debug::addDeferRender([corner,prevCorner](){
+
+                                  DrawSphere(toVector3(corner),4,RED);
+                                  DrawSphere(toVector3(prevCorner),4,RED);
+
+                                  });
+
 
             //PossiblePoint intersect = t.lineIntersectWithTerrain(prevCorner,corner);
             Vector2 intersect = t.lineBlockIntersect(prevCorner,corner,true);

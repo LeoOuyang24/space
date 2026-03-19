@@ -73,4 +73,24 @@ struct Factory<GravitySwitch>
                                 access<GravitySwitch,&GravitySwitch::orient,&Orient::pos>>;
 };
 
+struct DestroyLaser : public Object<RectCollider,TextureRenderer,DestroyLaser>
+{
+    DestroyLaser();
+    void interactWith(PhysicsBody& other);
+    void render();
+private:
+    bool activated = false;
+};
+
+template<>
+struct Factory<DestroyLaser>
+{
+    static constexpr std::string ObjectName = "destroy_laser";
+    using Base = FactoryBase<DestroyLaser,
+                                access<DestroyLaser,&DestroyLaser::orient,&Orient::pos>,
+                                //access<DestroyLaser,&DestroyLaser::orient,&Orient::rotation>,
+                                accessSetter<DestroyLaser,[](float deg){return DEG2RAD*deg;},&DestroyLaser::orient,&Orient::rotation>,
+                                access<DestroyLaser,&DestroyLaser::orient,&Orient::facing>>;
+};
+
 #endif // INTERACTIVES_H_INCLUDED

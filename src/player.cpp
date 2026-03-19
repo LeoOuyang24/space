@@ -18,11 +18,10 @@ size_t std::hash<Key::KeyVal>::operator()(const Key::KeyVal& val) const
 
 Texture2D Player::PlayerSprite;
 
-PlayerCollider::PlayerCollider(int width, int height) : RectCollider{width,height}
+PlayerCollider::PlayerCollider(Player& owner_, float width, float height) : RectCollider{width,height}, owner(owner_)
 {
 
 }
-
 
 PlayerRenderer::PlayerRenderer(Player& owner_) : owner(owner_)
 {
@@ -86,7 +85,7 @@ bool Player::isTangible()
     return tangible && state != PORTALLING;
 }
 
-Player::Player(const Vector2& pos_) : Object({pos_},std::make_tuple(PLAYER_DIMEN,PLAYER_DIMEN),std::make_tuple(std::ref(*this)))
+Player::Player(const Vector2& pos_) : Object({pos_},std::make_tuple(std::ref(*this),PLAYER_DIMEN,PLAYER_DIMEN),std::make_tuple(std::ref(*this)))
 {
     renderer.setSprite(Globals::Game.Sprites.getSprite("guy.png"));
 }
@@ -279,7 +278,7 @@ void Player::handleControls()
     //setState((IsKeyDown(KEY_LEFT_SHIFT) && onGround) ? CHARGING : WALKING);
     if (((!leftRight || !onGround) || state == CHARGING))
     {
-        speed = trunc(speed*(onGround ? GROUND_FRICTION : freeFall ? AIR_FRICTION : .999),3); //apply friction
+        speed = trunc(speed*(onGround ? GROUND_FRICTION : AIR_FRICTION),3); //apply friction
     }
     //orient.pos += orient.getFacing()*speed;
 

@@ -26,6 +26,7 @@ void ClassDeserializer::init()
     registerName<LargePushBot>();
     registerName<GlowStone>("glowstone");
     registerName<GravitySwitch>();
+    registerName<DestroyLaser>();
 }
 
 std::shared_ptr<PhysicsBody> ClassDeserializer::construct(std::string_view cereal)

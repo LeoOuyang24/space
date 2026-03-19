@@ -11,7 +11,7 @@ struct CircleCollider
     int radius = 0;
 
 
-    bool isOnGround(const Orient& orient, Terrain& t);
+    bool isOnGround(const PhysicsBody& body, Terrain& t);
     float getLandingAngle(Orient& orient, Terrain& terrain);
 
     GET_SHAPE_TYPE(ShapeType::CIRCLE);
@@ -23,7 +23,7 @@ struct RectCollider
     //orient.pos is considered to be the center of the rectangle
     float width = 0, height = 0;
 
-    bool isOnGround(const Orient& orient, Terrain& t);
+    bool isOnGround(PhysicsBody& body, Terrain& t);
     float getLandingAngle(Orient& orient, Terrain& terrain);
 
     GET_SHAPE_TYPE(ShapeType::RECT);
