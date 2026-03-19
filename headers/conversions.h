@@ -52,7 +52,6 @@ std::string toString(T*);
 template<typename T>
 concept Arith = std::is_arithmetic_v<T>;
 
-
 template<Arith A> //overload for number-like types, just run to_string on it
 std::string toString(A& f)
 {
@@ -63,6 +62,16 @@ template<typename T>
 std::string toString(std::unique_ptr<T>& ptr)
 {
     return toString(ptr.get());
+}
+
+
+template<typename FieldType, auto Func>
+struct Setter;
+
+template<typename FieldType,auto Func>
+std::string toString(Setter<FieldType,Func> setter)
+{
+    return toString<FieldType>(setter.value);
 }
 
 #endif // CONVERSIONS_H_INCLUDED

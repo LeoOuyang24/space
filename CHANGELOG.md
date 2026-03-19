@@ -14,6 +14,7 @@ strong, its not intuitive like normal gravity
 * Removed angle being determined by gravity
 * Invalid sprites now have an "error" sprite as opposed to a warning message
 * Improved how to add new factories
+* Player can slow down in the air by pressing backwards 
 
 ## 2/17/2026:
 * Removed non-freefall gravity being different from freefall gravity

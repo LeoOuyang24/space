@@ -42,7 +42,7 @@ struct Forces
     void addFriction(float friction, ForceSource source);
     Vector2 getTotalForce();
 
-    Vector2 getForce(ForceSource source) //read-only, get force from a source
+    Vector2 getForce(ForceSource source) const //read-only, get force from a source
     {
         return (source >= forces.size()) ? Vector2{0,0} : forces[source];
     }
@@ -59,10 +59,10 @@ struct PhysicsBody
     virtual void render() = 0;
     virtual void update(Terrain&) = 0;
     virtual Vector2 getPos() = 0;
-    Orient getOrient();
+    Orient getOrient() const;
     void setOrient(const Orient& orient);
     void setPos(const Vector2& pos);
-    virtual Forces& getForces() = 0;
+    Forces& getForces();
     virtual void onCollide(PhysicsBody& other)
     {
 
@@ -97,6 +97,7 @@ struct PhysicsBody
 protected:
     void downGravity(Terrain&);
     void planetGravity(Terrain&);
+    void pointGravity(Terrain&);
 
     void adjustAngle(Terrain& terrain);
     void stayOnGround(Terrain& terrain);
@@ -151,7 +152,7 @@ struct Object : public PhysicsBody
 
     bool isOnGround(Terrain& t)
     {
-        return collider.isOnGround(orient,t);
+        return collider.isOnGround(*this,t);
     }
 
     void onCollide(PhysicsBody& other)
@@ -217,8 +218,8 @@ struct Object : public PhysicsBody
             if (onGround)
             {
                 adjustAngle(t);
-                stayOnGround(t);
             }
+            stayOnGround(t);
         }
     }
     Forces& getForces()

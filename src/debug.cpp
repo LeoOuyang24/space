@@ -135,7 +135,22 @@ void Cheats::drawInterface()
     }
 
     DrawText(("CHEATS: " + modeString).c_str(),10,50,30,RED);
-    DrawText(Globals::Game.terrain.get_gravityMode() == GlobalTerrain::PLANET ? "PLANET" : "DOWN",GetScreenDimen().x*.8,50,30,GREEN);
+
+    std::string gravText = "";
+    switch (Globals::Game.terrain.get_gravityMode())
+    {
+    case GlobalTerrain::PLANET:
+        gravText = "PLANET";
+        break;
+    case GlobalTerrain::DOWN:
+        gravText = "DOWN";
+        break;
+    case GlobalTerrain::POINT:
+        gravText = "POINT";
+        break;
+    }
+
+    DrawText(gravText.c_str(),GetScreenDimen().x*.8,50,30,GREEN);
 }
 
 void Cheats::handleInput()
@@ -201,7 +216,7 @@ void Cheats::handleInput()
     }
     else if (IsKeyPressed(KEY_G))
     {
-        Globals::Game.terrain.set_gravityMode(Globals::Game.terrain.get_gravityMode() == GlobalTerrain::DOWN ? GlobalTerrain::PLANET : GlobalTerrain::DOWN);
+        Globals::Game.terrain.set_gravityMode(static_cast<GlobalTerrain::GravityMode>(static_cast<int>(Globals::Game.terrain.get_gravityMode() + 1)%GlobalTerrain::ENUM_SIZE));
     }
     if (mode == ENDPOINT)
     {

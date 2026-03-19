@@ -21,7 +21,11 @@ class Player;
 //
 struct PlayerCollider : public RectCollider
 {
-    PlayerCollider(int width, int height);
+    PlayerCollider(Player& owner, float width, float height);
+    //bool isOnGround(const Orient& orient, Terrain& t);
+
+private:
+    Player& owner;
 };
 struct PlayerRenderer : public TextureRenderer
 {

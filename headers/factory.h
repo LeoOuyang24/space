@@ -49,6 +49,29 @@ auto& access(Obj& thing)
     return access<decltype(thing.*Member),Members...>(thing.*Member);
 }
 
+//used to define a custom setter function for a particular field
+//use this the same way you'd use access, but replace access with accessSetter<obj,setFunc,accessors...> (defined below)
+template<typename FieldType, auto Func>
+struct Setter
+{
+    FieldType& value;
+    Setter(FieldType& val) : value(val)
+    {
+
+    }
+    void operator=(const FieldType& other)
+    {
+        value = Func(other);
+    }
+};
+
+template<typename Obj, auto Func, auto... Members>
+auto accessSetter(Obj& thing)
+{
+    using FieldType = std::remove_reference<decltype(access<Obj,Members...>(std::declval<Obj&>()))>::type;
+    return Setter<FieldType,Func>(access<Obj,Members...>(thing));
+}
+
 //sets a field. For most fields, this is pretty simple; simply set it to the serialized version
 template<typename Accessed>
 void setValue(const SplitString& params, Accessed& accessed, size_t index)
@@ -59,9 +82,14 @@ void setValue(const SplitString& params, Accessed& accessed, size_t index)
     }
 }
 
-//Look for specializations below class declarations. Each object we want to be able to serialize/deserialize has a specialization
-template<typename Obj>
-struct Factory;
+template<typename Accessed, auto Func>
+void setValue(const SplitString& params, Setter<Accessed,Func> setter, size_t index)
+{
+    if (index < params.size())
+    {
+        setter = fromString<Accessed>(params[index]);
+    }
+}
 
 //specialization for unique_ptr. We instead reset it to the raw pointer of the deserialized object
 template<typename T >
@@ -131,35 +159,7 @@ struct FactoryBase
     }
 };
 
-//used to define a custom setter function for a particular field
-//use this the same way you'd use access, but replace access with Setter<obj,setFunc,accessors...>::CustomSetter
-template<typename Obj,auto SetFunc, auto... Accessors>
-struct Setter
-{
-    using FieldType = decltype(access<Accessors...>(std::declval<Obj>()));
-    FieldType& value;
-    void operator=(FieldType&& other)
-    {
-        SetFunc(value,other);
-    }
-    static Setter CustomSetter(Obj& obj)
-    {
-        return Setter{access<Accessors...>(obj)};
-    }
-};
 
-template<size_t N>
-struct StringWrapper
-{
-  char str[N];
-  constexpr StringWrapper(const char (&s)[N])
-  {
-      for (int i = 0; i < N; i ++)
-      {
-          str[i] = s[i];
-      }
-  }
-};
 
 //handles how objects are deserialized
 class ClassDeserializer

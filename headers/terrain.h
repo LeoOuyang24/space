@@ -66,7 +66,9 @@ struct GlobalTerrain
     enum GravityMode
     {
         PLANET, //gravity is based on nearby terrain
-        DOWN //gravity moves down
+        DOWN, //gravity moves down
+        POINT, //gravity focuses on "gravityCenter"
+        ENUM_SIZE
     };
 
     make_getter(gravityMode,GravityMode);
@@ -75,6 +77,7 @@ struct GlobalTerrain
 
 private:
     GravityMode gravityMode = PLANET;
+    Vector2 gravityCenter = {}; //point at which gravity is focusing on when gravityMode is POINT
 
     struct Layer
     {

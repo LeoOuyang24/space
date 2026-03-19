@@ -52,3 +52,27 @@ void GravitySwitch::interactWith(PhysicsBody& other)
 {
     Globals::Game.terrain.flipGravity();
 }
+
+DestroyLaser::DestroyLaser()
+{
+    collider.width = 100;
+    collider.height = 100;
+    followGravity = false;
+    renderer.sprite = Globals::Game.Sprites.getSprite("laser_beamer_off.png");
+}
+
+void DestroyLaser::interactWith(PhysicsBody& other)
+{
+    activated = true;
+}
+
+void DestroyLaser::render()
+{
+    Object::render();
+    if (activated)
+    {
+        DrawLine3D(toVector3(getPos()),
+                   toVector3(getPos()+orient.getFacingVector()*300)
+                   ,RED,20);
+    }
+}
