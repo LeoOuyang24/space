@@ -130,7 +130,7 @@ void BarrelReceiver::render()
     Object::render();
 }
 
-void AntiGravPod::update(Terrain& t)
+void TerrainPod::update(Terrain& t)
 {
     Object::update(t);
     if (collideTrigger.isThrown(*this))
@@ -141,7 +141,7 @@ void AntiGravPod::update(Terrain& t)
             followGravity = false;
             collideTrigger.setPickupable(false);
             tint = YELLOW;
-            Globals::Game.terrain.getTerrain(orient.layer)->addPlanet(*this,ANTI);
+            Globals::Game.terrain.getTerrain(orient.layer)->addPlanet(*this,type);
         }
     }
 }

@@ -19,7 +19,7 @@ struct ObjectLookup
     std::unordered_map<PhysicsBody*, std::shared_ptr<PhysicsBody>> objects;
 
     void addObject(PhysicsBody& obj);
-    void addObject(std::shared_ptr<PhysicsBody> ptr);
+    void addObject(std::shared_ptr<PhysicsBody> ptr); //not passing by reference here because when adding the player shared_ptr, it has to be converted from player pointer to physicsbody pointer, and that makes this fail. 
     //removes an object from "objects". If there are any other shared pointers, the object will not be destroyed
     //for example, this commonly happens when the player dies after picking up a gear and the gear has to be reset
     void eraseObject(PhysicsBody& obj);

@@ -20,8 +20,13 @@ endif
 $(app): build/main.o $(objs) 
 	$(CXX)  $(LDLIBS) -o $@ $^ $(LDFLAGS) 
 
+#run without debugger 
 run: $(app)
 	./$(app)
+
+#run debugger
+gdb: $(app)
+	gdb ./$(app)
 
 build/main.o: main.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@

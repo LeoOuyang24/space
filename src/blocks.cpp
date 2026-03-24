@@ -240,14 +240,14 @@ Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, bool isS
 
 
     Vector2 answer = past ? b : current;
-    for (EntityPlanet& terr : planets)
+    for (EntityPlanet& terr : planets) //calculate the answer completely separately, by only accounting for planets
         {
-            if (terr.ptr.lock().get() && (isSolid && terr.type == SOLID) || (!isSolid && terr.type != AIR))
+            if (terr.ptr.lock() && (isSolid && terr.type == SOLID) || (!isSolid && terr.type != AIR))
             {
                 PossiblePoint pos = segmentIntersectCircle(a,b,terr.ptr.lock()->getPos(),GetDimen(terr.ptr.lock()->getShape()).x/2);
                 if (pos.exists)
                 {
-                    answer = Vector2DistanceSqr(answer,a) > Vector2DistanceSqr(pos.pos,a) ? pos.pos : answer ;
+                    answer = Vector2DistanceSqr(answer,a) > Vector2DistanceSqr(pos.pos,a) ? pos.pos : answer ; //take the answer closer to "a"
                 }
             }
         }
@@ -385,11 +385,19 @@ bool Terrain::checkBlocks(const Vector2& pos, bool checkPlanets, std::function<b
 {
     if (checkPlanets)
     {
-        for (EntityPlanet& terr : planets)
+        for (auto it = planets.begin(); it != planets.end();)
         {
-            if (terr.ptr.lock().get() && check(terr.type) && CheckCollisionPointShape(pos,terr.ptr.lock().get()->getShape()))
+            if (it->ptr.lock() && check(it->type) && CheckCollisionPointShape(pos,it->ptr.lock()->getShape()))
             {
                 return true;
+            }
+            else if (!it->ptr.lock())
+            {
+               it = planets.erase(it);
+            }
+            else
+            {
+                ++it;
             }
         }
     }
@@ -413,24 +421,6 @@ bool Terrain::checkBlocks(const Vector2& pos, bool checkPlanets, std::function<b
     }
 
     return answer;    
-}
-
-bool Terrain::isOnPlanet(const Vector2& pos)
-{
-    for (auto it = planets.begin(); it < planets.end();)
-    {
-        if (it->ptr.lock().get())
-        {
-            if (CheckCollisionPointShape(pos,it->ptr.lock().get()->getShape()))
-            {
-                return true;
-            }
-        }
-        else
-        {
-            it = planets.erase(it);
-        }
-    }
 }
 
 void Terrain::addPlanet(PhysicsBody& planet, BlockType type)

@@ -21,7 +21,8 @@ void ClassDeserializer::init()
     registerName<BarrelReceiver>();
     registerName<BarrelSpawner>();
     registerName<MovingTerrain>();
-    registerName<AntiGravPod>("antigravpod");
+    registerName<TerrainPod>("terrain_pod");
+    registerName<GenericSpawner<TerrainPod>>();
     registerName<PushBot>();
     registerName<LargePushBot>();
     registerName<GlowStone>("glowstone");

@@ -192,8 +192,6 @@ struct Terrain
     bool blockExists(const Shape& shape); //returns true if a shape collides with terrain
     bool isBlockType(const Shape& shape, BlockType type); //unimplemented, too lazy :p
 
-    //returns true if pos is intersecting with any planet
-    bool isOnPlanet(const Vector2& pos);
 
     void addPlanet(PhysicsBody& planet, BlockType type);
 

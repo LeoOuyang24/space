@@ -155,17 +155,18 @@ private:
     bool activated = false;
 };
 
-struct AntiGravPod :  public Object<CircleCollider,TextureRenderer,AntiGravPod,PickupComponent>
+struct TerrainPod :  public Object<CircleCollider,TextureRenderer,TerrainPod,PickupComponent>
 {
-    AntiGravPod()
+    TerrainPod()
     {
         this->followGravity = true;
-        this->collider.radius = 25;
+        this->collider.radius = 50;
         this->renderer.sprite = Globals::Game.Sprites.getSprite("grapple.png");
     }
     void update(Terrain&);
 private:
     bool activated = false;
+    BlockType type = SOLID;
 };
 
 template<>
@@ -219,6 +220,14 @@ struct Factory<GenericSpawner<Barrel>>
     static constexpr std::string ObjectName = "barrel_spawner";
     using Base = FactoryBase<GenericSpawner<Barrel>,
                             access<GenericSpawner<Barrel>,&GenericSpawner<Barrel>::orient,&Orient::pos>>;
+};
+
+template<>
+struct Factory<GenericSpawner<TerrainPod>>
+{
+    static constexpr std::string ObjectName = "terrain_spawner";
+    using Base = FactoryBase<GenericSpawner<TerrainPod>,
+                            access<GenericSpawner<TerrainPod>,&GenericSpawner<TerrainPod>::orient,&Orient::pos>>;   
 };
 
 bool operator==(const Key::KeyVal& left, const Key::KeyVal& right);

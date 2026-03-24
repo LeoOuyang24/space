@@ -94,7 +94,10 @@ struct PhysicsBody
     make_getter(followGravity,bool);
     make_setter(followGravity,bool);
     bool followGravity = true; //true if object follows gravity and can not be inside terrain
-
+    virtual ~PhysicsBody()
+    {
+        
+    }
 protected:
     void downGravity(Terrain&);
     virtual void planetGravity(Terrain&);
