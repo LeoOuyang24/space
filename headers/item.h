@@ -150,6 +150,7 @@ struct BarrelReceiver : public Object<RectCollider,TextureRenderer,BarrelReceive
         this->renderer.sprite = Globals::Game.Sprites.getSprite("barrel_receiver.png");
     }
     void onCollide(PhysicsBody& other);
+    void render();
 private:
     bool activated = false;
 };

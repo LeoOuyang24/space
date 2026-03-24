@@ -20,6 +20,36 @@ struct Factory<GrapplePoint>
                                 access<GrapplePoint,&GrapplePoint::orient,&Orient::pos>
                                 >;
 };
+
+struct MoveFunc //represents a function that determines how the terrain moves
+{
+    std::function<Vector2(const Orient& o,const Vector2& starting,float)> moveFunc;
+    std::function<std::string()> toString;
+    uint16_t duration = 1; //how many frames it takes to complete a full cycle
+    uint16_t frame = 0; //used to calculate position, increments each time calcNewPos is called
+    Vector2 operator()(const Orient& o,const Vector2& starting)
+    {
+        frame = (frame+1)%duration;
+        if (moveFunc)
+        {
+            Debug::addDeferRender([this,starting,o](){
+            
+                DrawText3D(GetFontDefault(),
+                            std::to_string(frame).c_str(),
+                            toVector3(moveFunc(o,starting,static_cast<float>(frame)/duration)),
+                        10,10,0,false,WHITE);
+
+            });
+
+            return moveFunc(o,starting,static_cast<float>(frame)/duration);
+        }
+        else
+        {
+            return starting;
+        }
+    }
+};
+
 struct LaserBeamEnemy : public Object<RectCollider,TextureRenderer,LaserBeamEnemy>
 {
     enum RotateFunc : int
@@ -32,16 +62,11 @@ struct LaserBeamEnemy : public Object<RectCollider,TextureRenderer,LaserBeamEnem
     float arc = 0; //arc in degrees
     float beamLength = 100;
     RotateFunc func = SINE;
+    MoveFunc movement;
 
-    RenderTexture laserBeam;
     LaserBeamEnemy()
     {
         followGravity = false;
-
-        laserBeam = LoadRenderTexture(1000,1000);
-        BeginTextureMode(laserBeam);
-            ClearBackground(RED);
-        EndTextureMode();
 
         collider.width = 100;
         collider.height = 100;
@@ -63,7 +88,8 @@ struct Factory<LaserBeamEnemy>
                                 access<LaserBeamEnemy,&LaserBeamEnemy::arc>,
                                 access<LaserBeamEnemy,&LaserBeamEnemy::beamLength>,
                                 access<LaserBeamEnemy,&LaserBeamEnemy::startingRot>,
-                                access<LaserBeamEnemy,&LaserBeamEnemy::func>
+                                access<LaserBeamEnemy,&LaserBeamEnemy::func>,
+                                access<LaserBeamEnemy,&LaserBeamEnemy::movement>
                                 >;
 };
 //moving terrain
@@ -71,27 +97,7 @@ struct Factory<LaserBeamEnemy>
 //construct, Debug mode, etc.
 struct MovingTerrain : public Object<CircleCollider,ShapeRenderer<CIRCLE>,MovingTerrain>
 {
-    struct MoveFunc //represents a function that determines how the terrain moves
-    {
-        std::function<Vector2(const Orient& o,const Vector2& starting,uint16_t,float speed)> moveFunc;
-        std::function<std::string()>toString;
-        uint16_t frame = 0; //used to calculate position, increments each time calcNewPos is called
-
-        Vector2 operator()(const Orient& o,const Vector2& starting,float speed)
-        {
-            frame++;
-            if (moveFunc)
-            {
-                return moveFunc(o,starting,frame,speed);
-            }
-            else
-            {
-                return starting;
-            }
-        }
-    };
     MoveFunc calcNewPos;
-    float speed = 0;
     Vector2 starting = {3000,3000};
     BlockType type = SOLID;
     MovingTerrain()
@@ -116,7 +122,6 @@ struct Factory<MovingTerrain>
     using Base = FactoryBase<MovingTerrain,
                     access<MovingTerrain,&MovingTerrain::starting>,
                     access<MovingTerrain,&MovingTerrain::collider,&CircleCollider::radius>,
-                    access<MovingTerrain,&MovingTerrain::speed>,
                     access<MovingTerrain,&MovingTerrain::type>,
                     access<MovingTerrain,&MovingTerrain::calcNewPos>>;
 };

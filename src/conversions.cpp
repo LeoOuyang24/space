@@ -214,33 +214,38 @@ BlockType fromString(std::string_view str)
 }
 
 template<>
-MovingTerrain::MoveFunc fromString(std::string_view str)
+MoveFunc fromString(std::string_view str)
 {
     //basically return two functions, one is how we move, the other is how to serialize
     SplitString split(str,'|');
+    float speed = fromString<float>(split[1]);
     auto toString = [cereal=std::string(str.data())]() -> std::string {return cereal;}; //toString function each of these guys will have, which is just returning the string that was used to deserialize them
     if (split[0] == "LINE") //LINE|<distance>|<angle in degrees>
     {
         return { //linear movement, can be diagonal based on 3rd parameter
-            [distance = fromString<float>(split[1]),
-            degrees = fromString<float>(split[2])]
-                (const Orient& o,const Vector2& starting,uint16_t frame,float speed) -> Vector2
+            
+            [distance = fromString<float>(split[2]),
+            degrees = fromString<float>(split[3])]
+                (const Orient& o,const Vector2& starting,float frame) -> Vector2
                     {
                         if (distance > 0)
-                            return starting + Vector2(cos(degrees*DEG2RAD),sin(degrees*DEG2RAD))*sin(frame*speed/10.0f/distance)*distance;
+                            return starting + Vector2(cos(degrees*DEG2RAD),sin(degrees*DEG2RAD))*sin(frame*2*M_PI)*distance;
                         return starting;
                     },
-            toString
+            toString,
+            speed
         };
     }
     else if (split[0] == "CIRCLE") //CIRCLE|<radius>
     {
         return {
-            [radius=fromString<float>(split[1])](const Orient& o,const Vector2& starting,uint16_t frame,float speed){
-                float angle = frame/1000.0f*speed;
+        
+            [radius=fromString<float>(split[1])](const Orient& o,const Vector2& starting,float frame){
+                float angle = frame/1000.0f;
                 return starting + Vector2(cos(angle),sin(angle))*radius;
             },
-            toString
+            toString,
+            speed
         };
     }
     return {};
@@ -331,7 +336,7 @@ std::string toString(LaserBeamEnemy::RotateFunc& func)
 }
 
 template<>
-std::string toString(MovingTerrain::MoveFunc& moveFunc)
+std::string toString(MoveFunc& moveFunc)
 {
     if (moveFunc.toString)
         return moveFunc.toString();

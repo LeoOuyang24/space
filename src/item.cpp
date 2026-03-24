@@ -90,7 +90,7 @@ void Barrel::update(Terrain& terrain)
 {
     Object::update(terrain);
 
-    if (onGround && collideTrigger.isThrown(*this)) //last two conditions are only true if we have been dropped
+    if ((onGround || terrain.blockExists(getShape()) ) && collideTrigger.isThrown(*this)) //last two conditions are only true if we have been dropped
     {
         setDead(true);
         Sequences::add(false,[start=GetTime(),pos=getPos()](int frames){
@@ -119,6 +119,15 @@ void BarrelReceiver::onCollide(PhysicsBody& other)
                                              )),this->orient.layer);*/
        // onTrigger(*this);
     }
+}
+
+void BarrelReceiver::render()
+{
+    if (activated)
+    {
+        DrawSprite3D(Globals::Game.Sprites.getSprite("barrel.png"),Rectangle(getPos().x,getPos().y,30,60),-orient.rotation);
+    }
+    Object::render();
 }
 
 void AntiGravPod::update(Terrain& t)

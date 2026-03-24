@@ -22,7 +22,7 @@ struct Orient
 
     float rotation = 0; // IN RADIANS
     bool facing = true; //true if facing to the right
-
+    Vector2 startingPos = {};
 
     inline Vector2 getFacingVector() const
     {
@@ -36,6 +36,9 @@ struct Orient
     {
         return {pos.x - dimens.x/2, pos.y - dimens.y/2, dimens.x, dimens.y};
     }
+
+    void setStartingPos(const Vector2& start); //ideally this should only be called when an object is first added into the world
+    Vector2 getStartingPos();
 
 
 };

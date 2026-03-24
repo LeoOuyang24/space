@@ -47,12 +47,13 @@ void LaserBeamEnemy::render()
 
 void LaserBeamEnemy::update(Terrain& t)
 {
-    Object<RectCollider,TextureRenderer,LaserBeamEnemy>::update(t);
+    //Object<RectCollider,TextureRenderer,LaserBeamEnemy>::update(t);
 
     orient.rotation = (func == SINE ?
                         startingRot*DEG2RAD + arc/2*DEG2RAD*(sin(GetTime())) :
                         fmod(startingRot*DEG2RAD + GetTime(),std::max(1.0f,arc*DEG2RAD))
                         );
+    setPos(movement(orient,orient.getStartingPos()));
    // orient.rotation += 0.01;
 
 }
@@ -92,7 +93,7 @@ void MovingTerrain::collideWith(PhysicsBody& other)
 
 void MovingTerrain::update(Terrain& t)
 {
-    Vector2 newPos = calcNewPos(getOrient(),starting,speed);
+    Vector2 newPos = calcNewPos(getOrient(),starting);
     if (newPos != getPos())
     {
         moved = newPos - getPos();

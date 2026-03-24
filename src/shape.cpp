@@ -4,6 +4,16 @@
 #include "../headers/objects.h"
 #include "../headers/colliders.h"
 
+void Orient::setStartingPos(const Vector2& start)
+{
+    startingPos = start;
+}
+
+Vector2 Orient::getStartingPos()
+{
+    return startingPos;
+}
+
 bool CheckCollisionPointShape(const Vector2& pos, const Shape& shape1)
 {
     switch (shape1.type)

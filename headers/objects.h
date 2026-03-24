@@ -92,11 +92,12 @@ struct PhysicsBody
     void applyForces(Terrain& t);
 
     make_getter(followGravity,bool);
+    make_setter(followGravity,bool);
     bool followGravity = true; //true if object follows gravity and can not be inside terrain
 
 protected:
     void downGravity(Terrain&);
-    void planetGravity(Terrain&);
+    virtual void planetGravity(Terrain&);
     void pointGravity(Terrain&);
 
     void adjustAngle(Terrain& terrain);
@@ -218,8 +219,8 @@ struct Object : public PhysicsBody
             if (onGround)
             {
                 adjustAngle(t);
+                stayOnGround(t);
             }
-            stayOnGround(t);
         }
     }
     Forces& getForces()

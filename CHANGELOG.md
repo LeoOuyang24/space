@@ -6,6 +6,12 @@
 * TODO: Make ALT-TAB work
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
 
+## NEW RELEASE
+* Changed how moveFunc works:
+  * MoveFunc now supports being used by all classes, as opposed to just MovingTerrain
+  * MoveFunc now operates not on an ever increasing counter but rather a set number of frames (kind of like how spritesheet animations loop)
+* Project has been slightly reconfigured to support the move to VSCode, o7 Code::Blocks
+
 ## 3/18/2026:
 * Added destroy lasers and the big gravity room
 * Added down gravity and point gravity

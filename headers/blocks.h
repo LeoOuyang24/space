@@ -82,6 +82,7 @@ struct PossibleBlock
 };
 
 struct PhysicsBody;
+struct Shape;
 
 struct Terrain
 {
@@ -168,11 +169,28 @@ struct Terrain
             }
         }
     }
-    //"checkEdges" will check neighbors if point is on edge
-    //checkPlanets will check planets as well as terrain. Usually you want this, but in the case of lineTerrainIntersect and other functions that call this A LOT, it eats perforamnce like a bitch
-    //  such functions should try to resolve planet checking with line collision detection functions
-    bool blockExists(const Vector2& pos, bool checkEdge = true, bool checkPlanets = true); //true if block at position is not AIR
-    bool isBlockType(const Vector2& pos,BlockType type, bool checkEdges = true, bool checkPlanets = true); //true if block at position is "type".
+
+    /**
+     * @brief Given a position, returns whether that position is not AIR
+     *
+     * @param pos, the position to check
+     * @param checkPlanets, true if we want to check planets
+     *
+     * @returns true if position does not contain air
+     */
+    bool blockExists(const Vector2& pos, bool checkPlanets = true); //true if block at position is not AIR
+    /**
+     * @brief Given a position, returns whether that position is a certain type
+     *
+     * @param pos, the position to check
+     * @param checkPlanets, true if we want to check planets
+     *
+     * @returns true if position contains the provided type
+     */
+    bool isBlockType(const Vector2& pos,BlockType type, bool checkPlanets = true); //true if block at position is "type".
+
+    bool blockExists(const Shape& shape); //returns true if a shape collides with terrain
+    bool isBlockType(const Shape& shape, BlockType type); //unimplemented, too lazy :p
 
     //returns true if pos is intersecting with any planet
     bool isOnPlanet(const Vector2& pos);
@@ -192,8 +210,20 @@ struct Terrain
     std::vector<EntityPlanet> planets;
 
 private:
-    bool isDrawing = false; //true if BeginTextureMode has been called, allowing us to batch draw planets
 
+
+    /**
+     * @brief Given a position, returns whether that position has a block of a certain type. This is the workhorse function of blockExists and isBlockType
+     *
+     * @param pos, the position to check
+     * @param checkPlanets, true if we want to check planets. You almost always want this to be true, but sometimes it can be expensive (O(n), where n is the number of planets)
+     * @param check, a function that, given a blocktype, returns true or false. This can allow us to check if a block at a position has a certain type or if it is NOT a certain type
+     *
+     * @returns true if "check" returns true on the block at "pos" or any neighboring points if its on an edge
+     */
+    bool checkBlocks(const Vector2& pos, bool checkPlanets, std::function<bool(BlockType)> check);
+
+    bool isDrawing = false; //true if BeginTextureMode has been called, allowing us to batch draw planets
 
     void drawBlocks();
     void endDrawBlocks();

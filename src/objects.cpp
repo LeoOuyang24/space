@@ -200,12 +200,14 @@ void PhysicsBody::planetGravity(Terrain& terrain)
         if (count > 0)
         {
             Vector2 moveVec = forces.getForce(Forces::MOVE);
+
             if (!Vector2Equals(moveVec,{}) && !freeFall) //if there moving, subtract that component from gravity (prevents gravity from pulling player against intended motion)
                 {
                     grav -= moveVec*Vector2DotProduct(grav,moveVec)/Vector2DotProduct(moveVec,moveVec)*.9f;
                 }
 
             Vector2 norm = Vector2Normalize(grav);
+
             //std::cout << Vector2Length(grav) << "\n";
             forces.addForce(norm*GlobalTerrain::GRAVITY_CONSTANT,Forces::GRAVITY);
             //forces.addForce(grav,Forces::GRAVITY);

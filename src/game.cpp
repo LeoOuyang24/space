@@ -158,7 +158,7 @@ void Globals::addWorld(std::string_view path)
             world.bg_path = entry.path().string();
             world.bg = LoadTexture(world.bg_path.c_str());
        }
-       else if (extension == ".txt")
+       else if (extension == ".txt" && entry.path().filename().string().substr(0,5) == "layer")
        {
             world.layers.push_back(entry.path().string());
        }
@@ -202,6 +202,7 @@ Texture2D Globals::getBG()
 void Globals::addObject(PhysicsBody& body, LayerType layer)
 {
     body.setOrient({body.getPos(),layer});
+    body.orient.setStartingPos(body.getPos());
     objects.addObject(body);
     terrain.addObject(objects.getObject(&body),layer);
     body.onAdd();
@@ -212,6 +213,7 @@ void Globals::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
     if (ptr.get())
     {
         ptr->setOrient({ptr->getPos(),layer,ptr->orient.rotation,ptr->orient.facing});
+        ptr->orient.setStartingPos(ptr->getPos());
         objects.addObject(ptr);
         terrain.addObject(ptr,layer);
         ptr->onAdd();

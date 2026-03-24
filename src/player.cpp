@@ -118,9 +118,8 @@ void Player::update(Terrain& terrain)
             Vector2 grav = forces.getForce(Forces::GRAVITY);
             if (Vector2LengthSqr(grav) != 0)
             {
-               // orient.rotation = atan2(-grav.x,grav.y);
+               // orient.rotation = atan2(-terrainAngle.x,terrainAngle.y);
             }
-
         }
         float oldRotation = orient.rotation;
         Object::adjustAngle(terrain);
@@ -155,7 +154,7 @@ void Player::update(Terrain& terrain)
             o.pos = (getPos() + orient.getNormal()*(-collider.height/2 - GetDimen(ptr->getShape()).y/2));
             o.rotation = orient.rotation;
             ptr->setOrient(o);
-            //ptr->followGravity = false;
+            ptr->set_followGravity(false);
         }
     }
 }
@@ -206,17 +205,18 @@ void Player::handleControls()
             if (PhysicsBody* body = holding.lock().get())
             {
                 Vector2 mousePos = screenToWorld(GetMousePosition(),Globals::Game.getCamera(),Globals::Game.getCurrentZ());
+                body->set_followGravity(true);
                 body->getForces().addFriction(0);
                 if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
                 {
-                    power = std::min(power + 1,100.0f);
+                    power = 100;//std::min(power + 1,100.0f);
 
                 }
                 else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && power > 0)
                 {
                     //Debug::togglePaused();
                     float angle = atan2(mousePos.y - orient.pos.y,mousePos.x - orient.pos.x);
-                    body->getForces().addForce(Vector2Normalize(mousePos - orient.pos)*8,Forces::MOVE);
+                    body->getForces().addForce(Vector2Normalize(mousePos - orient.pos)*20,Forces::MOVE);
                     holding.reset();
                     power = 0;
                 }
@@ -276,14 +276,13 @@ void Player::handleControls()
     break;
     }
     //setState((IsKeyDown(KEY_LEFT_SHIFT) && onGround) ? CHARGING : WALKING);
-    if (((!leftRight || !onGround) || state == CHARGING))
+    if (((!leftRight) || !onGround || state == CHARGING))
     {
-        speed = trunc(speed*(onGround ? GROUND_FRICTION : AIR_FRICTION),3); //apply friction
+        speed = trunc(speed*(onGround ? GROUND_FRICTION : AIR_FRICTION),3); //apply friction, which is different than normal force friction applied to all objects
     }
     //orient.pos += orient.getFacing()*speed;
 
-
-    forces.setForce(orient.getFacingVector()*speed,Forces::MOVE);
+    forces.setForce(orient.getFacingVector()*speed,Forces::MOVE);  
 
     if (IsKeyDown(KEY_Z))
     {
