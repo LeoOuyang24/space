@@ -86,7 +86,6 @@ int main(void)
     // Initialization
     //--------------------------------------------------------------------------------------
     const Vector2 screenDimen = Globals::screenDimen;
-
     SetConfigFlags( FLAG_VSYNC_HINT);
     InitWindow(screenDimen.x, screenDimen.y, "raylib [core] example - basic window");
     InitAudioDevice();
@@ -110,7 +109,7 @@ int main(void)
     //World world1 = {{"levels/layer0.txt","levels/layer1.txt","levels/layer2.txt"}};
     //Globals::Game.loadLevel("levels/block.txt");
 
-    Globals::Game.addWorld("worlds/world1");
+    Globals::Game.addWorld("worlds/world0");
     Globals::Game.setCurWorld(0);
 
     Globals::Game.moveCamera(Vector3{Terrain::MAX_TERRAIN_SIZE*0.5,Terrain::MAX_TERRAIN_SIZE*0.5,Globals::BACKGROUND_Z*0.9});
@@ -129,13 +128,13 @@ int main(void)
     Vector2 pixelSizes = {1.0/blocks.width,1.0/blocks.height};
     SetShaderValue(Terrain::GravityFieldShader,GetShaderLocation(Terrain::GravityFieldShader,"pixelSizes"),&pixelSizes,SHADER_UNIFORM_VEC2);
 
-    SoundLibrary::loadBGM("music/world3.wav");
+    SoundLibrary::loadBGM("music/world0_together.wav");
     SoundLibrary::toggleBGM(false);
 
     Vector2 point = {3000,3000};
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-        //SoundLibrary::update();
+        SoundLibrary::update();
 
         float deltaTime = GetFrameTime();
         if ( IsKeyPressed(KEY_RIGHT_BRACKET) || !Debug::isPaused())

@@ -34,6 +34,18 @@ build/main.o: main.cpp
 build/%.o: src/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+#build and deploy a product!
+deploy: $(app)
+	mkdir deploy
+	mv $(app) ./deploy
+	cp -r sprites ./deploy
+	cp -r music ./deploy
+	cp -r worlds ./deploy
+	cp -r shaders ./deploy
+	cp -r levels ./deploy
+	cp -r sounds ./deploy
+
+
 .PHONY: clean
 
 clean:

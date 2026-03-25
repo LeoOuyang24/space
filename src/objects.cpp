@@ -200,7 +200,7 @@ void PhysicsBody::planetGravity(Terrain& terrain)
         if (count > 0)
         {
             Vector2 moveVec = forces.getForce(Forces::MOVE);
-
+            terrainAngle += Vector2Normalize(grav);
             if (!Vector2Equals(moveVec,{}) && !freeFall) //if there moving, subtract that component from gravity (prevents gravity from pulling player against intended motion)
                 {
                     grav -= moveVec*Vector2DotProduct(grav,moveVec)/Vector2DotProduct(moveVec,moveVec)*.9f;

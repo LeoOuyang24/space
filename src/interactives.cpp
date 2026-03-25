@@ -33,7 +33,7 @@ Rover::Rover() : Object({},std::make_tuple(ROVER_DIMEN.x,ROVER_DIMEN.y),
 void Rover::interactWith(PhysicsBody& other)
 {
     on = !on;
-    SoundLibrary::toggleBGM(on);
+    SoundLibrary::loadBGM( on ? "music/world0_together.wav" : "music/world0_off.wav");
     renderer.setState(on ? "DEFAULT" : "OFF");
 }
 

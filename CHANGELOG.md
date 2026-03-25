@@ -7,10 +7,16 @@
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
 
 ## NEW RELEASE
+
+## 3/24/2026 (andrew-music-demo)
 * Changed how moveFunc works:
   * MoveFunc now supports being used by all classes, as opposed to just MovingTerrain
   * MoveFunc now operates not on an ever increasing counter but rather a set number of frames (kind of like how spritesheet animations loop)
 * Project has been slightly reconfigured to support the move to VSCode, o7 Code::Blocks
+* Added Andrew's music!! And the blank version when turned off
+* Temporarily made it so the rover spawns at teh beginning for easy debugging
+* Changed world 0 layer 1's layout slightly to make a gear easier to get, due to the physics changes (still way too hard lmao)
+* Brought back the player facing the direction of gravity, except its the direction of terrain now
 
 ## 3/18/2026:
 * Added destroy lasers and the big gravity room

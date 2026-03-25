@@ -118,8 +118,12 @@ void Player::update(Terrain& terrain)
             Vector2 grav = forces.getForce(Forces::GRAVITY);
             if (Vector2LengthSqr(grav) != 0)
             {
-               // orient.rotation = atan2(-terrainAngle.x,terrainAngle.y);
+                orient.rotation = atan2(-terrainAngle.x,terrainAngle.y);
             }
+        }
+        else
+        {
+            terrainAngle = {};
         }
         float oldRotation = orient.rotation;
         Object::adjustAngle(terrain);
@@ -235,7 +239,7 @@ void Player::handleControls()
                                                   Globals::Game.getCurrentZ()) - getPos());
                     boosted = true;
 
-                    forces.addForce(direction*5,Forces::BOOSTING);
+                    forces.addForce(direction*7,Forces::BOOSTING);
 
                     Sequences::add(false,[pos = orient.pos + orient.getNormal()*GetDimen(getShape()).y,rot=orient.rotation](int count){
                                    DrawSprite3D(Globals::Game.Sprites.getSprite("mid-air-boost.png"),

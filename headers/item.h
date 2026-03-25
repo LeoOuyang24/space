@@ -61,7 +61,7 @@ struct CollectibleCollider
 
 struct Collectible : public Object<CircleCollider,TextureRenderer,Collectible,CollectibleCollider>
 {
-    Collectible() : Object({},std::make_tuple(15),std::make_tuple(Globals::Game.Sprites.getSprite("gear.png")))
+    Collectible() : Object({},std::make_tuple(20),std::make_tuple(Globals::Game.Sprites.getSprite("gear.png")))
     {
         followGravity = false;
     }

@@ -15,7 +15,7 @@ class Player;
 struct Globals
 {
     static Globals Game;
-    static constexpr bool DEBUG = true; //set to true for debug mode
+    static constexpr bool DEBUG = false; //set to true for debug mode
     static constexpr Vector2 screenDimen = DEBUG ? Vector2{900,900} : Vector2{1920,1080};
 
     //the bigger the z, the further away from the screen

@@ -53,6 +53,7 @@ struct PhysicsBody
 {
     Orient orient;
     size_t keyVal = 0; //a value that is sometimes used for object-object interactions
+    Vector2 terrainAngle = {};
 
     Forces forces;
     virtual Shape getShape() = 0;
