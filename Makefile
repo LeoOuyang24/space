@@ -3,7 +3,7 @@ objs := $(patsubst src/%.cpp,build/%.o,$(srcs))
 app  := main.exe
 deps := $(patsubst src/%.cpp,build/%.d,$(srcs))
 
-CXXFLAGS := -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP
+CXXFLAGS := -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing
 LDFLAGS := -static -lraylib -lopengl32 -lwinmm -lgdi32 -lpthread -lraylib -lopengl32 -lwinmm -lgdi32 -lpthread
 LDLIBS := -L ..\raylib-5.5_win64_mingw-w64/lib
 BUILD ?= debug
@@ -49,4 +49,4 @@ deploy: $(app)
 .PHONY: clean
 
 clean:
-	rm -f $(objs) $(deps) $(app)
+	rm -f $(objs) $(deps) $(app) build/main.o

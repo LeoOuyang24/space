@@ -19,9 +19,9 @@ struct ButtonTheme
 class Button
 {
     typedef std::function<void()> ClickFunc;
+    Rectangle box;
     ClickFunc onClick;
     std::string message = "";
-    Rectangle box;
     ButtonTheme theme;
 public:
     Button(const Vector2&, const Vector2&, ClickFunc,std::string_view);

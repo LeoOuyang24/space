@@ -14,5 +14,3 @@ gear	5587.183105,3587.228027
 gear	4402.182129,3976.519287	
 gear	4424.155273,4327.783691	
 sign	Sprint-jumping will get you far! But for more precise movements in air, RIGHT-CLICK to get a small boost in a direction of your choosing!	3096.719238,4855.943359	
-
-rover	2933.805176,3144.189453	

@@ -6,13 +6,22 @@
 bool CircleCollider::isOnGround(const PhysicsBody& body, Terrain& terrain)
 {
 
-    return  terrain.blockExists(body.orient.pos + Vector2Rotate(body.orient.getNormal(),+ M_PI/4)*radius) ||
-            terrain.blockExists(body.orient.pos + body.orient.getNormal()*radius) ||
-            terrain.blockExists(body.orient.pos + Vector2Rotate(body.orient.getNormal(),- M_PI/4)*radius);
+    return terrain.blockExists(body.getShape());
 }
 
 float CircleCollider::getLandingAngle(Orient& o, Terrain& terrain)
 {
+    int count = 10;
+    for (int i = 0; i < count; i ++)
+    {
+        float radians = 360.0f/count*DEG2RAD*i;
+        Vector2 point = o.pos + Vector2(cos(radians),sin(radians))*radius;
+
+        if (terrain.blockExists(point))
+        {
+            return radians + M_PI*3/2;
+        }
+    }
     return o.rotation;
 }
 
@@ -27,59 +36,32 @@ bool RectCollider::isOnGround(PhysicsBody& body, Terrain& t)
     if (Globals::Game.terrain.get_gravityMode() == GlobalTerrain::DOWN &&
         Vector2LengthSqr(body.getForces().getForce(Forces::JUMP)) <= Vector2LengthSqr(body.getForces().getForce(Forces::GRAVITY)))
     {
-        Vector2 botLeft = o.pos + Vector2(-width/2,height/2);
-        Vector2 botRight = o.pos + Vector2(width/2,height/2);
+        Vector2 botLeft = o.pos + Vector2(-width/2*0.5,height/2);
+        Vector2 botRight = o.pos + Vector2(width/2*0.5,height/2);
         Vector2 botCenter = o.pos + Vector2(0,height/2);
 
-      /*  Debug::addDeferRender([botLeft,botRight,pos=o.pos](){
-                              DrawSphere(toVector3(botLeft),2,RED);
-                              DrawSphere(toVector3(botRight),2,BLUE);
+        Color c = t.isBlockType(botLeft,SOLID) ? RED : BLUE;
+        Color c2 = t.isBlockType(botRight,SOLID) ? RED : BLUE;
+
+        Debug::addDeferRender([botLeft,botRight,pos=o.pos,c,c2](){
+                              DrawSphere(toVector3(botLeft),2,c);
+                              DrawSphere(toVector3(botRight),2,c2);
                               //DrawSphere(toVector3(pos),2,BLACK);
                              // DrawSphere(toVector3(intersect),2,PURPLE);
 
-                              });*/
+                              });
 
-        return t.isBlockType(botLeft,SOLID) || t.isBlockType(botRight,SOLID) || t.isBlockType(botCenter,SOLID);
-    }
+        return (t.isBlockType(botLeft,SOLID) || t.isBlockType(botRight,SOLID) || t.isBlockType(botCenter,SOLID));
+    } 
     else     //calculate collision based on if any of our 4 sides intersects with terrain
     {
-        Vector2 last = o.pos;
-       // bool down = Globals::Game.terrain.get_gravityMode() == GlobalTerrain::DOWN;
-        //int start = down ? int((abs(o.rotation*RAD2DEG)/45) + 1 ) % 4: 0;
-        //int upTo = down ? (start + 2) : 4;
-        for (int i = 0; i < 4; i ++) //top right, bot right, bot left, top left
-        {
-            int prev = (i);
-            int index =(i + 1)%4;
-
-            Vector2 prevCorner = o.pos + Vector2Rotate(Vector2(width/2,height/2)*Vector2(((prev%3) != 0)*2 - 1,prev/2*2 - 1),o.rotation); //top left
-            Vector2 corner = o.pos + Vector2Rotate(Vector2(width/2,height/2)*Vector2(((index%3) != 0)*2 - 1,index/2*2 - 1),o.rotation);
-
-           /* Debug::addDeferRender([corner,prevCorner](){
-
-                                  DrawSphere(toVector3(corner),4,RED);
-                                  DrawSphere(toVector3(prevCorner),4,RED);
-
-                                  });*/
-
-
-            //PossiblePoint intersect = t.lineIntersectWithTerrain(prevCorner,corner);
-            Vector2 intersect = t.lineBlockIntersect(prevCorner,corner,true);
-
-            //if (intersect.exists)
-            if (!Vector2Equals(intersect,corner)) //something is in the way!
-            {
-                return true;
-            }
-
-            prevCorner = corner;
-        }
-        return false;
+        return t.blockExists(body.getShape());
     }
 }
 
 float RectCollider::getLandingAngle(Orient& o, Terrain& terrain)
 {
+
     Vector2 prevCorner = o.pos + Vector2Rotate(Vector2(-width/2,-height/2),o.rotation); //top left
 
 
@@ -103,6 +85,6 @@ float RectCollider::getLandingAngle(Orient& o, Terrain& terrain)
         {
             return o.rotation;
         }
-    return atan2(ground.y,ground.x) + M_PI*3/2;
+    return atan2(ground.y,ground.x) - M_PI/2;
 }
 

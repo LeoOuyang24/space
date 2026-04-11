@@ -13,9 +13,7 @@ void GrapplePoint::update(Terrain& terrain)
 {
     Object<CircleCollider,TextureRenderer,GrapplePoint>::update(terrain);
 
-    Vector2 balls = screenToWorld(GetMousePosition(),Globals::Game.getCamera(),Globals::Game.getCurrentZ());
-
-    if (Vector2DistanceSqr(screenToWorld(GetMousePosition(),Globals::Game.getCamera(),Globals::Game.getCurrentZ()),getPos()) <= collider.radius*collider.radius &&
+    if (Vector2DistanceSqr(screenToWorld(GetMousePosition(),Globals::Game.Camera.getCamera(),Globals::Game.getCurrentZ()),getPos()) <= collider.radius*collider.radius &&
         IsMouseButtonDown(MOUSE_LEFT_BUTTON)
         )
     {
@@ -58,13 +56,13 @@ void LaserBeamEnemy::update(Terrain& t)
 
 }
 
-Shape LaserBeamEnemy::getShape()
+Shape LaserBeamEnemy::getShape() const
 {
     Vector2 endPos = Globals::Game.getCurrentTerrain()->lineBlockIntersect(orient.pos,
                                                       orient.pos + Vector2(cos(orient.rotation),sin(orient.rotation))*beamLength,
                                                       true);
 
-    Shape shape = {RECT,{(endPos + orient.pos)*0.5,orient.layer,orient.rotation},ShapeCollider(Vector2(Vector2Length(endPos - orient.pos),10))};
+    Shape shape = {RECT,{(endPos + orient.pos)*0.5,orient.layer,orient.rotation},ShapeCollider(Vector2(Vector2Distance(endPos,getPos()),10))};
     return shape;
 }
 
@@ -72,7 +70,6 @@ void LaserBeamEnemy::collideWith(PhysicsBody& other)
 {
     if (&other == Globals::Game.getPlayer())
     {
-        //std::cout << "collided " << GetTime() << "\n";
         Globals::Game.getPlayer()->setDead(true);
     }
 }
@@ -103,7 +100,6 @@ void MovingTerrain::update(Terrain& t)
 
 void PushBot::update(Terrain& t)
 {
-    double time = GetTime();
     Object::update(t);
    // std::cout << getPos() << "\n";
     //std::cout << GetTime() - time << " " << onGround << "\n";
@@ -150,4 +146,35 @@ void GlowStone::onCollide(PhysicsBody& other)
                    return isAnimeDone(anime->info,frames);
                    });
     }
+}
+
+void CameraMoveRegion::collideWith(PhysicsBody& other)
+{
+    if (&other == Globals::Game.getPlayer())
+    {
+        if (!wasActivated)
+        {
+            std::cout << "entered\n";
+            Globals::Game.Camera.clear();
+            Globals::Game.Camera.startQueue();
+                Globals::Game.Camera.setCameraFollow(getPos() + cameraTarget,100); //okay for this to not be in queue so other camera moves can be queued up, including by leaving the region
+            Globals::Game.Camera.stopQueue();
+        }
+        activated = true;
+    }
+
+}
+
+void CameraMoveRegion::update(Terrain& t)
+{
+    if (wasActivated && !activated)
+    {
+        std::cout << "left\n";
+        Globals::Game.Camera.clear();
+        Globals::Game.Camera.startQueue();
+            Globals::Game.Camera.setCameraFollow(true,100);
+        Globals::Game.Camera.stopQueue();
+    }
+    wasActivated = activated;
+    activated = false;
 }

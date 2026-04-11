@@ -7,6 +7,11 @@
 #include "objects.h"
 #include "game.h"
 
+struct NoRenderer
+{
+     void render(const Shape& shape, const Color& color);
+};
+
 template<ShapeType shapeType>
 struct ShapeRenderer
 {

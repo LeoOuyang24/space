@@ -1,16 +1,16 @@
 sprites/layers/world1/layer0.png
 1010.000000,3200.000000
 barrel_spawner	1496.471069,3019.032959	
-laser_beamer	2947.706055,3401.621094	90.000000	500.000000	90.000000	SINE	
-laser_beamer	2361.261475,3506.287598	360.000000	500.000000	90.000000	CONSTANT	
-barrel_receiver	2953.251953,3218.227783	1	null	
-barrel_receiver	3000.173584,3895.113281	1	null	
-sign	In my travels, I've come to take great interest in cold metals.|There is a strange inverse correlation between a metal's current temperatures, and the temperature it once held.|So the coldest metals, were at one point the hottest and hardest working!|And this one here...|I could practically preserve food on!	3826.000000,3493.039062	
-sign	Drat! They're exactly that heavy!	2090.039551,3139.732910	
-sign	These barrels sure seem heavy...|I hope they aren't heavy enough to interfere with my boosting and sprint jumping capabilities!	1660.866455,3115.017334	
-
+laser_beamer	2947.706055,3401.621094	90.000000	500.000000	90.000000	SINE	null	
+laser_beamer	2361.261475,3506.287598	360.000000	500.000000	90.000000	CONSTANT	null	
+barrel_receiver	2956.515381,3218.227783	1	null	
+barrel_receiver	3005.136475,3895.113281	1	null	
+sign	In my travels, I've come to take great interest in cold metals.|There is a strange inverse correlation between a metal's current temperatures, and the temperature it once held.|So the coldest metals, were at one point the hottest and hardest working!|And this one here...|I could practically preserve food on!	3826.000000,3492.985107	
+sign	Drat! They're exactly that heavy!	2089.957520,3139.689941	
+sign	These barrels sure seem heavy...|I hope they aren't heavy enough to interfere with my boosting and sprint jumping capabilities!	1659.156494,3115.025879	
 gear	1943.947632,3455.919189	
 gear	2187.555664,3862.697998	
 gear	2621.333252,3885.809082	
 gear	2228.454346,3060.246582	
-	
+barrel	1503.852173,3064.001221	
+barrel	1503.313477,3064.000000

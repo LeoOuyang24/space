@@ -64,11 +64,11 @@ void PickupComponent::collideWith(PhysicsBody& owner, PhysicsBody& other)
     if (pickupable)
     {
         Player* player = static_cast<Player*>(Globals::Game.getPlayer());
-        if (player->getHolding() == &owner)
+        if (player->getHolding() == &owner) //if currently being held by player
         {
             lastHeld = GetTime();
         }
-        else if (&other == player && GetTime() - lastHeld >= 1)
+        else if (&other == player && GetTime() - lastHeld >= 1) //if not being held by player but collided with player, we can be picked back up if it's been 1 second
         {
             player->setHolding(owner);
         }
@@ -88,8 +88,8 @@ void PickupComponent::setPickupable(bool val)
 
 void Barrel::update(Terrain& terrain)
 {
+    Debug::debugForces(*this);
     Object::update(terrain);
-
     if ((onGround || terrain.blockExists(getShape()) ) && collideTrigger.isThrown(*this)) //last two conditions are only true if we have been dropped
     {
         setDead(true);
@@ -140,6 +140,7 @@ void TerrainPod::update(Terrain& t)
             activated = true;
             followGravity = false;
             collideTrigger.setPickupable(false);
+            collider.radius *= 1.5;
             tint = YELLOW;
             Globals::Game.terrain.getTerrain(orient.layer)->addPlanet(*this,type);
         }

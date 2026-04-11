@@ -37,8 +37,9 @@ struct Key : public Object<RectCollider,TextureRenderer,Key,KeyCollider>
         return container.find(lockVal) != container.end();
     }
 
-    Key(KeyVal key_, const Vector3& pos) : key(key_), Object({Vector2(pos.x,pos.y),pos.z},std::make_tuple(KEY_DIMEN.x,KEY_DIMEN.y),
-                                                             std::make_tuple(Globals::Game.Sprites.getSprite(KEY_SPRITE_PATH)))
+    Key(KeyVal key_, const Vector3& pos) : Object({Vector2(pos.x,pos.y),pos.z},std::make_tuple(KEY_DIMEN.x,KEY_DIMEN.y),
+                                                             std::make_tuple(Globals::Game.Sprites.getSprite(KEY_SPRITE_PATH))),
+                                                             key(key_) 
     {
         tint = key;
     }
@@ -112,6 +113,7 @@ struct GenericSpawner : public Object<RectCollider,TextureRenderer,GenericSpawne
     {
         this->collider.width = 100;
         this->collider.height = 150;
+        this->set_followGravity(false);
         this->renderer.sprite = Globals::Game.Sprites.getSprite("barrel_spawner.png");
     }
     void update(Terrain& terrain)

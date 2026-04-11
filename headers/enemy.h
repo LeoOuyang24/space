@@ -32,14 +32,14 @@ struct MoveFunc //represents a function that determines how the terrain moves
         frame = (frame+1)%duration;
         if (moveFunc)
         {
-            Debug::addDeferRender([this,starting,o](){
+            /*Debug::addDeferRender([this,starting,o](){
             
                 DrawText3D(GetFontDefault(),
                             std::to_string(frame).c_str(),
                             toVector3(moveFunc(o,starting,static_cast<float>(frame)/duration)),
                         10,10,0,false,WHITE);
 
-            });
+            });*/
 
             return moveFunc(o,starting,static_cast<float>(frame)/duration);
         }
@@ -75,7 +75,7 @@ struct LaserBeamEnemy : public Object<RectCollider,TextureRenderer,LaserBeamEnem
 
     void render();
     void update(Terrain& t);
-    Shape getShape(); //for collision detection purposes, only the laser beam's shape matters
+    Shape getShape() const; //for collision detection purposes, only the laser beam's shape matters
     void collideWith(PhysicsBody& other);
 };
 
@@ -178,5 +178,35 @@ struct GlowStone : public Object<CircleCollider,TextureRenderer,GlowStone>
     }
     void onCollide(PhysicsBody& other);
 };
+
+struct CameraMoveRegion : public Object<RectCollider,NoRenderer,CameraMoveRegion>
+{
+    Vector2 cameraTarget = {};
+    CameraMoveRegion()
+    {
+        collider.width = 100;
+        collider.height = 100;
+        followGravity = false;
+    }
+    void collideWith(PhysicsBody& other);
+    void update(Terrain& t);
+private:
+    bool activated = false;
+    bool wasActivated = false;
+};
+
+template<>
+struct Factory<CameraMoveRegion>
+{
+    static constexpr char ObjectName[] = "camera_move_region";
+
+    using Base = FactoryBase<CameraMoveRegion,
+                    access<CameraMoveRegion,&CameraMoveRegion::orient,&Orient::pos>,
+                    access<CameraMoveRegion,&CameraMoveRegion::collider,&RectCollider::width>,
+                    access<CameraMoveRegion,&CameraMoveRegion::collider,&RectCollider::height>,
+                    access<CameraMoveRegion,&CameraMoveRegion::cameraTarget>>;
+
+};
+
 
 #endif // ENEMY_H_INCLUDED

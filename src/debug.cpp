@@ -10,7 +10,7 @@
 void Editor::drawInterface()
 {
     Vector2 mousePos = GetMousePosition();
-    Vector2 coords = screenToWorld(mousePos,Globals::Game.getCamera(),
+    Vector2 coords = screenToWorld(mousePos,Globals::Game.Camera.getCamera(),
                                     Globals::Game.getCurrentZ());
     DrawText((std::to_string(int(coords.x)) + " " + std::to_string(int(coords.y))).c_str(),mousePos.x,mousePos.y - 20,20,WHITE);
     DrawText("EDITOR",10,50,30,BLUE);
@@ -24,7 +24,7 @@ void Editor::drawInterface()
 void Editor::handleInput()
 {
     Vector2 mousePos = GetMousePosition();
-    Vector2 coords = screenToWorld(mousePos,Globals::Game.getCamera(),
+    Vector2 coords = screenToWorld(mousePos,Globals::Game.Camera.getCamera(),
                                     Globals::Game.getCurrentZ());
     if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
     {
@@ -50,7 +50,7 @@ void Editor::handleInput()
 
             if (ptr.get())
             {
-                ptr->orient.pos = coords;
+                ptr->setPos(coords);
                 Globals::Game.addObject(ptr,Globals::Game.getCurrentLayer());
             }
 
@@ -148,6 +148,8 @@ void Cheats::drawInterface()
     case GlobalTerrain::POINT:
         gravText = "POINT";
         break;
+    default:
+        break;
     }
 
     DrawText(gravText.c_str(),GetScreenDimen().x*.8,50,30,GREEN);
@@ -155,7 +157,7 @@ void Cheats::drawInterface()
 
 void Cheats::handleInput()
 {
-    Vector2 mousePos = screenToWorld(GetMousePosition(),Globals::Game.getCamera(),Globals::Game.getCurrentZ());
+    Vector2 mousePos = screenToWorld(GetMousePosition(),Globals::Game.Camera.getCamera(),Globals::Game.getCurrentZ());
     if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON))
     {
         switch (mode)
@@ -167,7 +169,6 @@ void Cheats::handleInput()
             {
                 if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
                 {
-                Color color = {255,255,255,100};
                 if (rand()%2)
                     Globals::Game.addObject(*(new Object<RectCollider,
                                               ShapeRenderer<ShapeType::RECT>,EMPTY_TYPE>(
@@ -195,7 +196,8 @@ void Cheats::handleInput()
         case ENDPOINT:
             endpoint = mousePos;
             break;
-
+        default:
+            break;
         }
     }
     else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
@@ -238,7 +240,7 @@ void Cheats::handleInput()
                                          terr->blockExists(pos,false) ? RED : BLUE);
                                 },
                                 screenToWorld(GetMousePosition(),
-                                              Globals::Game.getCamera(),
+                                              Globals::Game.Camera.getCamera(),
                                               Globals::Game.getCurrentZ()),2*Block::BLOCK_DIMEN);
                       });
 
@@ -325,20 +327,20 @@ void Debug::drawInterface()
         currentMode->drawInterface();
         if (GetMousePosition().x >= 0.9*screenDimen.x)
         {
-            Globals::Game.moveCamera(Globals::Game.getCamera().position + Vector3(10,0,0));
+            Globals::Game.Camera.moveCamera(Globals::Game.Camera.getCamera().position + Vector3(10,0,0));
         }
         else if (GetMousePosition().x <= 0.1*screenDimen.x)
         {
-            Globals::Game.moveCamera(Globals::Game.getCamera().position + Vector3(-10,0,0));
+            Globals::Game.Camera.moveCamera(Globals::Game.Camera.getCamera().position + Vector3(-10,0,0));
         }
 
         if (GetMousePosition().y >= 0.9*screenDimen.y)
         {
-            Globals::Game.moveCamera(Globals::Game.getCamera().position + Vector3(0,10,0));
+            Globals::Game.Camera.moveCamera(Globals::Game.Camera.getCamera().position + Vector3(0,10,0));
         }
         else if (GetMousePosition().y <= 0.1*screenDimen.y)
         {
-            Globals::Game.moveCamera(Globals::Game.getCamera().position + Vector3(0,-10,0));
+            Globals::Game.Camera.moveCamera(Globals::Game.Camera.getCamera().position + Vector3(0,-10,0));
         }
     }
 }
@@ -346,4 +348,22 @@ void Debug::drawInterface()
 bool Debug::isDebugOn()
 {
     return currentMode;
+}
+
+void Debug::debugForces(PhysicsBody& body) //draws forces on an object
+{
+    Vector2 pos = body.getPos();
+    Forces& forces = body.getForces();
+
+    Vector2 grav = pos + forces.getForce(Forces::GRAVITY)*30;
+    Vector2 mov = pos + forces.getForce(Forces::MOVE)*30;
+    Vector2 jump = pos + forces.getForce(Forces::JUMP)*30;
+    Vector2 boos = pos + forces.getForce(Forces::BOOSTING)*30;
+
+    Debug::addDeferRender([pos,grav,mov,jump,boos](){
+        DrawLine3D(toVector3(pos),toVector3(grav),RED,5);
+        DrawLine3D(toVector3(pos),toVector3(mov),BLUE,5);
+        DrawLine3D(toVector3(pos),toVector3(jump),GREEN,5);
+        DrawLine3D(toVector3(pos),toVector3(boos),PURPLE,5);
+                        });   
 }

@@ -133,7 +133,7 @@ template<>
 std::string fromString(std::string_view str)
 {
     std::string answer = "";
-    for (int i = 0; i < str.size(); i ++)
+    for (size_t i = 0; i < str.size(); i ++)
     {
         if (str[i] == '\\' && i < str.size() - 1)
         {
@@ -195,6 +195,8 @@ std::string toString(BlockType& type) //this has to be declared before from stri
         return "LAVA";
     case ANTI:
         return "ANTI";
+    default:
+        return "AIR";
     }
     return "AIR";
 }

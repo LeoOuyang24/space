@@ -115,6 +115,8 @@ void PhysicsBody::applyForces(Terrain& terrain)
     case GlobalTerrain::GravityMode::POINT:
         pointGravity(terrain);
         break;
+    default:
+        break;
     }
 
     if (orient.pos.x >= Terrain::MAX_TERRAIN_SIZE || orient.pos.x <= 0)
@@ -127,11 +129,67 @@ void PhysicsBody::applyForces(Terrain& terrain)
         forces.addFriction({1,-1});
         forces.addForce( Vector2{0,(orient.pos.y <= 0 ) * 2 - 1},Forces::BOUNCE);
     }
+    Vector2 total = forces.getTotalForce();
+    setPos(getPos() + total);
 
-    setPos(getPos() + forces.getTotalForce());
+    if (Globals::Game.terrain.get_gravityMode() == GlobalTerrain::DOWN)
+    {
+        Vector2 dimen = GetDimen(getShape());
+        Vector2 left = orient.pos + Vector2(-dimen.x/2 - 1,2);
+        Vector2 right = orient.pos + Vector2(dimen.x/2 + 1,2);
+        Vector2 up = orient.pos + Vector2(0,-dimen.y/2 - Block::BLOCK_DIMEN);
 
-    Vector2 grav = forces.getForce(Forces::GRAVITY);
+        Color lColor = WHITE;
+        Color rColor = WHITE;
+
+        Vector2 lpos = terrain.lineBlockIntersect(orient.pos,left);
+        Vector2 rpos = terrain.lineBlockIntersect(orient.pos,right);
+        Vector2 upos = terrain.lineBlockIntersect(orient.pos,up);
+
+        if (!Vector2Equals(left,lpos))
+        {
+            orient.pos.x = lpos.x + dimen.x/2 + Block::BLOCK_DIMEN;
+            lColor = BLUE;
+        }
+        if (!Vector2Equals(right,rpos))
+        {
+            orient.pos.x = rpos.x - dimen.x/2 - Block::BLOCK_DIMEN;
+            rColor = BLUE;
+        }
+        if (!Vector2Equals(up,upos))
+        {
+            orient.pos.y = upos.y + dimen.y/2 + Block::BLOCK_DIMEN;
+        }
+        Debug::addDeferRender([left,right,lColor,rColor,lpos,rpos](){
+
+            DrawCircle3D(toVector3(left),2,{},0,PURPLE);
+            DrawCircle3D(toVector3(right),2,{},0,PURPLE);
+
+            DrawSphere(toVector3(lpos),2,lColor);
+            DrawSphere(toVector3(rpos),2,rColor);
+
+        });
+    }
+
+    /*Vector2 horiz = {forces.getTotalForce().x,0};
+    Vector2 vert = {0,forces.getTotalForce().y};
+
+    Shape horizShape = getShape();
+    horizShape.orient.pos += horiz;
+    Shape vertShape = getShape();
+    vertShape.orient.pos += vert;
+
+    if (terrain.blockExists(getPos() + horiz  + Vector2(GetDimen(getShape()).x*(horiz.x < 0 ? -1 : 1),0)))
+    {
+        horiz = {};
+    }
+    if (terrain.blockExists(vertShape))
+    {
+     //   vert = {};
+    }*/
+
     forces.addFriction(onGround ? 0.5 : .99);
+    //forces.setForce(grav,Forces::GRAVITY);
 
     /*if (Globals::Game.terrain.get_gravityMode() == GlobalTerrain::DOWN && onGround)
     {
@@ -146,8 +204,9 @@ void PhysicsBody::applyForces(Terrain& terrain)
 
 void PhysicsBody::downGravity(Terrain& t)
 {
-    float mult = 1;//(onGround && orient.rotation < -M_PI/4) ? abs(sin(orient.rotation)) : 1;
-    forces.addForce(Vector2(0,GlobalTerrain::GRAVITY_CONSTANT)*(mult),Forces::GRAVITY);
+    //float mult = (onGround && abs(orient.rotation) < M_PI/4) ? abs(sin(orient.rotation)) : 1;
+    forces.addForce(Vector2(0,GlobalTerrain::GRAVITY_CONSTANT),Forces::GRAVITY);
+   //forces.setForce(Vector2(0,mult*5),Forces::GRAVITY);
 }
 
 void PhysicsBody::planetGravity(Terrain& terrain)
@@ -203,7 +262,7 @@ void PhysicsBody::planetGravity(Terrain& terrain)
             terrainAngle += Vector2Normalize(grav);
             if (!Vector2Equals(moveVec,{}) && !freeFall) //if there moving, subtract that component from gravity (prevents gravity from pulling player against intended motion)
                 {
-                    grav -= moveVec*Vector2DotProduct(grav,moveVec)/Vector2DotProduct(moveVec,moveVec)*.9f;
+                    grav -= moveVec*Vector2DotProduct(grav,moveVec)/Vector2DotProduct(moveVec,moveVec)*.89f;
                 }
 
             Vector2 norm = Vector2Normalize(grav);
@@ -249,6 +308,7 @@ void PhysicsBody::adjustAngle(Terrain& terrain)
 
     if (trunc(abs(newAngle - orient.rotation),2) > .001)
     {
+
         orient.rotation = newAngle;
     }
 }
@@ -259,7 +319,10 @@ void PhysicsBody::stayOnGround(Terrain& terrain)
    Vector2 norm = orient.getNormal();
 
     Vector2 bruh = terrain.lineTerrainIntersect(orient.pos,orient.pos + norm*GetDimen(getShape()).y,true); //- normal*(collider.height)/2;
+    
     Vector2 newPos = bruh - Vector2Normalize(norm)*(GetDimen(getShape()).y/2  - 1);
+
+
     setPos(newPos);
 
 }

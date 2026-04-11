@@ -52,7 +52,7 @@ Rectangle Terrain::getBlockRect(const Vector2& pos)
 void Terrain::addBlock(const Vector2& pos, const Block& block)
 {
 
-    int index = pointToIndex(pos);
+    size_t index = pointToIndex(pos);
 
     if (index < 0 || index >= pointToIndex({MAX_TERRAIN_SIZE - 1,MAX_TERRAIN_SIZE - 1}))
     {
@@ -191,13 +191,13 @@ Vector2 Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, bool i
     Vector2 newA = a;
     Vector2 dir = Vector2Normalize(b - a);
     //move "a" back until its not in terrain any more
-    if ( (isSolid && isBlockType(newA,SOLID,true) || blockExists(newA,true))  && !Vector2Equals(dir,{0,0}))
+    if ( ((isSolid && isBlockType(newA,SOLID,true)) || blockExists(newA,true))  && !Vector2Equals(dir,{0,0}))
     {
         Vector2 oldA;
         //it's kind of okay for thsi function to expensively check for planets
         //it's primarily only used for adusting angle, which only calls this twice per frame per entity
         //and it's rare for this to loop for long
-        while ((isSolid && isBlockType(newA,SOLID,true) || blockExists(newA,true))) //move "A" backwards until we encounter non-solid block
+        while (((isSolid && isBlockType(newA,SOLID,true)) || blockExists(newA,true))) //move "A" backwards until we encounter non-solid block
         {
             oldA = newA;
             newA -= dir*Block::BLOCK_DIMEN;
@@ -218,7 +218,7 @@ Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, bool isS
 
     if (pointToIndex(a) == pointToIndex(b)) //if a and b are in teh same box, it comes down to whether or not there's empty space there
     {
-        return (isSolid && isBlockType(a,SOLID,true) || blockExists(a,true)) ? a : b;
+        return ((isSolid && isBlockType(a,SOLID,true)) || blockExists(a,true)) ? a : b;
     }
 
     Vector2 dir = Vector2Normalize(b - a);
@@ -242,7 +242,7 @@ Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, bool isS
     Vector2 answer = past ? b : current;
     for (EntityPlanet& terr : planets) //calculate the answer completely separately, by only accounting for planets
         {
-            if (terr.ptr.lock() && (isSolid && terr.type == SOLID) || (!isSolid && terr.type != AIR))
+            if (terr.ptr.lock() && ((isSolid && terr.type == SOLID) || (!isSolid && terr.type != AIR)))
             {
                 PossiblePoint pos = segmentIntersectCircle(a,b,terr.ptr.lock()->getPos(),GetDimen(terr.ptr.lock()->getShape()).x/2);
                 if (pos.exists)
@@ -282,8 +282,6 @@ void Terrain::generatePlanet(const Vector2& center, int radius, const Color& col
 
 void Terrain::generatePlanets()
 {
-    const int range = 1000;
-
     terrain.clear();
 
     int numPlanets = rand()%3 + 3;
@@ -315,7 +313,6 @@ void Terrain::generateRect(const Rectangle& rect, const Color& color)
 
 void Terrain::generateRightTriangle(const Vector2& corner, float height, const Color& color)
 {
-    Vector2 origin = roundPos({corner.x,corner.y - height});
     int modHeight = height/Block::BLOCK_DIMEN;
 
     drawBlocks();
@@ -323,7 +320,6 @@ void Terrain::generateRightTriangle(const Vector2& corner, float height, const C
     {
         for (int j = i; j <= modHeight; j+= 1)
         {
-            Vector2 pos = origin + Vector2(i,j)*Block::BLOCK_DIMEN;
             addBlock({i,j},{color});
         }
     }
@@ -345,10 +341,19 @@ bool Terrain::blockExists(const Shape& shape)
     switch (shape.type)
     {
         case ShapeType::CIRCLE:
-            return  blockExists(shape.orient.pos + Vector2(0,shape.collider.radius)) ||
-                    blockExists(shape.orient.pos - Vector2(0,shape.collider.radius)) || 
-                    blockExists(shape.orient.pos + Vector2(shape.collider.radius,0)) || 
-                    blockExists(shape.orient.pos - Vector2(shape.collider.radius,0));
+        {
+            int count = 10;
+            for (int i = 0; i < count; i ++)
+            {
+                float radians = 360.0f/count*DEG2RAD*i;
+                Vector2 point = shape.orient.pos + Vector2(cos(radians),sin(radians))*shape.collider.radius;
+                if (blockExists(point))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
         case ShapeType::RECT:
             for (int i = 0; i < 4; i ++) //top right, bot right, bot left, top left
             {
@@ -439,7 +444,7 @@ void Terrain::render(int i, int z)
 
    //BeginShaderMode(GravityFieldShader);
 
-   DrawBillboardPro(Globals::Game.getCamera(),blocksTexture.texture,Rectangle(0,0,blocksTexture.texture.width,blocksTexture.texture.height)
+   DrawBillboardPro(Globals::Game.Camera.getCamera(),blocksTexture.texture,Rectangle(0,0,blocksTexture.texture.width,blocksTexture.texture.height)
                     ,Vector3(blocksTexture.texture.width/2,blocksTexture.texture.height/2,z),Vector3(0,-1,0),
                     Vector2(blocksTexture.texture.width,blocksTexture.texture.height),Vector2(blocksTexture.texture.width/2,blocksTexture.texture.height/2),
                     0,balls);

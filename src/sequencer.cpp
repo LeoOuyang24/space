@@ -5,29 +5,34 @@
 Sequences::SequencerList Sequences::physicsSequences;
 Sequences::SequencerList Sequences::renderSequences;
 
-void Sequences::add(const Sequencer& lst, bool isPhysics)
+Sequence Sequences::add(Sequencer* lst, bool isPhysics)
+{
+    Sequence temp = Sequence(lst);
+    add(temp,isPhysics);
+    return isPhysics ? physicsSequences.front() : renderSequences.front();
+}
+
+Sequence Sequences::add(const RunThis& lst, bool isPhysics)
+{
+    return add((new Sequencer{lst}),isPhysics);
+}
+
+void Sequences::add(Sequence& seq, bool isPhysics)
 {
     if (isPhysics)
     {
-        physicsSequences.emplace_front(lst);
+        physicsSequences.push_front(seq);
     }
     else
     {
-        renderSequences.emplace_front(lst);
+        renderSequences.push_front(seq);
     }
 }
-
-void Sequences::add(const RunThis& lst, bool isPhysics)
-{
-    add(Sequencer{lst},isPhysics);
-}
-
-
 void Sequences::run(SequencerList& lst)
 {
     for (auto it = lst.begin(); it != lst.end();)
     {
-       if (run(*it))
+       if (!it->get() || (run(*it) && it->use_count() == 1)) //remove if a sequence is null or if it is empty AND there are no other pointers pointing to it. Other pointers pointing to it implies that it is a reserved sequence
        {
            it = lst.erase(it);
        }
@@ -37,14 +42,17 @@ void Sequences::run(SequencerList& lst)
        }
     }
 }
-
-bool Sequences::run(Sequencer& seq)
+bool Sequences::run(Sequence& seq)
 {
-    if (seq.size() > 0 && (*seq.begin())()) //run first function, if it's done, remove it
+    if (seq->size() > 0) //run first function, if it's done, remove it
     {
-        seq.pop_front();
+        auto it = seq->begin();
+        if ((*it)())
+        {
+            seq->erase(it); //erase the iterator in case new RunThis were addeddas part of the run
+        }
     }
-    return seq.size() == 0;
+    return seq->size() == 0;
 }
 
 void Sequences::runPhysics()

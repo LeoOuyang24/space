@@ -47,6 +47,7 @@ PossiblePoint segmentIntersectTriangle(const Vector2& a1, const Vector2& a2, con
 PossiblePoint segmentIntersectCircle(const Vector2& a1, const Vector2& a2, const Vector2& center, float radius); //returns point closest to a1 that is on the circle
 
 Vector3 toVector3(const Vector2& vector2);
+Vector2 toVector2(const Vector3& vector3);
 
 template<typename T>
 concept has_y = requires { &T::y; };

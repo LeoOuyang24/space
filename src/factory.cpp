@@ -5,6 +5,7 @@
 #include "../headers/portal.h"
 #include "../headers/interactives.h"
 #include "../headers/enemy.h"
+#include "../headers/camera.h"
 
 std::unordered_map<std::string,std::function<PhysicsBody*(const SplitString& params)>> ClassDeserializer::funcs;
 
@@ -28,6 +29,7 @@ void ClassDeserializer::init()
     registerName<GlowStone>("glowstone");
     registerName<GravitySwitch>();
     registerName<DestroyLaser>();
+    registerName<CameraMoveRegion>();
 }
 
 std::shared_ptr<PhysicsBody> ClassDeserializer::construct(std::string_view cereal)

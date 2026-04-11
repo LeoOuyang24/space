@@ -1,5 +1,19 @@
 #include "../headers/render.h"
 
+void NoRenderer::render(const Shape& shape, const Color& color)
+{
+    if (Debug::isDebugOn())
+    {
+        Rectangle rect = shape.orient.getRect(GetDimen(shape));
+        for (int i = 0; i < 4; i ++)
+        {
+            DrawLine3D(toVector3(Vector2(rect.x,rect.y) + Vector2(rect.width*(i%3 == 0),rect.height*(i > 1))),
+                       toVector3(Vector2(rect.x,rect.y) + Vector2(rect.width*((i+1)%4%3 == 0),rect.height*((i + 1)%4 > 1))),
+                    WHITE,10);
+        }
+    }
+}
+
 TextureRenderer::TextureRenderer(const Texture2D& sprite)
 {
     setSprite(sprite);
@@ -31,7 +45,6 @@ void TextureRenderer::render(const Shape& shape, const Color& color)
 
 AnimeRenderer::AnimeRenderer(const std::initializer_list<std::string_view>& lst)
 {
-    int i = 0;
     for (auto it = lst.begin(); it != lst.end(); ++it)
     {
         std::string_view stateName = *it;

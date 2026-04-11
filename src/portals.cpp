@@ -70,7 +70,7 @@ bool Portal::unlocked()
                         Player* player = static_cast<Player*>(Globals::Game.getPlayer());
                         player->setPos(start + (dest - start)*.01f*x);
 
-                       Globals::Game.lookAt(Lerp(
+                       Globals::Game.Camera.lookAt(Lerp(
                                                  Globals::Game.terrain.getZOfLayer(player->getOrient().layer),
                                                  Globals::Game.terrain.getZOfLayer(orient.layer + layerDisp),
                                                  x/100.0));

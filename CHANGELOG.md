@@ -7,6 +7,18 @@
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
 
 ## NEW RELEASE
+* Improved Circle Collider's collision with terrain
+* Aiming now draws an arrow
+* Massively overhauled the Camera:
+  * The Camera is no longer owned by Globals::Game, and instead is managed by GameCamera, a wrapper class, which Globals::Game has an instance of.
+  * GameCamera has a unique queue system for queuing up camera movements for smooth transitions. `GameCamera::startQueue` will cause all camera movement options to be "queued up" in Sequences. `GameCamera::stopQueue` stop the queueing. Until all queued function calls are finished, no other camera movement is allowed.
+  * This implementation has these advantages:
+    * Allows for very obvious camera control. The `start/stopQueue` functions clearly delineate not only when control is grabbed but also the order in which the camera will move.
+    * Allows Camera state to be checked when a movement is done, as opposed to when the sequence is made.
+  * This implentation has some disadvantages:
+    * Respecting the "lock" is entirely up to the developer. Any functions that may change the state need to have a big `if` at the beginning checking for lock status. Same with `queueing` status.
+    * The way the whole thing works is a little unintuitive. When a camera needs to do a transition, it has to push to the front of the sequence a series of `RunThis`. However, when queueing up actions, every function call is pushed to the back. If a function wants to call a function that does a transition and add to that transition, any transition additions have to be done in reverse order.
+    * Reliance on lambda captures means that if `GameCamera` goes out of scope before `Sequences`, there may be memory issues. This is unlikely, however, as `GameCamera` is only owned by the global singleton.
 
 ## 3/24/2026 (andrew-music-demo)
 * Changed how moveFunc works:

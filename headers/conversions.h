@@ -31,7 +31,7 @@ struct SplitString
     template<typename T>
     void forEach(T func)
     {
-        for (int i = 0; i < size(); i ++)
+        for (size_t i = 0; i < size(); i ++)
         {
             func((*this)[i]);
         }

@@ -43,10 +43,6 @@ struct Portal : public Object<CircleCollider,ShapeRenderer<CIRCLE>,Portal>
     Portal();
     Portal(const Vector2& pos, LayerType layer, const Vector2& pos_, LayerType layerDisp_);
     bool unlocked();
-    void update()
-    {
-
-    }
     void interactWith(PhysicsBody& other);
     void render();
 };
