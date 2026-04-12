@@ -6,6 +6,36 @@
 * TODO: Make ALT-TAB work
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
 
+## NEW RELEASE
+
+## 4/11/2026 
+* Removed Barrel's Factory to prevent it from being saved in EDITOR mode.
+* Improved Circle Collider's collision with terrain
+* Aiming now draws an arrow
+* Massively overhauled the Camera:
+  * The Camera is no longer owned by Globals::Game, and instead is managed by GameCamera, a wrapper class, which Globals::Game has an instance of.
+  * GameCamera has a unique queue system for queuing up camera movements for smooth transitions. `GameCamera::startQueue` will cause all camera movement options to be "queued up" in Sequences. `GameCamera::stopQueue` stop the queueing. Until all queued function calls are finished, no other camera movement is allowed.
+  * This implementation has these advantages:
+    * Allows for very obvious camera control. The `start/stopQueue` functions clearly delineate not only when control is grabbed but also the order in which the camera will move.
+    * Allows Camera state to be checked when a movement is done, as opposed to when the sequence is made.
+  * This implentation has some disadvantages:
+    * Respecting the "lock" is entirely up to the developer. Any functions that may change the state need to have a big `if` at the beginning checking for lock status. Same with `queueing` status.
+    * The way the whole thing works is a little unintuitive. When a camera needs to do a transition, it has to push to the front of the sequence a series of `RunThis`. However, when queueing up actions, every function call is pushed to the back. If a function wants to call a function that does a transition and add to that transition, any transition additions have to be done in reverse order.
+    * Reliance on lambda captures means that if `GameCamera` goes out of scope before `Sequences`, there may be memory issues. This is unlikely, however, as `GameCamera` is only owned by the global singleton.
+* Refactored `lineBlockIntersect` and `lineTerrainIntersect` to be more flexible
+  * Player now only counts as `onGround` if on solid ground, all other objects can be on any non-air surface
+* Added a section to layer 1 of world 1 with some terrain pod stuff
+
+## 3/24/2026 (andrew-music-demo)
+* Changed how moveFunc works:
+  * MoveFunc now supports being used by all classes, as opposed to just MovingTerrain
+  * MoveFunc now operates not on an ever increasing counter but rather a set number of frames (kind of like how spritesheet animations loop)
+* Project has been slightly reconfigured to support the move to VSCode, o7 Code::Blocks
+* Added Andrew's music!! And the blank version when turned off
+* Temporarily made it so the rover spawns at teh beginning for easy debugging
+* Changed world 0 layer 1's layout slightly to make a gear easier to get, due to the physics changes (still way too hard lmao)
+* Brought back the player facing the direction of gravity, except its the direction of terrain now
+
 ## 3/18/2026:
 * Added destroy lasers and the big gravity room
 * Added down gravity and point gravity

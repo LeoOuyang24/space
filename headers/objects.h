@@ -32,7 +32,7 @@ struct Forces
         FORCE_SOURCE_SIZE //number of force sources, should always be the last member
     };
 
-    std::array<Vector2,FORCE_SOURCE_SIZE> forces; //mapping force source to a force
+    std::array<Vector2,FORCE_SOURCE_SIZE> forces{}; //mapping force source to a force
     Vector2 totalForce = {0,0}; //total forces
 
     void setForce(const Vector2& force, Forces::ForceSource source);
@@ -53,15 +53,15 @@ struct PhysicsBody
 {
     Orient orient;
     size_t keyVal = 0; //a value that is sometimes used for object-object interactions
-
+    Vector2 terrainAngle = {};
     Forces forces;
-    virtual Shape getShape() = 0;
+    virtual Shape getShape() const = 0;
     virtual void render() = 0;
     virtual void update(Terrain&) = 0;
-    virtual Vector2 getPos() = 0;
+    virtual Vector2 getPos() const = 0;
     Orient getOrient() const;
     void setOrient(const Orient& orient);
-    void setPos(const Vector2& pos);
+    virtual void setPos(const Vector2& pos);
     Forces& getForces();
     virtual void onCollide(PhysicsBody& other)
     {
@@ -92,11 +92,17 @@ struct PhysicsBody
     void applyForces(Terrain& t);
 
     make_getter(followGravity,bool);
+    make_setter(followGravity,bool);
+    make_getter(onGround,bool);
+    make_setter(onGround,bool);
     bool followGravity = true; //true if object follows gravity and can not be inside terrain
-
+    virtual ~PhysicsBody()
+    {
+        
+    }
 protected:
     void downGravity(Terrain&);
-    void planetGravity(Terrain&);
+    virtual void planetGravity(Terrain&);
     void pointGravity(Terrain&);
 
     void adjustAngle(Terrain& terrain);
@@ -130,17 +136,19 @@ struct Object : public PhysicsBody
 
 
     template<typename... CollArgs, typename... RenderArgs>
-    Object(const Orient& pos, std::tuple<CollArgs...> colliderArgs, std::tuple<RenderArgs...> renderArgs) : tint(WHITE),
+    Object(const Orient& pos, std::tuple<CollArgs...> colliderArgs, std::tuple<RenderArgs...> renderArgs) : 
                                                                         collider(std::make_from_tuple<Collider>(colliderArgs)),
-                                                                        renderer(std::make_from_tuple<Renderer>(renderArgs))
-    {
+                                                                        renderer(std::make_from_tuple<Renderer>(renderArgs)),
+                                                                        tint(WHITE)
+    {       
         orient = pos;
     }
 
     template<typename... CollArgs, typename... RenderArgs, typename... Args>
-    Object(const Orient& pos, std::tuple<CollArgs...> colliderArgs, std::tuple<RenderArgs...> renderArgs, Args... conArgs) : tint(WHITE),
+    Object(const Orient& pos, std::tuple<CollArgs...> colliderArgs, std::tuple<RenderArgs...> renderArgs, Args... conArgs) : 
                                                                         collider(std::make_from_tuple<Collider>(colliderArgs)),
-                                                                        renderer(std::make_from_tuple<Renderer>(renderArgs))
+                                                                        renderer(std::make_from_tuple<Renderer>(renderArgs)),
+                                                                        tint(WHITE)
     {
         orient = pos;
     }
@@ -198,11 +206,11 @@ struct Object : public PhysicsBody
         }
     }
 
-    Vector2 getPos()
+    Vector2 getPos() const
     {
         return orient.pos;
     }
-    virtual Shape getShape()
+    virtual Shape getShape() const
     {
         return {collider.getShapeType(),orient,collider.getCollider()};
     }
@@ -218,8 +226,8 @@ struct Object : public PhysicsBody
             if (onGround)
             {
                 adjustAngle(t);
+                stayOnGround(t);
             }
-            stayOnGround(t);
         }
     }
     Forces& getForces()

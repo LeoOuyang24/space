@@ -48,6 +48,8 @@ public:
     void handleInput();
 };
 
+struct PhysicsBody;
+
 //master class that controls debugging
 //can swap between editor and cheats
 //also allows for "DeferedRenders", which are renders that are done for debugging purposes
@@ -84,6 +86,7 @@ public:
     static void drawInterface();
     static bool isDebugOn();
 
+    static void debugForces(PhysicsBody& body); //draws forces on an object
 
 };
 

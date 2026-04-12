@@ -76,7 +76,6 @@
 		<Unit filename="headers/conversions.h" />
 		<Unit filename="headers/debug.h" />
 		<Unit filename="headers/enemy.h" />
-		<Unit filename="headers/factories.h" />
 		<Unit filename="headers/factory.h" />
 		<Unit filename="headers/game.h" />
 		<Unit filename="headers/interactives.h" />

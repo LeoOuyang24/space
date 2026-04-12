@@ -41,11 +41,17 @@ void SoundLibrary::loadSounds(std::string_view folderPath)
 
 void SoundLibrary::loadBGM(std::string_view path)
 {
+    float time = IsMusicValid(bgm) ? GetMusicTimePlayed(bgm) : -1; 
+
     bgm = LoadMusicStream(path.data());
     if (IsMusicValid(bgm))
     {
         SetMusicVolume(bgm,1);
         PlayMusicStream(bgm);
+        if (time != -1)
+        {
+            SeekMusicStream(bgm,time);
+        }
     }
     else
     {

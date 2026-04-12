@@ -22,7 +22,7 @@ struct Orient
 
     float rotation = 0; // IN RADIANS
     bool facing = true; //true if facing to the right
-
+    Vector2 startingPos = {};
 
     inline Vector2 getFacingVector() const
     {
@@ -36,6 +36,9 @@ struct Orient
     {
         return {pos.x - dimens.x/2, pos.y - dimens.y/2, dimens.x, dimens.y};
     }
+
+    void setStartingPos(const Vector2& start); //ideally this should only be called when an object is first added into the world
+    Vector2 getStartingPos();
 
 
 };
@@ -60,5 +63,33 @@ bool CheckCollision(const Shape& shape1, const Shape& shape2);
 
 Vector2 GetDimen(const Shape& shape1);
 
+
+/**
+ * @brief Get the Ith Point on a shape. 
+ * 
+ * @param shape 
+ * @param i, the ith point
+ * @return Vector2 
+ */
+Vector2 getIthShapePoint(const Shape& shape, int i); 
+
+/**
+ * @brief Return the maximum number that "i" can be in getIthShapePoint (larger i's are still expected to be handeled, but will probably just loop back around like in a modulo)
+ * 
+ * @param type 
+ * @return constexpr size_t 
+ */
+constexpr size_t getShapePoints(ShapeType type)
+{
+    switch (type)
+    {
+        case ShapeType::CIRCLE:
+            return 10; //magic number, make larger for more expensive but accurate calculations
+        case ShapeType::RECT:
+            return 4;
+        default:
+            return 0;
+    }  
+}
 
 #endif // SHAPE_H_INCLUDED

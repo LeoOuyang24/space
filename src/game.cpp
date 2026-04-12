@@ -32,16 +32,7 @@ void Globals::init()
     objects.addObject(player);
 
 
-   // setLayer(0);
-
-    camera.projection = CAMERA_PERSPECTIVE;
-    camera.position = Vector3(0,0,getCurrentZ() - Globals::CAMERA_Z_DISP);
-    camera.target = Vector3(0,0,Globals::BACKGROUND_Z);
-    //camera.offset = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
-    //camera.rotation = 0.0f;
-    //camera.zoom = 1.0f;
-    camera.up = {0,-1,0};
-    camera.fovy = 90;
+    Camera.init();
 
 }
 
@@ -70,13 +61,9 @@ void Globals::setLayer(LayerType layer)
             player->orient.layer = layer;
             terrain.addObject(player,layer);
         }
+        
+        //Camera.lookAt(getCurrentZ(),100);
 
-        Sequences::add({[this,endZ=getCurrentZ(),startZ = camera.target.z](int runTimes){
-
-                       lookAt(Lerp(startZ,endZ,runTimes/50.0));
-                       return runTimes >= 50;
-
-                       }},false);
     }
     else
     {
@@ -88,6 +75,11 @@ void Globals::setLayer(LayerType layer)
 float Globals::getCurrentZ()
 {
     return terrain.getZOfLayer(currentLayer);
+}
+
+Camera3D Globals::getCamera()
+{
+    return Camera.getCamera();
 }
 
 LayerType Globals::getCurrentLayer()
@@ -158,7 +150,7 @@ void Globals::addWorld(std::string_view path)
             world.bg_path = entry.path().string();
             world.bg = LoadTexture(world.bg_path.c_str());
        }
-       else if (extension == ".txt")
+       else if (extension == ".txt" && entry.path().filename().string().substr(0,5) == "layer")
        {
             world.layers.push_back(entry.path().string());
        }
@@ -202,6 +194,7 @@ Texture2D Globals::getBG()
 void Globals::addObject(PhysicsBody& body, LayerType layer)
 {
     body.setOrient({body.getPos(),layer});
+    body.orient.setStartingPos(body.getPos());
     objects.addObject(body);
     terrain.addObject(objects.getObject(&body),layer);
     body.onAdd();
@@ -212,6 +205,7 @@ void Globals::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
     if (ptr.get())
     {
         ptr->setOrient({ptr->getPos(),layer,ptr->orient.rotation,ptr->orient.facing});
+        ptr->orient.setStartingPos(ptr->getPos());
         objects.addObject(ptr);
         terrain.addObject(ptr,layer);
         ptr->onAdd();
@@ -233,53 +227,6 @@ PhysicsBody* Globals::getPlayer()
     return player.get();
 }
 
-void Globals::setCameraFollow(bool val)
-{
-    cameraFollow = val;
-}
-
-bool Globals::getCameraFollow()
-{
-    return cameraFollow;
-}
-
-
-void Globals::moveCamera(const Vector3& pos)
-{
-    moveCamera(Vector2{pos.x,pos.y});
-
-    camera.position.z = pos.z ;
-    camera.target.z = pos.z + Globals::CAMERA_Z_DISP;
-
-}
-
-void Globals::moveCamera(const Vector2& pos)
-{
-    float disp = Globals::CAMERA_Z_DISP*tan(camera.fovy/2*DEG2RAD); //distance from the edge of the screen
-
-    //clamps camera to level area
-    Vector2 clampedPos = {
-        Clamp(pos.x,disp,Terrain::MAX_TERRAIN_SIZE - disp),
-        Clamp(pos.y,disp,Terrain::MAX_TERRAIN_SIZE - disp)
-    };
-    assignVector(camera.position,clampedPos);
-    assignVector(camera.target,clampedPos);
-}
-
-void Globals::moveCamera(float z)
-{
-    moveCamera(Vector3(camera.position.x,camera.position.y,z));
-}
-
-void Globals::lookAt(float z)
-{
-    moveCamera(z - Globals::CAMERA_Z_DISP);
-}
-
-const Camera3D& Globals::getCamera()
-{
-    return camera;
-}
 
 Globals::Globals()
 {

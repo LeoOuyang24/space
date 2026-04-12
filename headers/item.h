@@ -37,8 +37,9 @@ struct Key : public Object<RectCollider,TextureRenderer,Key,KeyCollider>
         return container.find(lockVal) != container.end();
     }
 
-    Key(KeyVal key_, const Vector3& pos) : key(key_), Object({Vector2(pos.x,pos.y),pos.z},std::make_tuple(KEY_DIMEN.x,KEY_DIMEN.y),
-                                                             std::make_tuple(Globals::Game.Sprites.getSprite(KEY_SPRITE_PATH)))
+    Key(KeyVal key_, const Vector3& pos) : Object({Vector2(pos.x,pos.y),pos.z},std::make_tuple(KEY_DIMEN.x,KEY_DIMEN.y),
+                                                             std::make_tuple(Globals::Game.Sprites.getSprite(KEY_SPRITE_PATH))),
+                                                             key(key_) 
     {
         tint = key;
     }
@@ -61,7 +62,7 @@ struct CollectibleCollider
 
 struct Collectible : public Object<CircleCollider,TextureRenderer,Collectible,CollectibleCollider>
 {
-    Collectible() : Object({},std::make_tuple(15),std::make_tuple(Globals::Game.Sprites.getSprite("gear.png")))
+    Collectible() : Object({},std::make_tuple(20),std::make_tuple(Globals::Game.Sprites.getSprite("gear.png")))
     {
         followGravity = false;
     }
@@ -112,11 +113,12 @@ struct GenericSpawner : public Object<RectCollider,TextureRenderer,GenericSpawne
     {
         this->collider.width = 100;
         this->collider.height = 150;
+        this->set_followGravity(false);
         this->renderer.sprite = Globals::Game.Sprites.getSprite("barrel_spawner.png");
     }
     void update(Terrain& terrain)
     {
-        if (!baby.lock().get())
+        if (!baby.lock().get() && activated)
         {
             PhysicsBodyType* obj = new PhysicsBodyType();
             obj->setPos(this->orient.pos + Vector2(10,0));
@@ -127,6 +129,7 @@ struct GenericSpawner : public Object<RectCollider,TextureRenderer,GenericSpawne
     }
     void interactWith(PhysicsBody& other)
     {
+        activated = true;
         if (PhysicsBodyType* brah = baby.lock().get())
         {
             brah->setDead(true);
@@ -135,6 +138,7 @@ struct GenericSpawner : public Object<RectCollider,TextureRenderer,GenericSpawne
 
 private:
     std::weak_ptr<PhysicsBodyType> baby; //if our baby is dead, respawn!
+    bool activated = false; //don't activate until first interaction
 };
 
 struct BarrelReceiver : public Object<RectCollider,TextureRenderer,BarrelReceiver>
@@ -150,21 +154,23 @@ struct BarrelReceiver : public Object<RectCollider,TextureRenderer,BarrelReceive
         this->renderer.sprite = Globals::Game.Sprites.getSprite("barrel_receiver.png");
     }
     void onCollide(PhysicsBody& other);
+    void render();
 private:
     bool activated = false;
 };
 
-struct AntiGravPod :  public Object<CircleCollider,TextureRenderer,AntiGravPod,PickupComponent>
+struct TerrainPod :  public Object<CircleCollider,TextureRenderer,TerrainPod,PickupComponent>
 {
-    AntiGravPod()
+    TerrainPod()
     {
         this->followGravity = true;
-        this->collider.radius = 25;
+        this->collider.radius = 50;
         this->renderer.sprite = Globals::Game.Sprites.getSprite("grapple.png");
     }
     void update(Terrain&);
 private:
     bool activated = false;
+    BlockType type = SOLID;
 };
 
 template<>
@@ -192,13 +198,13 @@ struct Factory<Booster>
                             access<Booster,&Booster::orient,&Orient::pos>>;
 };
 
-template<>
+/*template<>
 struct Factory<Barrel>
 {
     static constexpr std::string ObjectName = "barrel";
     using Base = FactoryBase<Barrel,
                             access<Barrel,&Barrel::orient,&Orient::pos>>;
-};
+};*/
 
 template<>
 struct Factory<BarrelReceiver>
@@ -218,6 +224,14 @@ struct Factory<GenericSpawner<Barrel>>
     static constexpr std::string ObjectName = "barrel_spawner";
     using Base = FactoryBase<GenericSpawner<Barrel>,
                             access<GenericSpawner<Barrel>,&GenericSpawner<Barrel>::orient,&Orient::pos>>;
+};
+
+template<>
+struct Factory<GenericSpawner<TerrainPod>>
+{
+    static constexpr std::string ObjectName = "terrain_spawner";
+    using Base = FactoryBase<GenericSpawner<TerrainPod>,
+                            access<GenericSpawner<TerrainPod>,&GenericSpawner<TerrainPod>::orient,&Orient::pos>>;   
 };
 
 bool operator==(const Key::KeyVal& left, const Key::KeyVal& right);

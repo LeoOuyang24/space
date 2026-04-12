@@ -4,6 +4,16 @@
 #include "../headers/objects.h"
 #include "../headers/colliders.h"
 
+void Orient::setStartingPos(const Vector2& start)
+{
+    startingPos = start;
+}
+
+Vector2 Orient::getStartingPos()
+{
+    return startingPos;
+}
+
 bool CheckCollisionPointShape(const Vector2& pos, const Shape& shape1)
 {
     switch (shape1.type)
@@ -125,5 +135,26 @@ Vector2 GetDimen(const Shape& shape)
     default:
         std::cerr << "GetDimen ERROR: unknown shapes: " << shape.type << "\n";
         return {};
+    }
+}
+
+Vector2 getIthShapePoint(const Shape& shape, int i)
+{
+    size_t points = getShapePoints(shape.type);
+    switch (shape.type)
+    {
+        case ShapeType::CIRCLE:
+        {
+            float radians = 360.0f/points*DEG2RAD*i;
+            return (shape.orient.pos + Vector2(cos(radians),sin(radians))*shape.collider.radius);
+        }
+        case ShapeType::RECT:
+        {
+            int index = i%points;
+            return shape.orient.pos + Vector2Rotate(Vector2(shape.collider.dimens.x/2,shape.collider.dimens.y/2)*Vector2(((index%3) != 0)*2 - 1,index/2*2 - 1),shape.orient.rotation);
+        }
+        default:
+            std::cerr << "Error getIthPoint: Somehow received a shape that is invalid, how did this even happen :woozy_face:\n";
+            return {0,0};
     }
 }

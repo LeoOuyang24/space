@@ -8,6 +8,7 @@
 #include "terrain.h"
 #include "sprites.h"
 #include "interface.h"
+#include "camera.h"
 
 typedef uint16_t Frame;
 
@@ -39,6 +40,7 @@ struct Globals
     void setCollects(size_t val);
 
     float getCurrentZ();
+    Camera3D getCamera();
     LayerType getCurrentLayer();
     Terrain* getCurrentTerrain();
     void loadLevel(std::string_view path);
@@ -52,26 +54,16 @@ struct Globals
     void addObject(std::shared_ptr<PhysicsBody> ptr);
     PhysicsBody* getPlayer();
 
-    void setCameraFollow(bool val);
-    bool getCameraFollow();
-
-    void moveCamera(const Vector3& pos);
-    void moveCamera(const Vector2& pos);
-    void moveCamera(float z); //set position to z
-    void lookAt(float z); //set target to z
-    const Camera3D& getCamera();
-
     SpritesGlobal Sprites;
     GlobalTerrain terrain;
     ObjectLookup objects;
     Interface interface;
+    GameCamera Camera;
 
     Worlds worlds;
     CurrentWorld curWorld = -1;
 
 private:
-    bool cameraFollow = false;
-    Camera3D camera;
     Globals();
 };
 

@@ -27,6 +27,15 @@ void DrawLine3D(Vector3 startPos,Vector3 endPos, Color color, int width)
     rlPopMatrix();
 }
 
+void DrawArrow3D(Vector3 startPos,Vector3 endPos, Color color, int width)
+{
+    DrawLine3D(startPos,endPos,color,width);
+
+    DrawLine3D(endPos + Vector3Normalize(Vector3RotateByAxisAngle(endPos - startPos,Vector3(0,0,1),5*M_PI/6))*100,endPos,color,width);
+    DrawLine3D(endPos + Vector3Normalize(Vector3RotateByAxisAngle(endPos - startPos,Vector3(0,0,1),-5*M_PI/6))*100,endPos,color,width);
+
+}
+
 Vector2 GetScreenDimen()
 {
     return {GetScreenWidth(),GetScreenHeight()};
@@ -91,7 +100,7 @@ std::string fitText(Font font, std::string_view text, float fontSize, float font
                                 //yes this does mean that words that take up "maxWidth" will exceed "maxWidth" length, not much we can do
 
     size_t strStart = 0; //start of our current line
-    for (int i = 1; i < split.size(); i ++)
+    for (size_t i = 1; i < split.size(); i ++)
     {
         size_t start = str.size(); //this is the index of the space before new word
         str += ' ';
@@ -117,19 +126,19 @@ void DrawText2D(Font font, const char *text, Vector2 position, float fontSize, f
 
     position.y -= height/2;
 
-    for (int i = 0; i < split.size(); i ++)
+    for (size_t i = 0; i < split.size(); i ++)
     {
         const char* c_str = std::string(split[i]).c_str();//no easy way to convert std::string_view to c_string that doesn't go over is my joker ark
 
         //dimension of this line (we really only care about horizontal)
         float width = MeasureTextEx(font,c_str,fontSize,fontSpacing).x;
-        Vector2 adjusted = {position.x - width/2*align,position.y + height/split.size()*i};
+        Vector2 adjusted = {position.x - width/2*(align != LEFT),position.y + height/split.size()*i};
         DrawTextEx(font,c_str,adjusted,fontSize,fontSpacing,tint);
     }
 
 }
 
-//shamelessly, almost 100% copy pasted from https://www.raylib.com/examples/text/loader.html?name=text_3d_drawing\
+//shamelessly, almost 100% copy pasted from https://www.raylib.com/examples/text/loader.html?name=text_3d_drawing
 //is modified to draw along x-y plane as opposed to x-z,
 
 // Draw codepoint at specified position in 3D space

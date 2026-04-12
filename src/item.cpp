@@ -64,11 +64,11 @@ void PickupComponent::collideWith(PhysicsBody& owner, PhysicsBody& other)
     if (pickupable)
     {
         Player* player = static_cast<Player*>(Globals::Game.getPlayer());
-        if (player->getHolding() == &owner)
+        if (player->getHolding() == &owner) //if currently being held by player
         {
             lastHeld = GetTime();
         }
-        else if (&other == player && GetTime() - lastHeld >= 1)
+        else if (&other == player && GetTime() - lastHeld >= 1) //if not being held by player but collided with player, we can be picked back up if it's been 1 second
         {
             player->setHolding(owner);
         }
@@ -88,9 +88,9 @@ void PickupComponent::setPickupable(bool val)
 
 void Barrel::update(Terrain& terrain)
 {
+    Debug::debugForces(*this);
     Object::update(terrain);
-
-    if (onGround && collideTrigger.isThrown(*this)) //last two conditions are only true if we have been dropped
+    if ((onGround || terrain.blockExists(getShape()) ) && collideTrigger.isThrown(*this)) //last two conditions are only true if we have been dropped
     {
         setDead(true);
         Sequences::add(false,[start=GetTime(),pos=getPos()](int frames){
@@ -121,7 +121,16 @@ void BarrelReceiver::onCollide(PhysicsBody& other)
     }
 }
 
-void AntiGravPod::update(Terrain& t)
+void BarrelReceiver::render()
+{
+    if (activated)
+    {
+        DrawSprite3D(Globals::Game.Sprites.getSprite("barrel.png"),Rectangle(getPos().x,getPos().y,30,60),-orient.rotation);
+    }
+    Object::render();
+}
+
+void TerrainPod::update(Terrain& t)
 {
     Object::update(t);
     if (collideTrigger.isThrown(*this))
@@ -131,8 +140,9 @@ void AntiGravPod::update(Terrain& t)
             activated = true;
             followGravity = false;
             collideTrigger.setPickupable(false);
+            collider.radius *= 1.5;
             tint = YELLOW;
-            Globals::Game.terrain.getTerrain(orient.layer)->addPlanet(*this,ANTI);
+            Globals::Game.terrain.getTerrain(orient.layer)->addPlanet(*this,type);
         }
     }
 }

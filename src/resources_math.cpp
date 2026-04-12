@@ -35,7 +35,6 @@ Vector2 rotatePoint(const Vector2& p, const Vector2& rotateAround, float angle)
 float pointInRectAngle(const Vector2& p1, const Rectangle& rect)
 {
     float slope = rect.height/rect.width;
-    float angle = 0;
     Vector2 center = Vector2(rect.x + rect.width/2, rect.y + rect.height/2);
     float y2 = (p1.x - center.x)*slope;
     float y1 = p1.y - center.y;
@@ -92,7 +91,7 @@ PossiblePoint segmentIntersect(const Vector2& a1, const Vector2& a2, const Vecto
     if (det == 0) //if determinant is 0, lines are parallel
     {
         if (a1.x == a2.x && b1.x == a1.x && //both are coincident, vertical lines
-            (std::max(a1.y,a2.y) >= std::min(b1.y,b2.y) && std::min(b1.y,b2.y) >= std::min(a1.y,a2.y) ||
+            ((std::max(a1.y,a2.y) >= std::min(b1.y,b2.y) && std::min(b1.y,b2.y) >= std::min(a1.y,a2.y)) ||
             (std::max(b1.y,b2.y) >= std::min(a1.y,a2.y) && std::min(a1.y,a2.y) >= std::min(b1.y,b2.y))))
         {
             return {true,std::max(std::min(b1.y,b2.y),std::min(a1.y,a2.y))}; //return 2nd lowest point, which since there is an intersection, must be on both lines
@@ -209,4 +208,9 @@ PossiblePoint segmentIntersectCircle(const Vector2& a1, const Vector2& a2, const
 Vector3 toVector3(const Vector2& vector2)
 {
     return {vector2.x,vector2.y,Globals::Game.getCurrentZ()};
+}
+
+Vector2 toVector2(const Vector3& vector3)
+{
+    return {vector3.x,vector3.y};
 }

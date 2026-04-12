@@ -52,7 +52,7 @@ void exportBackground()
     Vector4 sunEdge = {1,0.5,0,0.0};
     SetShaderValue(sun,GetShaderLocation(sun,"centerColor"),&sunCenter,SHADER_UNIFORM_VEC4);
     SetShaderValue(sun,GetShaderLocation(sun,"borderColor"),&sunEdge,SHADER_UNIFORM_VEC4);
-    auto timeLocation = GetShaderLocation(sun,"time");
+    //auto timeLocation = GetShaderLocation(sun,"time");
 
     RenderTexture2D bg = LoadRenderTexture(8000*2,8000);//LoadRenderTexture(Terrain::MAX_WIDTH*screenDimen.x/screenDimen.y*2,Terrain::MAX_WIDTH*2);
 
@@ -68,7 +68,7 @@ void exportBackground()
             float maxRadius = (a*b)/(sqrt(pow(b*cos(angle),2) + pow(a*sin(angle),2))); //radius of an ellipse at a given angle
             float dist = maxRadius/2*Lerp(0,1,randed/(randed+5));
             Vector2 center = {bg.texture.width/2 + cos(angle)*dist,bg.texture.height/2 + sin(angle)*dist};
-            Vector3 color = {rand()%100/100.0,rand()%100/100.0,rand()%100/100.0};
+            //Vector3 color = {rand()%100/100.0,rand()%100/100.0,rand()%100/100.0};
             DrawCircleGradient(center.x,center.y,5,WHITE,Color(rand()%255,rand()%255,rand()%255,0));
         }
         BeginShaderMode(sun);
@@ -86,7 +86,6 @@ int main(void)
     // Initialization
     //--------------------------------------------------------------------------------------
     const Vector2 screenDimen = Globals::screenDimen;
-
     SetConfigFlags( FLAG_VSYNC_HINT);
     InitWindow(screenDimen.x, screenDimen.y, "raylib [core] example - basic window");
     InitAudioDevice();
@@ -104,7 +103,7 @@ int main(void)
 
     Portal::PortalShader = LoadShader(0,TextFormat("shaders/fragments/portal.h",GLSL_VERSION));
 
-    const Camera3D& camera = Globals::Game.getCamera();
+    const Camera3D& camera = Globals::Game.Camera.getCamera();
     //Globals::Game.loadLevel("levels/load_this.txt");
 
     //World world1 = {{"levels/layer0.txt","levels/layer1.txt","levels/layer2.txt"}};
@@ -113,7 +112,7 @@ int main(void)
     Globals::Game.addWorld("worlds/world1");
     Globals::Game.setCurWorld(0);
 
-    Globals::Game.moveCamera(Vector3{Terrain::MAX_TERRAIN_SIZE*0.5,Terrain::MAX_TERRAIN_SIZE*0.5,Globals::BACKGROUND_Z*0.9});
+    Globals::Game.Camera.moveCamera(Vector3{Terrain::MAX_TERRAIN_SIZE*0.5,Terrain::MAX_TERRAIN_SIZE*0.5,Globals::BACKGROUND_Z*0.9});
 
 
     float accum = 0;
@@ -129,13 +128,12 @@ int main(void)
     Vector2 pixelSizes = {1.0/blocks.width,1.0/blocks.height};
     SetShaderValue(Terrain::GravityFieldShader,GetShaderLocation(Terrain::GravityFieldShader,"pixelSizes"),&pixelSizes,SHADER_UNIFORM_VEC2);
 
-    SoundLibrary::loadBGM("music/world3.wav");
+    SoundLibrary::loadBGM("music/world0_together.wav");
     SoundLibrary::toggleBGM(false);
 
-    Vector2 point = {3000,3000};
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-        //SoundLibrary::update();
+     //   SoundLibrary::update();
 
         float deltaTime = GetFrameTime();
         if ( IsKeyPressed(KEY_RIGHT_BRACKET) || !Debug::isPaused())
@@ -171,27 +169,14 @@ int main(void)
             float move = GetMouseWheelMove()*5;
             //camera.position.z += move;
             //camera.target.z += move;
-            Globals::Game.moveCamera(Globals::Game.getCamera().position + Vector3(0,0,move));
+            Globals::Game.Camera.moveCamera(Globals::Game.Camera.getCamera().position + Vector3(0,0,move));
         }
-        if (!Debug::isDebugOn() && Globals::Game.player && Globals::Game.getCameraFollow())
-        {
-            Globals::Game.moveCamera(Globals::Game.player->orient.pos);
-        }
+        Globals::Game.Camera.update();
         if constexpr (Globals::DEBUG)
             Debug::handleInput();
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
-
-
-            Rectangle r1 = {450,450,200,50};
-            Rectangle r2 = {550,550,100,50};
-
-            float rot1 = GetTime()*0.5;
-            float rot2 = GetTime()*0.25;
-
-            bool collided = CheckCollisionRecsRotated(r1,r2,rot1,rot2);
-
 
             BeginMode3D(camera);
 

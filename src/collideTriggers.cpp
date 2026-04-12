@@ -18,7 +18,7 @@ TriggerSpawnPlanets::TriggerSpawnPlanets(const SplitString& split)
     if (split.size() > 2)
     {
         duration = fromString<decltype(duration)>(split[1]);
-        for (int i = 2; i < split.size();)
+        for (size_t i = 2; i < split.size();)
         {
             points.push_back(Circle::Factory::deserialize(split,i));
             i += Circle::Factory::size;
@@ -28,7 +28,7 @@ TriggerSpawnPlanets::TriggerSpawnPlanets(const SplitString& split)
 
 void TriggerSpawnPlanets::operator()(PhysicsBody& body)
 {
-    for (int i = 0; i < points.size(); i ++)
+    for (size_t i = 0; i < points.size(); i ++)
     {
         Globals::Game.terrain.getTerrain(body.getOrient().layer)->generatePlanet(
                                                                                  points[i].center + body.getPos()*(!points[i].absolute),

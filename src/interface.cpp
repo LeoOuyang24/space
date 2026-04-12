@@ -25,7 +25,7 @@ void Interface::processSign()
                30,10,BLACK,CENTER);
 
     auto key = GetKeyPressed();
-    if (key != 0 && !justSet || messageIndex >= sign.lock()->getMessagesSize()) //if any key is pressed
+    if ((key != 0 && !justSet) || messageIndex >= sign.lock()->getMessagesSize()) //if any key is pressed
     {
         setMessage(nullptr);
     }

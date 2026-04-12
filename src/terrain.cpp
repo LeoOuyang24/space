@@ -87,7 +87,6 @@ void GlobalTerrain::loadTerrain(LayerType layer, std::string imagePath)
         {
 
             Vector2 point = {i*Block::BLOCK_DIMEN,j*Block::BLOCK_DIMEN};
-            int index = terr->pointToIndex(point);
 
             Color color = GetImageColor(img,i,j);
 

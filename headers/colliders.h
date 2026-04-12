@@ -4,7 +4,7 @@
 #include "shape.h"
 
 //life is too short to have to write the getShapeType function for each collider
-#define GET_SHAPE_TYPE(type) ShapeType getShapeType() {return type;}
+#define GET_SHAPE_TYPE(type) ShapeType getShapeType() const {return type;}
 
 struct CircleCollider
 {
@@ -15,7 +15,7 @@ struct CircleCollider
     float getLandingAngle(Orient& orient, Terrain& terrain);
 
     GET_SHAPE_TYPE(ShapeType::CIRCLE);
-    ShapeCollider getCollider(){  return {.radius = radius}; };
+    ShapeCollider getCollider() const {  return {.radius = radius}; };
 };
 
 struct RectCollider
@@ -27,7 +27,7 @@ struct RectCollider
     float getLandingAngle(Orient& orient, Terrain& terrain);
 
     GET_SHAPE_TYPE(ShapeType::RECT);
-    ShapeCollider getCollider(){ return {Vector2(width,height)}; };
+    ShapeCollider getCollider() const { return {Vector2(width,height)}; };
 };
 
 

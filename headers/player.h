@@ -22,7 +22,7 @@ class Player;
 struct PlayerCollider : public RectCollider
 {
     PlayerCollider(Player& owner, float width, float height);
-    //bool isOnGround(const Orient& orient, Terrain& t);
+    bool isOnGround(PhysicsBody& body, Terrain& t);
 
 private:
     Player& owner;
@@ -57,7 +57,6 @@ struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
     static constexpr int PLAYER_DIMEN = 30;
 
     static constexpr float PLAYER_MAX_SPEED = 6;
-    static constexpr float PLAYER_RUN_MAX_SPEED = 5; //currently unused
     static constexpr float PLAYER_MAX_AIR_SPEED = 4;//3.5;
     static constexpr float PLAYER_MAX_AIR_FREEFALL_SPEED = PLAYER_MAX_SPEED; //max air speed when freefalling
 
@@ -84,6 +83,7 @@ struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
 
     bool boosted = false;
     std::weak_ptr<PhysicsBody> holding;
+
 
     std::unordered_set<Key::KeyVal> keys;
     bool isTangible();
