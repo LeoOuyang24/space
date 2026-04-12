@@ -7,6 +7,8 @@
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
 
 ## NEW RELEASE
+
+## 4/11/2026 
 * Removed Barrel's Factory to prevent it from being saved in EDITOR mode.
 * Improved Circle Collider's collision with terrain
 * Aiming now draws an arrow
