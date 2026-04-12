@@ -7,6 +7,7 @@
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
 
 ## NEW RELEASE
+* Removed Barrel's Factory to prevent it from being saved in EDITOR mode.
 * Improved Circle Collider's collision with terrain
 * Aiming now draws an arrow
 * Massively overhauled the Camera:
@@ -19,6 +20,9 @@
     * Respecting the "lock" is entirely up to the developer. Any functions that may change the state need to have a big `if` at the beginning checking for lock status. Same with `queueing` status.
     * The way the whole thing works is a little unintuitive. When a camera needs to do a transition, it has to push to the front of the sequence a series of `RunThis`. However, when queueing up actions, every function call is pushed to the back. If a function wants to call a function that does a transition and add to that transition, any transition additions have to be done in reverse order.
     * Reliance on lambda captures means that if `GameCamera` goes out of scope before `Sequences`, there may be memory issues. This is unlikely, however, as `GameCamera` is only owned by the global singleton.
+* Refactored `lineBlockIntersect` and `lineTerrainIntersect` to be more flexible
+  * Player now only counts as `onGround` if on solid ground, all other objects can be on any non-air surface
+* Added a section to layer 1 of world 1 with some terrain pod stuff
 
 ## 3/24/2026 (andrew-music-demo)
 * Changed how moveFunc works:

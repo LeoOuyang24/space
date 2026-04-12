@@ -13,6 +13,8 @@
 #include "rlgl.h"
 
 Shader Terrain::GravityFieldShader;
+//Terrain::CheckFunc Terrain::blockExistsCheck = [](BlockType other){return other != AIR;}; 
+//Terrain::CheckFunc Terrain::isBlockTypeCheck = [](BlockType type){return [type](BlockType other){ return other == type;};}; 
 
 Vector2 Terrain::roundPos(const Vector2& vec, int blockDimen)
 {
@@ -187,72 +189,26 @@ Vector2 Terrain::pointBoxEdgeIntersect(const Vector2& a, const Vector2& dir,int 
 
 Vector2 Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, bool isSolid)
 {
-
-    Vector2 newA = a;
-    Vector2 dir = Vector2Normalize(b - a);
-    //move "a" back until its not in terrain any more
-    if ( ((isSolid && isBlockType(newA,SOLID,true)) || blockExists(newA,true))  && !Vector2Equals(dir,{0,0}))
+    if (isSolid)
     {
-        Vector2 oldA;
-        //it's kind of okay for thsi function to expensively check for planets
-        //it's primarily only used for adusting angle, which only calls this twice per frame per entity
-        //and it's rare for this to loop for long
-        while (((isSolid && isBlockType(newA,SOLID,true)) || blockExists(newA,true))) //move "A" backwards until we encounter non-solid block
-        {
-            oldA = newA;
-            newA -= dir*Block::BLOCK_DIMEN;
-            //std::cout << dir.x << " " << dir.y << "\n";
-        }
-
-        PossiblePoint surface = segmentIntersectRect(oldA,newA,getBlockRect(oldA)); //if newA is stuck on the surface of a block, move a little more
-        if (surface.exists)
-        {
-            newA = surface.pos - dir;
-        }
+        return lineTerrainIntersect(a,b,isBlockTypeCheck(SOLID));
     }
-    return lineBlockIntersect(newA,b,isSolid);
+    else
+    {
+        return lineTerrainIntersect(a,b,static_cast<CheckFunc>(blockExistsCheck));
+    }
 }
 
 Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, bool isSolid)
 {
-
-    if (pointToIndex(a) == pointToIndex(b)) //if a and b are in teh same box, it comes down to whether or not there's empty space there
+    if (isSolid)
     {
-        return ((isSolid && isBlockType(a,SOLID,true)) || blockExists(a,true)) ? a : b;
+        return lineBlockIntersect(a,b,isBlockTypeCheck(SOLID));
     }
-
-    Vector2 dir = Vector2Normalize(b - a);
-
-    Vector2 current = a;
-    bool past = false;
-    //loop until we have gone past b or we hit a wall
-    while (((isSolid && !isBlockType(current,SOLID,false)) || !blockExists(current,false)) && !past)
+    else
     {
-        current = pointBoxEdgeIntersect(current,dir,Block::BLOCK_DIMEN);
-        past = abs(current.y - a.y) > abs(b.y - a.y) || abs(current.x - a.x) > abs(b.x - a.x);
-
-        /*Debug::addDeferRender([current,this](){
-
-                              DrawCircle3D(toVector3(current),2,{},0,blockExists(current,true) ? RED : WHITE);
-
-                              });*/
+        return lineBlockIntersect(a,b,static_cast<CheckFunc>(blockExistsCheck));
     }
-
-
-    Vector2 answer = past ? b : current;
-    for (EntityPlanet& terr : planets) //calculate the answer completely separately, by only accounting for planets
-        {
-            if (terr.ptr.lock() && ((isSolid && terr.type == SOLID) || (!isSolid && terr.type != AIR)))
-            {
-                PossiblePoint pos = segmentIntersectCircle(a,b,terr.ptr.lock()->getPos(),GetDimen(terr.ptr.lock()->getShape()).x/2);
-                if (pos.exists)
-                {
-                    answer = Vector2DistanceSqr(answer,a) > Vector2DistanceSqr(pos.pos,a) ? pos.pos : answer ; //take the answer closer to "a"
-                }
-            }
-        }
-    return answer;
-
 }
 size_t Terrain::pointToIndex(const Vector2& vec,int blockDimen, int maxWidth)
 {
@@ -328,62 +284,22 @@ void Terrain::generateRightTriangle(const Vector2& corner, float height, const C
 
 bool Terrain::blockExists(const Vector2& pos, bool checkPlanets)
 {
-    return checkBlocks(pos,checkPlanets,[](BlockType other){return other != AIR;});
+    return checkBlocks(pos,checkPlanets,blockExistsCheck);
 }
 
 bool Terrain::isBlockType(const Vector2& pos, BlockType type, bool checkPlanets)
 {
-    return checkBlocks(pos,checkPlanets,[type](BlockType other){return other == type;});
+    return checkBlocks(pos,checkPlanets,isBlockTypeCheck(type));
 }
 
 bool Terrain::blockExists(const Shape& shape)
 {
-    switch (shape.type)
-    {
-        case ShapeType::CIRCLE:
-        {
-            int count = 10;
-            for (int i = 0; i < count; i ++)
-            {
-                float radians = 360.0f/count*DEG2RAD*i;
-                Vector2 point = shape.orient.pos + Vector2(cos(radians),sin(radians))*shape.collider.radius;
-                if (blockExists(point))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-        case ShapeType::RECT:
-            for (int i = 0; i < 4; i ++) //top right, bot right, bot left, top left
-            {
-                int prev = (i);
-                int index =(i + 1)%4;
+    return checkBlocks(shape,true,blockExistsCheck);
+}
 
-                Vector2 prevCorner = shape.orient.pos + Vector2Rotate(Vector2(shape.collider.dimens.x/2,shape.collider.dimens.y/2)*Vector2(((prev%3) != 0)*2 - 1,prev/2*2 - 1),shape.orient.rotation); //top left
-                Vector2 corner = shape.orient.pos + Vector2Rotate(Vector2(shape.collider.dimens.x/2,shape.collider.dimens.y/2)*Vector2(((index%3) != 0)*2 - 1,index/2*2 - 1),shape.orient.rotation);
-
-            /* Debug::addDeferRender([corner,prevCorner](){
-
-                                    DrawSphere(toVector3(corner),4,RED);
-                                    DrawSphere(toVector3(prevCorner),4,RED);
-
-                                    });*/
-
-
-                Vector2 intersect = lineBlockIntersect(prevCorner,corner,false);
-
-                //if (intersect.exists)
-                if (!Vector2Equals(intersect,corner)) //something is in the way!
-                {
-                    return true;
-                }
-
-                prevCorner = corner;
-            }
-            return false;
-    }
-    return false;
+bool Terrain::isBlockType(const Shape& shape, BlockType type)
+{
+    return checkBlocks(shape,true,isBlockTypeCheck(type));
 }
 
 bool Terrain::checkBlocks(const Vector2& pos, bool checkPlanets, std::function<bool(BlockType)> check)
@@ -426,6 +342,106 @@ bool Terrain::checkBlocks(const Vector2& pos, bool checkPlanets, std::function<b
     }
 
     return answer;    
+}
+
+bool Terrain::checkBlocks(const Shape& shape, bool checkPlanets, std::function<bool(BlockType)> check)
+{
+    switch (shape.type)
+    {
+        case ShapeType::CIRCLE:
+        {
+            for (size_t i = 0; i < getShapePoints(ShapeType::CIRCLE); i ++)
+            {
+                if (checkBlocks(getIthShapePoint(shape,i),checkPlanets,check))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        case ShapeType::RECT:
+            for (size_t i = 0; i < getShapePoints(ShapeType::RECT); i ++) //top right, bot right, bot left, top left
+            {
+                Vector2 prevCorner = getIthShapePoint(shape,i); //top left
+                Vector2 corner = getIthShapePoint(shape,i+1);
+
+                Vector2 intersect = lineBlockIntersect(prevCorner,corner,check);
+
+                //if (intersect.exists)
+                if (!Vector2Equals(intersect,corner)) //something is in the way!
+                {
+                    return true;
+                }
+
+                prevCorner = corner;
+            }
+            return false;
+    }
+    return false;
+}
+
+Vector2 Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, CheckFunc check)
+{
+
+    Vector2 newA = a;
+    Vector2 dir = Vector2Normalize(b - a);
+    //move "a" back until its not in terrain any more
+    if (!Vector2Equals(dir,{0,0}))
+    {
+        Vector2 oldA;
+        //it's kind of okay for thsi function to expensively check for planets
+        //it's primarily only used for adusting angle, which only calls this twice per frame per entity
+        //and it's rare for this to loop for long
+        while (checkBlocks(newA,true,check))//(check(terrain[pointToIndex(newA)])) //move "A" backwards until we encounter non-solid block
+        {
+            oldA = newA;
+            newA -= dir*Block::BLOCK_DIMEN;
+            //std::cout << dir.x << " " << dir.y << "\n";
+        }
+    }
+    return lineBlockIntersect(newA,b,check);
+}
+
+Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFunc check)
+{
+
+    if (pointToIndex(a) == pointToIndex(b)) //if a and b are in teh same box, it comes down to whether or not there's empty space there
+    {
+        return check(terrain[pointToIndex(a)]) ? a : b;
+    }
+
+    Vector2 dir = Vector2Normalize(b - a);
+
+    Vector2 current = a;
+    bool past = false;
+    //loop until we have gone past b or we hit a wall
+    while (!check(terrain[pointToIndex(current)]) && !past)
+    {
+        current = pointBoxEdgeIntersect(current,dir,Block::BLOCK_DIMEN);
+        past = abs(current.y - a.y) > abs(b.y - a.y) || abs(current.x - a.x) > abs(b.x - a.x);
+
+        /*Debug::addDeferRender([current,this](){
+
+                              DrawCircle3D(toVector3(current),2,{},0,blockExists(current,true) ? RED : WHITE);
+
+                              });*/
+    }
+
+
+    Vector2 answer = past ? b : current;
+    for (EntityPlanet& terr : planets) //calculate the answer completely separately, by only accounting for planets
+        {
+            if (terr.ptr.lock() && check(terr.type))
+            {
+                PossiblePoint pos = segmentIntersectCircle(a,b,terr.ptr.lock()->getPos(),GetDimen(terr.ptr.lock()->getShape()).x/2);
+                if (pos.exists)
+                {
+                    answer = Vector2DistanceSqr(answer,a) > Vector2DistanceSqr(pos.pos,a) ? pos.pos : answer ; //take the answer closer to "a"
+                }
+            }
+        }
+    return answer;
+
 }
 
 void Terrain::addPlanet(PhysicsBody& planet, BlockType type)

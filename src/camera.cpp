@@ -43,8 +43,8 @@ void GameCamera::setCameraFollow(bool val, int transition )
             if (transition)
             {
                 seq->push_front(RunThis([transition,this,startPos=camera.position](int times){
-                    Vector2 endPos = Globals::Game.getPlayer()->getPos();
-                    Vector3 pos = lerp(startPos,{endPos.x,endPos.y,camera.position.z},sin(static_cast<float>(times)/transition*M_PI/2));
+                    Vector3 endPos = toVector3(Globals::Game.getPlayer()->getPos());
+                    Vector3 pos = lerp(startPos,{endPos.x,endPos.y,endPos.z - Globals::CAMERA_Z_DISP},sin(static_cast<float>(times)/transition*M_PI/2));
                     camera.position = pos;
                     camera.target = pos;
                     camera.target.z = pos.z + Globals::CAMERA_Z_DISP;
@@ -54,14 +54,14 @@ void GameCamera::setCameraFollow(bool val, int transition )
         }
         else
         {
-            moveCamera(Vector3{cameraFollowPoint.x,cameraFollowPoint.y,camera.position.z},transition);
+            moveCamera(cameraFollowPoint,transition);
         }
 
     }
 
 }
 
-void GameCamera::setCameraFollow(const Vector2& pos, int transition )
+void GameCamera::setCameraFollow(const Vector3& pos, int transition )
 {
     if (!lock)
     {
@@ -70,6 +70,10 @@ void GameCamera::setCameraFollow(const Vector2& pos, int transition )
     }
 }
 
+void GameCamera::setCameraFollow(const Vector2& point, int transition)
+{
+    setCameraFollow({point.x,point.y,camera.position.z},transition);
+}
 
 bool GameCamera::getCameraFollow()
 {

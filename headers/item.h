@@ -118,7 +118,7 @@ struct GenericSpawner : public Object<RectCollider,TextureRenderer,GenericSpawne
     }
     void update(Terrain& terrain)
     {
-        if (!baby.lock().get())
+        if (!baby.lock().get() && activated)
         {
             PhysicsBodyType* obj = new PhysicsBodyType();
             obj->setPos(this->orient.pos + Vector2(10,0));
@@ -129,6 +129,7 @@ struct GenericSpawner : public Object<RectCollider,TextureRenderer,GenericSpawne
     }
     void interactWith(PhysicsBody& other)
     {
+        activated = true;
         if (PhysicsBodyType* brah = baby.lock().get())
         {
             brah->setDead(true);
@@ -137,6 +138,7 @@ struct GenericSpawner : public Object<RectCollider,TextureRenderer,GenericSpawne
 
 private:
     std::weak_ptr<PhysicsBodyType> baby; //if our baby is dead, respawn!
+    bool activated = false; //don't activate until first interaction
 };
 
 struct BarrelReceiver : public Object<RectCollider,TextureRenderer,BarrelReceiver>
@@ -196,13 +198,13 @@ struct Factory<Booster>
                             access<Booster,&Booster::orient,&Orient::pos>>;
 };
 
-template<>
+/*template<>
 struct Factory<Barrel>
 {
     static constexpr std::string ObjectName = "barrel";
     using Base = FactoryBase<Barrel,
                             access<Barrel,&Barrel::orient,&Orient::pos>>;
-};
+};*/
 
 template<>
 struct Factory<BarrelReceiver>

@@ -23,6 +23,16 @@ PlayerCollider::PlayerCollider(Player& owner_, float width, float height) : Rect
 
 }
 
+bool PlayerCollider::isOnGround(PhysicsBody& body, Terrain& t)
+{
+    if (Globals::Game.terrain.get_gravityMode() == GlobalTerrain::PLANET)
+    {
+        return t.isBlockType(body.getShape(),SOLID); //player can only be on ground if on solid ground
+    }
+    return RectCollider::isOnGround(body,t);
+
+}
+
 PlayerRenderer::PlayerRenderer(Player& owner_) : owner(owner_)
 {
 

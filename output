@@ -1,0 +1,318 @@
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c main.cpp -o build/main.o
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/UI.cpp -o build/UI.o
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/audio.cpp -o build/audio.o
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/blocks.cpp -o build/blocks.o
+src/blocks.cpp: In member function 'Vector2 Terrain::lineBlockIntersect(const Vector2&, const Vector2&, bool)':
+src/blocks.cpp:221:25: warning: suggest parentheses around '&&' within '||' [-Wparentheses]
+  221 |         return (isSolid && isBlockType(a,SOLID,true) || blockExists(a,true)) ? a : b;
+      |                 ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/blocks.cpp: In member function 'void Terrain::generateRightTriangle(const Vector2&, float, const Color&)':
+src/blocks.cpp:316:13: warning: variable 'origin' set but not used [-Wunused-but-set-variable]
+  316 |     Vector2 origin = roundPos({corner.x,corner.y - height});
+      |             ^~~~~~
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/collideTriggers.cpp -o build/collideTriggers.o
+src/collideTriggers.cpp: In constructor 'TriggerSpawnPlanets::TriggerSpawnPlanets(const SplitString&)':
+src/collideTriggers.cpp:21:27: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
+   21 |         for (int i = 2; i < split.size();)
+      |                         ~~^~~~~~~~~~~~~~
+src/collideTriggers.cpp: In member function 'virtual void TriggerSpawnPlanets::operator()(PhysicsBody&)':
+src/collideTriggers.cpp:31:23: warning: comparison of integer expressions of different signedness: 'int' and 'std::vector<TriggerSpawnPlanets::Circle>::size_type' {aka 'long long unsigned int'} [-Wsign-compare]
+   31 |     for (int i = 0; i < points.size(); i ++)
+      |                     ~~^~~~~~~~~~~~~~~
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/colliders.cpp -o build/colliders.o
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/conversions.cpp -o build/conversions.o
+src/conversions.cpp: In function 'T fromString(std::string_view) [with T = std::__cxx11::basic_string<char>; std::string_view = std::basic_string_view<char>]':
+src/conversions.cpp:136:23: warning: comparison of integer expressions of different signedness: 'int' and 'std::basic_string_view<char>::size_type' {aka 'long long unsigned int'} [-Wsign-compare]
+  136 |     for (int i = 0; i < str.size(); i ++)
+      |                     ~~^~~~~~~~~~~~
+src/conversions.cpp:138:33: warning: comparison of integer expressions of different signedness: 'int' and 'std::basic_string_view<char>::size_type' {aka 'long long unsigned int'} [-Wsign-compare]
+  138 |         if (str[i] == '\\' && i < str.size() - 1)
+      |                               ~~^~~~~~~~~~~~~~~~
+src/conversions.cpp: In function 'std::string toString(T&) [with T = BlockType; std::string = std::__cxx11::basic_string<char>]':
+src/conversions.cpp:188:12: warning: enumeration value 'WATER' not handled in switch [-Wswitch]
+  188 |     switch (type)
+      |            ^
+src/conversions.cpp:188:12: warning: enumeration value 'BLOCK_TYPES' not handled in switch [-Wswitch]
+In file included from src/conversions.cpp:4:
+src/../headers/conversions.h: In instantiation of 'void SplitString::forEach(T) [with T = fromString<std::vector<std::__cxx11::basic_string<char> > >(std::string_view)::<lambda(const std::string_view&)>]':
+src/conversions.cpp:168:18:   required from here
+  168 |     split.forEach([&answer](const std::string_view& view){
+      |     ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  169 |                   answer.emplace_back(fromString<std::string>(view));
+      |                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  170 |                   });
+      |                   ~~
+src/../headers/conversions.h:34:27: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
+   34 |         for (int i = 0; i < size(); i ++)
+      |                         ~~^~~~~~~~
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/debug.cpp -o build/debug.o
+src/debug.cpp: In member function 'virtual void Cheats::drawInterface()':
+src/debug.cpp:140:12: warning: enumeration value 'ENUM_SIZE' not handled in switch [-Wswitch]
+  140 |     switch (Globals::Game.terrain.get_gravityMode())
+      |            ^
+src/debug.cpp: In member function 'virtual void Cheats::handleInput()':
+src/debug.cpp:170:23: warning: unused variable 'color' [-Wunused-variable]
+  170 |                 Color color = {255,255,255,100};
+      |                       ^~~~~
+src/debug.cpp:161:16: warning: enumeration value 'SIZE' not handled in switch [-Wswitch]
+  161 |         switch (mode)
+      |                ^
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/enemy.cpp -o build/enemy.o
+src/enemy.cpp: In member function 'virtual void GrapplePoint::update(Terrain&)':
+src/enemy.cpp:16:13: warning: variable 'balls' set but not used [-Wunused-but-set-variable]
+   16 |     Vector2 balls = screenToWorld(GetMousePosition(),Globals::Game.getCamera(),Globals::Game.getCurrentZ());
+      |             ^~~~~
+src/enemy.cpp: In member function 'virtual void PushBot::update(Terrain&)':
+src/enemy.cpp:105:12: warning: unused variable 'time' [-Wunused-variable]
+  105 |     double time = GetTime();
+      |            ^~~~
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/factory.cpp -o build/factory.o
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/game.cpp -o build/game.o
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/interactives.cpp -o build/interactives.o
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/interface.cpp -o build/interface.o
+src/interface.cpp: In member function 'void Interface::processSign()':
+src/interface.cpp:28:18: warning: suggest parentheses around '&&' within '||' [-Wparentheses]
+   28 |     if (key != 0 && !justSet || messageIndex >= sign.lock()->getMessagesSize()) //if any key is pressed
+      |         ~~~~~~~~~^~~~~~~~~~~
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/item.cpp -o build/item.o
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/objects.cpp -o build/objects.o
+src/objects.cpp: In member function 'void PhysicsBody::applyForces(Terrain&)':
+src/objects.cpp:107:12: warning: enumeration value 'ENUM_SIZE' not handled in switch [-Wswitch]
+  107 |     switch (Globals::Game.terrain.get_gravityMode())
+      |            ^
+src/objects.cpp:191:13: warning: variable 'grav' set but not used [-Wunused-but-set-variable]
+  191 |     Vector2 grav = forces.getForce(Forces::GRAVITY);
+      |             ^~~~
+src/objects.cpp: In member function 'void PhysicsBody::downGravity(Terrain&)':
+src/objects.cpp:208:11: warning: unused variable 'mult' [-Wunused-variable]
+  208 |     float mult = (onGround && abs(orient.rotation) < M_PI/4) ? abs(sin(orient.rotation)) : 1;
+      |           ^~~~
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/player.cpp -o build/player.o
+src/player.cpp: In member function 'size_t std::hash<Color>::operator()(const Key::KeyVal&) const':
+src/player.cpp:16:25: warning: suggest parentheses around '+' inside '<<' [-Wparentheses]
+   16 |     return val.r  << 24 + val.g << 16 + val.b << 8 + val.a;
+      |                      ~~~^~~~~~~
+src/player.cpp:16:39: warning: suggest parentheses around '+' inside '<<' [-Wparentheses]
+   16 |     return val.r  << 24 + val.g << 16 + val.b << 8 + val.a;
+      |                                    ~~~^~~~~~~
+src/player.cpp:16:52: warning: suggest parentheses around '+' inside '<<' [-Wparentheses]
+   16 |     return val.r  << 24 + val.g << 16 + val.b << 8 + val.a;
+      |                                                  ~~^~~~~~~
+src/player.cpp: In member function 'virtual void PlayerRenderer::render(const Shape&, const Color&)':
+src/player.cpp:36:12: warning: enumeration value 'DEAD' not handled in switch [-Wswitch]
+   36 |     switch (owner.state)
+      |            ^
+src/player.cpp: In member function 'virtual void Player::update(Terrain&)':
+src/player.cpp:115:15: warning: unused variable 'oldRotation' [-Wunused-variable]
+  115 |         float oldRotation = orient.rotation;
+      |               ^~~~~~~~~~~
+src/player.cpp:82:11: warning: unused variable 'width' [-Wunused-variable]
+   82 |     float width = GetDimen(getShape()).x;
+      |           ^~~~~
+src/player.cpp: In member function 'void Player::handleControls()':
+src/player.cpp:216:27: warning: unused variable 'angle' [-Wunused-variable]
+  216 |                     float angle = atan2(mousePos.y - orient.pos.y,mousePos.x - orient.pos.x);
+      |                           ^~~~~
+src/player.cpp:227:27: warning: unused variable 'totalLength' [-Wunused-variable]
+  227 |                     float totalLength = Vector2Length(forces.getForce(Forces::JUMP)) + Vector2Length(forces.getForce(Forces::MOVE));
+      |                           ^~~~~~~~~~~
+src/player.cpp:162:12: warning: enumeration value 'PORTALLING' not handled in switch [-Wswitch]
+  162 |     switch (state)
+      |            ^
+src/player.cpp:162:12: warning: enumeration value 'DEAD' not handled in switch [-Wswitch]
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/portals.cpp -o build/portals.o
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/raylib_helper.cpp -o build/raylib_helper.o
+src/raylib_helper.cpp:141:1: warning: multi-line comment [-Wcomment]
+  141 | //shamelessly, almost 100% copy pasted from https://www.raylib.com/examples/text/loader.html?name=text_3d_drawing\
+      | ^
+src/raylib_helper.cpp: In function 'std::string fitText(Font, std::string_view, float, float, float)':
+src/raylib_helper.cpp:103:23: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
+  103 |     for (int i = 1; i < split.size(); i ++)
+      |                     ~~^~~~~~~~~~~~~~
+src/raylib_helper.cpp: In function 'void DrawText2D(Font, const char*, Vector2, float, float, Color, TextAlign)':
+src/raylib_helper.cpp:129:23: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
+  129 |     for (int i = 0; i < split.size(); i ++)
+      |                     ~~^~~~~~~~~~~~~~
+src/raylib_helper.cpp:135:49: warning: arithmetic between floating-point type 'float' and enumeration type 'TextAlign' is deprecated [-Wdeprecated-enum-float-conversion]
+  135 |         Vector2 adjusted = {position.x - width/2*align,position.y + height/split.size()*i};
+      |                                          ~~~~~~~^~~~~~
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/render.cpp -o build/render.o
+src/render.cpp: In constructor 'AnimeRenderer::AnimeRenderer(const std::initializer_list<std::basic_string_view<char> >&)':
+src/render.cpp:34:9: warning: unused variable 'i' [-Wunused-variable]
+   34 |     int i = 0;
+      |         ^
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/resources_math.cpp -o build/resources_math.o
+src/resources_math.cpp: In function 'float pointInRectAngle(const Vector2&, const Rectangle&)':
+src/resources_math.cpp:38:11: warning: unused variable 'angle' [-Wunused-variable]
+   38 |     float angle = 0;
+      |           ^~~~~
+src/resources_math.cpp: In function 'PossiblePoint segmentIntersect(const Vector2&, const Vector2&, const Vector2&, const Vector2&)':
+src/resources_math.cpp:95:57: warning: suggest parentheses around '&&' within '||' [-Wparentheses]
+   95 |             (std::max(a1.y,a2.y) >= std::min(b1.y,b2.y) && std::min(b1.y,b2.y) >= std::min(a1.y,a2.y) ||
+      |              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/sequencer.cpp -o build/sequencer.o
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/shape.cpp -o build/shape.o
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/sprites.cpp -o build/sprites.o
+g++ -g -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -MMD -MP -Wno-narrowing -g -c src/terrain.cpp -o build/terrain.o
+src/terrain.cpp: In member function 'void GlobalTerrain::loadTerrain(LayerType, std::string)':
+src/terrain.cpp:90:17: warning: unused variable 'index' [-Wunused-variable]
+   90 |             int index = terr->pointToIndex(point);
+      |                 ^~~~~
+g++  -L ..\raylib-5.5_win64_mingw-w64/lib -o main.exe build/main.o build/UI.o build/audio.o build/blocks.o build/collideTriggers.o build/colliders.o build/conversions.o build/debug.o build/enemy.o build/factory.o build/game.o build/interactives.o build/interface.o build/item.o build/objects.o build/player.o build/portals.o build/raylib_helper.o build/render.o build/resources_math.o build/sequencer.o build/shape.o build/sprites.o build/terrain.o -static -lraylib -lopengl32 -lwinmm -lgdi32 -lpthread -lraylib -lopengl32 -lwinmm -lgdi32 -lpthread 
+./main.exe
+INFO: Initializing raylib 5.6-dev
+INFO: Platform backend: DESKTOP (GLFW)
+INFO: Supported raylib modules:
+INFO:     > rcore:..... loaded (mandatory)
+INFO:     > rlgl:...... loaded (mandatory)
+INFO:     > rshapes:... loaded (optional)
+INFO:     > rtextures:. loaded (optional)
+INFO:     > rtext:..... loaded (optional)
+INFO:     > rmodels:... loaded (optional)
+INFO:     > raudio:.... loaded (optional)
+INFO: DISPLAY: Trying to enable VSYNC
+INFO: DISPLAY: Device initialized successfully
+INFO:     > Display size: 1920 x 1080
+INFO:     > Screen size:  900 x 900
+INFO:     > Render size:  900 x 900
+INFO:     > Viewport offsets: 0, 0
+INFO: GLAD: OpenGL extensions loaded successfully
+INFO: GL: Supported extensions count: 249
+INFO: GL: OpenGL device information:
+INFO:     > Vendor:   ATI Technologies Inc.
+INFO:     > Renderer: AMD Radeon(TM) Graphics
+INFO:     > Version:  3.3.0 Core Profile Context 22.20.24.09.231220
+INFO:     > GLSL:     4.60
+INFO: GL: VAO extension detected, VAO functions loaded successfully
+INFO: GL: NPOT textures extension detected, full NPOT textures supported
+INFO: GL: DXT compressed textures supported
+INFO: GL: ETC2/EAC compressed textures supported
+INFO: PLATFORM: DESKTOP (GLFW - Win32): Initialized successfully
+INFO: TEXTURE: [ID 1] Texture loaded successfully (1x1 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 1] Default texture loaded successfully
+INFO: SHADER: [ID 1] Vertex shader compiled successfully
+INFO: SHADER: [ID 2] Fragment shader compiled successfully
+INFO: SHADER: [ID 3] Program shader loaded successfully
+INFO: SHADER: [ID 3] Default shader loaded successfully
+INFO: RLGL: Render batch vertex buffers loaded successfully in RAM (CPU)
+INFO: RLGL: Render batch vertex buffers loaded successfully in VRAM (GPU)
+INFO: RLGL: Default OpenGL state initialized successfully
+INFO: TEXTURE: [ID 2] Texture loaded successfully (128x128 | GRAY_ALPHA | 1 mipmaps)
+INFO: FONT: Default font loaded successfully (224 glyphs)
+INFO: SYSTEM: Working Directory: C:\Users\leoou\Documents\projects\helloworld
+INFO: AUDIO: Device initialized successfully
+INFO:     > Backend:       miniaudio | WASAPI
+INFO:     > Format:        32-bit IEEE Floating Point -> 32-bit IEEE Floating Point
+INFO:     > Channels:      2 -> 2
+INFO:     > Sample rate:   48000 -> 48000
+INFO:     > Periods size:  1440
+INFO: TIMER: Target time per frame: 16.667 milliseconds
+INFO: FILEIO: [sprites\barrel.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (504x542 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 3] Texture loaded successfully (504x542 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\barrel_receiver.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (748x362 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 4] Texture loaded successfully (748x362 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\barrel_spawner.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (758x687 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 5] Texture loaded successfully (758x687 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\bg_scatter.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (16000x8000 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 6] Texture loaded successfully (16000x8000 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\billboard_run.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (1140x658 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 7] Texture loaded successfully (1140x658 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\billboard_run_jump.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (1140x1017 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 8] Texture loaded successfully (1140x1017 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\bot.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (62x53 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 9] Texture loaded successfully (62x53 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\gear.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (334x335 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 10] Texture loaded successfully (334x335 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\glowstone.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (182x182 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 11] Texture loaded successfully (182x182 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\grapple.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (422x422 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 12] Texture loaded successfully (422x422 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\guy.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (37x60 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 13] Texture loaded successfully (37x60 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\guy_boosting.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (37x60 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 14] Texture loaded successfully (37x60 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\key.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (368x566 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 15] Texture loaded successfully (368x566 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\laser_beamer.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (910x910 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 16] Texture loaded successfully (910x910 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\laser_beamer_off.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (910x910 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 17] Texture loaded successfully (910x910 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\locked.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (662x453 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 18] Texture loaded successfully (662x453 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\mid-air-boost.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (1108x518 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 19] Texture loaded successfully (1108x518 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\plaque.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (1000x1000 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 20] Texture loaded successfully (1000x1000 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\rover.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (1452x1991 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 21] Texture loaded successfully (1452x1991 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\rover2.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (143x177 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 22] Texture loaded successfully (143x177 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\rover_off.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (143x177 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 23] Texture loaded successfully (143x177 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\sign.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (1010x1090 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 24] Texture loaded successfully (1010x1090 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\sos.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (2500x1000 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 25] Texture loaded successfully (2500x1000 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites\squares.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (1000x1000 | R8G8B8 | 1 mipmaps)
+INFO: TEXTURE: [ID 26] Texture loaded successfully (1000x1000 | R8G8B8 | 1 mipmaps)
+INFO: FILEIO: [sprites\sunset.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (4000x2000 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 27] Texture loaded successfully (4000x2000 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites/ui\right-click.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (96x67 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 28] Texture loaded successfully (96x67 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites/animes/death.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (15000x500 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 29] Texture loaded successfully (15000x500 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites/animes/rover2_anime.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (1430x1770 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 30] Texture loaded successfully (1430x1770 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sprites/animes/rover_off.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (143x177 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 31] Texture loaded successfully (143x177 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [sounds/jump.mp3] File loaded successfully
+INFO: WAVE: Data loaded successfully (24000 Hz, 32 bit, 2 channels)
+INFO: FILEIO: [shaders/fragments/portal.h] Text file loaded successfully
+INFO: SHADER: [ID 4] Fragment shader compiled successfully
+INFO: SHADER: [ID 5] Program shader loaded successfully
+INFO: FILEIO: [worlds/world1\bg_scatter2.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (16000x8000 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 32] Texture loaded successfully (16000x8000 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 33] Texture loaded successfully (6000x6000 | R8G8B8A8 | 1 mipmaps)
+INFO: TEXTURE: [ID 1] Depth renderbuffer loaded successfully (32 bits)
+INFO: FBO: [ID 1] Framebuffer object created successfully
+INFO: FILEIO: [sprites/layers/world1/layer1.png] File loaded successfully
+INFO: IMAGE: Data loaded successfully (2000x2000 | R8G8B8A8 | 1 mipmaps)
+INFO: FILEIO: [shaders/fragments/terrain.h] Text file loaded successfully
+INFO: SHADER: [ID 4] Fragment shader compiled successfully
+INFO: SHADER: [ID 6] Program shader loaded successfully
+INFO: STREAM: Initialized successfully (44100 Hz, 16 bit, Stereo)
+INFO: FILEIO: [music/world0_together.wav] Music file loaded successfully
+INFO:     > Sample rate:   44100 Hz
+INFO:     > Sample size:   16 bits
+INFO:     > Channels:      2 (Stereo)
+INFO:     > Total frames:  3175200

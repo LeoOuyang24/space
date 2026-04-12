@@ -64,4 +64,32 @@ bool CheckCollision(const Shape& shape1, const Shape& shape2);
 Vector2 GetDimen(const Shape& shape1);
 
 
+/**
+ * @brief Get the Ith Point on a shape. 
+ * 
+ * @param shape 
+ * @param i, the ith point
+ * @return Vector2 
+ */
+Vector2 getIthShapePoint(const Shape& shape, int i); 
+
+/**
+ * @brief Return the maximum number that "i" can be in getIthShapePoint (larger i's are still expected to be handeled, but will probably just loop back around like in a modulo)
+ * 
+ * @param type 
+ * @return constexpr size_t 
+ */
+constexpr size_t getShapePoints(ShapeType type)
+{
+    switch (type)
+    {
+        case ShapeType::CIRCLE:
+            return 10; //magic number, make larger for more expensive but accurate calculations
+        case ShapeType::RECT:
+            return 4;
+        default:
+            return 0;
+    }  
+}
+
 #endif // SHAPE_H_INCLUDED

@@ -18,7 +18,7 @@ void ClassDeserializer::init()
     registerName<Rover>();
     registerName<BigSign>();
     registerName<LaserBeamEnemy>();
-    registerName<Barrel>();
+    registerName<Barrel>("barrel");
     registerName<BarrelReceiver>();
     registerName<BarrelSpawner>();
     registerName<MovingTerrain>();

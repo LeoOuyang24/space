@@ -23,7 +23,8 @@ struct GameCamera
      * @param point point to look at
      * @param transition how many frames you want the transition to be (0 for no transition)
      */
-    void setCameraFollow(const Vector2& point, int transition = 0); //turn camera follow off, and have it follow the provided point, "transition" == true if we want a transiiton
+    void setCameraFollow(const Vector3& point, int transition = 0); //turn camera follow off, and have it follow the provided point, "transition" == true if we want a transiiton
+    void setCameraFollow(const Vector2& point, int transition = 0); 
     /**
      * @brief Returns cameraFollow
      * 
@@ -93,7 +94,7 @@ private:
     }
     Camera3D camera;
     bool cameraFollow = false;
-    Vector2 cameraFollowPoint = {};
+    Vector3 cameraFollowPoint = {};
     Sequence seq; //the sequence to add camera transitions to
     bool lock = false; //true if all camera state modifications will be ignored
     bool queueing = false; //true if we are queueing actions

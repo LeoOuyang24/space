@@ -22,7 +22,7 @@ class Player;
 struct PlayerCollider : public RectCollider
 {
     PlayerCollider(Player& owner, float width, float height);
-    //bool isOnGround(const Orient& orient, Terrain& t);
+    bool isOnGround(PhysicsBody& body, Terrain& t);
 
 private:
     Player& owner;

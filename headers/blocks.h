@@ -112,10 +112,6 @@ struct Terrain
 
     void generateRightTriangle(const Vector2& corner, float height, const Color& color); //creates an isoscles right triangle
 
-    //slightly incorrect way to find the point closest to "a" taht intersects with terrain
-    //calculates by jumping increments of Block::Block_Dimen towards "b", which means it might skip some blocks at certain angles
-    //PossiblePoint lineIntersectWithTerrain(const Vector2& a, const Vector2& b);
-
      //returns the point that an object moving from "a" to "b" would stop at after hitting terrain, returns "b" if there is a clear path
      //isSolid = true if we wish to stop at a SOLID block. False, if we want to stop at any block that is not AIR
     Vector2 lineBlockIntersect(const Vector2& a, const Vector2& b, bool isSolid = true);
@@ -178,7 +174,7 @@ struct Terrain
      *
      * @returns true if position does not contain air
      */
-    bool blockExists(const Vector2& pos, bool checkPlanets = true); //true if block at position is not AIR
+    bool blockExists(const Vector2& pos, bool checkPlanets = true); 
     /**
      * @brief Given a position, returns whether that position is a certain type
      *
@@ -189,9 +185,21 @@ struct Terrain
      */
     bool isBlockType(const Vector2& pos,BlockType type, bool checkPlanets = true); //true if block at position is "type".
 
-    bool blockExists(const Shape& shape); //returns true if a shape collides with terrain
-    bool isBlockType(const Shape& shape, BlockType type); //unimplemented, too lazy :p
-
+    /**
+     * @brief returns true if the perimeter of a Shape collides with terrain. Always checks Planets
+     * 
+     * @param shape 
+     * @return true 
+     */
+    bool blockExists(const Shape& shape);
+    /**
+     * @brief returns true if shape perimeter collides with a block of a certain type. Always checks Planets
+     * 
+     * @param shape 
+     * @param type 
+     * @return true 
+     */
+    bool isBlockType(const Shape& shape, BlockType type); 
 
     void addPlanet(PhysicsBody& planet, BlockType type);
 
@@ -208,7 +216,9 @@ struct Terrain
     std::vector<EntityPlanet> planets;
 
 private:
-
+    typedef std::function<bool(BlockType)> CheckFunc; //used by various terrain functions to check for the type of a block
+    static constexpr auto blockExistsCheck = [](BlockType other){return other != AIR;}; 
+    static constexpr auto isBlockTypeCheck = [](BlockType type){return [type](BlockType other){ return other == type;};}; 
 
     /**
      * @brief Given a position, returns whether that position has a block of a certain type. This is the workhorse function of blockExists and isBlockType
@@ -219,7 +229,20 @@ private:
      *
      * @returns true if "check" returns true on the block at "pos" or any neighboring points if its on an edge
      */
-    bool checkBlocks(const Vector2& pos, bool checkPlanets, std::function<bool(BlockType)> check);
+    bool checkBlocks(const Vector2& pos, bool checkPlanets, CheckFunc check);
+    bool checkBlocks(const Shape& shape, bool checkPlanets, CheckFunc check); //same as above for a shape
+
+    /**
+     * @brief Returns the point between "a" and "b" if "a" were to move to "b" and stop at terrain. "b" if there is no terrain in the way
+     * 
+     * @param a 
+     * @param b 
+     * @param isSolid 
+     * @return Vector2 
+     */
+    Vector2 lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFunc check);
+    //same as above, except we'll move "a" out of terrain first.
+    Vector2 lineTerrainIntersect(const Vector2& a, const Vector2& b, CheckFunc check);
 
     bool isDrawing = false; //true if BeginTextureMode has been called, allowing us to batch draw planets
 

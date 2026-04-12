@@ -157,7 +157,7 @@ void CameraMoveRegion::collideWith(PhysicsBody& other)
             std::cout << "entered\n";
             Globals::Game.Camera.clear();
             Globals::Game.Camera.startQueue();
-                Globals::Game.Camera.setCameraFollow(getPos() + cameraTarget,100); //okay for this to not be in queue so other camera moves can be queued up, including by leaving the region
+                Globals::Game.Camera.setCameraFollow(toVector3(getPos()) - Vector3(0,0,Globals::CAMERA_Z_DISP) + cameraTarget,100); //okay for this to not be in queue so other camera moves can be queued up, including by leaving the region
             Globals::Game.Camera.stopQueue();
         }
         activated = true;

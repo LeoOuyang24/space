@@ -297,12 +297,12 @@ void PhysicsBody::adjustAngle(Terrain& terrain)
     botLeft = terrain.lineTerrainIntersect(botLeft,botLeft + normal,false);//.pos;
     botRight = terrain.lineTerrainIntersect(botRight,botRight + normal,false);//.pos;
 
-    /*Debug::addDeferRender([botLeft,botRight](){
+    Debug::addDeferRender([botLeft,botRight](){
 
                           DrawCircle3D({botLeft.x,botLeft.y,Globals::Game.getCurrentZ()},10,{},0,BLUE);
                           DrawCircle3D({botRight.x,botRight.y,Globals::Game.getCurrentZ()},10,{},0,BLUE);
 
-                          });*/
+                          });
 
     float newAngle = trunc(atan2(botRight.y - botLeft.y, botRight.x - botLeft.x),3);
 
@@ -318,7 +318,7 @@ void PhysicsBody::stayOnGround(Terrain& terrain)
 
    Vector2 norm = orient.getNormal();
 
-    Vector2 bruh = terrain.lineTerrainIntersect(orient.pos,orient.pos + norm*GetDimen(getShape()).y,true); //- normal*(collider.height)/2;
+    Vector2 bruh = terrain.lineTerrainIntersect(orient.pos,orient.pos + norm*GetDimen(getShape()).y,false); //- normal*(collider.height)/2;
     
     Vector2 newPos = bruh - Vector2Normalize(norm)*(GetDimen(getShape()).y/2  - 1);
 

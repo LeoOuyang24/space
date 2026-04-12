@@ -181,7 +181,7 @@ struct GlowStone : public Object<CircleCollider,TextureRenderer,GlowStone>
 
 struct CameraMoveRegion : public Object<RectCollider,NoRenderer,CameraMoveRegion>
 {
-    Vector2 cameraTarget = {};
+    Vector3 cameraTarget = {};
     CameraMoveRegion()
     {
         collider.width = 100;
