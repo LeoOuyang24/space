@@ -262,14 +262,14 @@ void PhysicsBody::planetGravity(Terrain& terrain)
             terrainAngle += Vector2Normalize(grav);
             if (!Vector2Equals(moveVec,{}) && !freeFall) //if there moving, subtract that component from gravity (prevents gravity from pulling player against intended motion)
                 {
-                    grav -= moveVec*Vector2DotProduct(grav,moveVec)/Vector2DotProduct(moveVec,moveVec)*.89f;
+                 //   grav -= moveVec*Vector2DotProduct(grav,moveVec)/Vector2DotProduct(moveVec,moveVec)*.89f;
                 }
 
             Vector2 norm = Vector2Normalize(grav);
 
             //std::cout << Vector2Length(grav) << "\n";
             forces.addForce(norm*GlobalTerrain::GRAVITY_CONSTANT,Forces::GRAVITY);
-            //forces.addForce(grav,Forces::GRAVITY);
+            //forces.addForce(grav*20,Forces::GRAVITY);
         }
         else if (count == 0)
         {
@@ -297,12 +297,12 @@ void PhysicsBody::adjustAngle(Terrain& terrain)
     botLeft = terrain.lineTerrainIntersect(botLeft,botLeft + normal,false);//.pos;
     botRight = terrain.lineTerrainIntersect(botRight,botRight + normal,false);//.pos;
 
-    Debug::addDeferRender([botLeft,botRight](){
+   /* Debug::addDeferRender([botLeft,botRight](){
 
-                          DrawCircle3D({botLeft.x,botLeft.y,Globals::Game.getCurrentZ()},10,{},0,BLUE);
-                          DrawCircle3D({botRight.x,botRight.y,Globals::Game.getCurrentZ()},10,{},0,BLUE);
-
-                          });
+                          DrawCircle3D({botLeft.x,botLeft.y,Globals::Game.getCurrentZ()},2,{},0,BLUE);
+                          DrawCircle3D({botRight.x,botRight.y,Globals::Game.getCurrentZ()},2,{},0,BLUE);
+                          DrawLine3D(toVector3(botLeft),toVector3(botRight),BLUE,1);
+                          }); */
 
     float newAngle = trunc(atan2(botRight.y - botLeft.y, botRight.x - botLeft.x),3);
 
@@ -310,6 +310,7 @@ void PhysicsBody::adjustAngle(Terrain& terrain)
     {
 
         orient.rotation = newAngle;
+        //setPos((botLeft + botRight)*0.5 - Vector2Rotate(Vector2(0,dimen.y/2),orient.rotation));
     }
 }
 

@@ -24,6 +24,7 @@
     * Reliance on lambda captures means that if `GameCamera` goes out of scope before `Sequences`, there may be memory issues. This is unlikely, however, as `GameCamera` is only owned by the global singleton.
 * Refactored `lineBlockIntersect` and `lineTerrainIntersect` to be more flexible
   * Player now only counts as `onGround` if on solid ground, all other objects can be on any non-air surface
+* `Generic Spawner` now only spawns objects after first interaction
 * Added a section to layer 1 of world 1 with some terrain pod stuff
 
 ## 3/24/2026 (andrew-music-demo)
