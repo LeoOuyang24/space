@@ -61,6 +61,8 @@ bool CheckCollisionPointRecRotated(const Vector2& pos, const Rectangle& rect, fl
 bool CheckCollisionRecsRotated(const Rectangle& r1, const Rectangle& r2, float rot1, float rot2);
 bool CheckCollision(const Shape& shape1, const Shape& shape2);
 
+Vector2 lineShapeIntersect(const Shape& shape1, const Vector2& a, const Vector2& b); //returns the point closest to "a", that collides with "shape1", "b" if no such intersection
+
 Vector2 GetDimen(const Shape& shape1);
 
 

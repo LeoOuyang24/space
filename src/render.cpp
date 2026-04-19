@@ -41,7 +41,6 @@ void TextureRenderer::render(const Shape& shape, const Color& color)
                      dimen*0.5,shape.orient.rotation*RAD2DEG*-1,color);
     if (Debug::isDebugOn())
     {
-        Vector2 dimens = GetDimen(shape);
         for (size_t i = 0; i < getShapePoints(shape.type); i ++)
         {
             DrawLine3D(toVector3(getIthShapePoint(shape,i)),toVector3(getIthShapePoint(shape,i+1)),RED);

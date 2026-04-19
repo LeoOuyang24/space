@@ -21,11 +21,11 @@ bool CheckCollisionPointShape(const Vector2& pos, const Shape& shape1)
     case CIRCLE:
         return Vector2DistanceSqr(pos,shape1.orient.pos) <= shape1.collider.radius*shape1.collider.radius;
     case RECT:
-        return pointInRectAngle(pos,{
+        return CheckCollisionPointRecRotated(pos,{
                                 shape1.orient.pos.x - shape1.collider.dimens.x/2,
                                 shape1.orient.pos.y - shape1.collider.dimens.y/2,
                                 shape1.collider.dimens.x,
-                                shape1.collider.dimens.y});
+                                shape1.collider.dimens.y},shape1.orient.rotation);
     }
     return false;
 }
@@ -122,6 +122,23 @@ bool CheckCollision(const Shape& shape1, const Shape& shape2)
             return CheckCollision(shape2,shape1);
         }
     }
+}
+
+Vector2 lineShapeIntersect(const Shape& shape, const Vector2& a, const Vector2& b)
+{
+    switch(shape.type)
+    {
+    case CIRCLE:
+        return segmentIntersectCircle(a,b,shape.orient.pos,shape.collider.radius).pos;
+    case RECT:
+        return segmentIntersectRect(a,b,Rectangle(shape.orient.pos.x - shape.collider.dimens.x/2, 
+                                                    shape.orient.pos.y - shape.collider.dimens.y/2, 
+                                                    shape.collider.dimens.x,
+                                                    shape.collider.dimens.y),
+                                                    shape.orient.rotation).pos;
+    default:
+        return {};
+    }    
 }
 
 Vector2 GetDimen(const Shape& shape)

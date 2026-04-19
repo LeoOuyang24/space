@@ -253,3 +253,16 @@ void GlobalTerrain::flipGravity()
 {
     gravityMode = (gravityMode == DOWN ? PLANET : DOWN);
 }
+
+void GlobalTerrain::setSignalSet(SignalSet& set)
+{
+    signals = &set;
+}
+
+void GlobalTerrain::emitSignal(SignalName name, void* data)
+{
+    if (signals && signals->find(name) != signals->end())
+    {
+        (*signals)[name](data);
+    }
+}

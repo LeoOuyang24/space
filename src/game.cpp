@@ -8,6 +8,7 @@
 #include "../headers/player.h"
 #include "../headers/factory.h"
 #include "../headers/audio.h"
+#include "../headers/signals.h"
 
 Globals Globals::Game;
 
@@ -142,6 +143,7 @@ void Globals::loadLevel(std::string_view path)
 void Globals::addWorld(std::string_view path)
 {
     World world;
+    world.signals = getWorldsSet(1);
     for (const auto & entry : std::filesystem::directory_iterator(path))
    {
        std::string extension = entry.path().filename().extension().string();
@@ -175,8 +177,8 @@ void Globals::setCurWorld(CurrentWorld cur)
     if (curWorld != cur && cur < worlds.size())
     {
         loadWorld(worlds[cur]);
+        terrain.setSignalSet(worlds[cur].signals);
     }
-
     curWorld = cur;
 
 

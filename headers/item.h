@@ -144,6 +144,7 @@ private:
 struct BarrelReceiver : public Object<RectCollider,TextureRenderer,BarrelReceiver>
 {
     std::unique_ptr<OnTrigger> onTrigger;
+    SignalName signal;
 
     BarrelReceiver()
     {
@@ -213,7 +214,8 @@ struct Factory<BarrelReceiver>
     using Base = FactoryBase<BarrelReceiver,
                             access<BarrelReceiver,&BarrelReceiver::orient,&Orient::pos>,
                             access<BarrelReceiver,&BarrelReceiver::keyVal>,
-                            access<BarrelReceiver,&BarrelReceiver::onTrigger>>;
+                            access<BarrelReceiver,&BarrelReceiver::onTrigger>,
+                            access<BarrelReceiver,&BarrelReceiver::signal>>;
 };
 
 typedef GenericSpawner<Barrel> BarrelSpawner;

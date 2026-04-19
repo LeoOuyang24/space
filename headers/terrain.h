@@ -4,6 +4,8 @@
 #include "blocks.h"
 #include "checkFields.h"
 
+#include "signals.h"
+
 #include <list>
 
 
@@ -75,7 +77,12 @@ struct GlobalTerrain
     make_setter(gravityMode,GravityMode);
     void flipGravity(); //swap between planet and down gravity
 
+    void setSignalSet(SignalSet& set);
+    void emitSignal(SignalName,void* val);
+
 private:
+    SignalSet* signals = nullptr;
+
     GravityMode gravityMode = PLANET;
     Vector2 gravityCenter = {}; //point at which gravity is focusing on when gravityMode is POINT
 
@@ -95,6 +102,7 @@ private:
 
 struct World
 {
+    SignalSet signals;
     std::vector<std::string> layers;
     std::string bg_path = "";
     Texture2D bg; //worlds own their backgrounds; these sprites are not accessible in Globals::Game.Sprites (just doesn't seem necessary)

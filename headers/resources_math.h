@@ -35,14 +35,11 @@ std::ostream& operator<<(std::ostream &os,const Vector3& vec);
 
 Vector2 rotatePoint(const Vector2& p, const Vector2& rotateAround, float angle);
 
-//returns which quadrant p1 is in rect. -M_PI/2 = top quadrant, M_PI/2 = bottom quadrant
-float pointInRectAngle(const Vector2& p1, const Rectangle& rect);
-
 //converts a 2d point on the screen to a point in a 3d world at the desired "z" value
 Vector2 screenToWorld(const Vector2& screenPoint, const Camera3D& camera,  float z);
 
-PossiblePoint segmentIntersect(const Vector2& a1, const Vector2& a2, const Vector2& b1, const Vector2& b2); //returns false if the lines segments don't exist
-PossiblePoint segmentIntersectRect(const Vector2& a1, const Vector2& a2, const Rectangle& rect); //true if a1-a2 intersects with "rect"
+PossiblePoint segmentIntersect(const Vector2& a1, const Vector2& a2, const Vector2& b1, const Vector2& b2); //returns the point of intersection between two lines, "a2" if there is no intersection
+PossiblePoint segmentIntersectRect(const Vector2& a1, const Vector2& a2, const Rectangle& rect,float rotation); //returns the point closest to a1 that is on the rect
 PossiblePoint segmentIntersectTriangle(const Vector2& a1, const Vector2& a2, const Vector2& t1, const Vector2& t2, const Vector2& t3);
 PossiblePoint segmentIntersectCircle(const Vector2& a1, const Vector2& a2, const Vector2& center, float radius); //returns point closest to a1 that is on the circle
 
