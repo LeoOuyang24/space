@@ -74,30 +74,6 @@ void LaserBeamEnemy::collideWith(PhysicsBody& other)
     }
 }
 
-void MovingTerrain::onAdd()
-{
-    setPos(starting);
-    Globals::Game.terrain.getTerrain(orient.layer)->addPlanet(*this,type);
-}
-
-void MovingTerrain::collideWith(PhysicsBody& other)
-{
-    if (other.get_followGravity())
-    {
-        other.setPos(other.getPos() + moved);
-    }
-}
-
-void MovingTerrain::update(Terrain& t)
-{
-    Vector2 newPos = calcNewPos(getOrient(),starting);
-    if (newPos != getPos())
-    {
-        moved = newPos - getPos();
-        setPos(newPos);
-    }
-}
-
 void PushBot::update(Terrain& t)
 {
     Object::update(t);

@@ -28,6 +28,7 @@ void Sequences::add(Sequence& seq, bool isPhysics)
         renderSequences.push_front(seq);
     }
 }
+#include <iostream>
 void Sequences::run(SequencerList& lst)
 {
     for (auto it = lst.begin(); it != lst.end();)

@@ -39,7 +39,13 @@ void TextureRenderer::render(const Shape& shape, const Color& color)
     DrawBillboardPro(Globals::Game.getCamera(),sprite,Rectangle(0,0,sprite.width*flip,sprite.height),
                      Vector3(shape.orient.pos.x,shape.orient.pos.y,Globals::Game.terrain.getZOfLayer(shape.orient.layer)),Vector3(0,-1,0),dimen,
                      dimen*0.5,shape.orient.rotation*RAD2DEG*-1,color);
-
+    if (Debug::isDebugOn())
+    {
+        for (size_t i = 0; i < getShapePoints(shape.type); i ++)
+        {
+            DrawLine3D(toVector3(getIthShapePoint(shape,i)),toVector3(getIthShapePoint(shape,i+1)),RED);
+        }
+    }
 
 }
 

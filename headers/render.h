@@ -26,6 +26,7 @@ struct ShapeRenderer
         case RECT:
              DrawCube(Vector3(shape.orient.pos.x,shape.orient.pos.y,Globals::Game.terrain.getZOfLayer(shape.orient.layer)),
                                      shape.collider.dimens.x,shape.collider.dimens.y,1,color);
+
             break;
         }
 

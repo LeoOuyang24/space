@@ -107,6 +107,7 @@ void BarrelReceiver::onCollide(PhysicsBody& other)
     {
         other.setDead(true);
         activated = true;
+        Globals::Game.terrain.emitSignal(signal,this);
         if (onTrigger.get())
         {
             (*onTrigger)(*this);
@@ -135,7 +136,7 @@ void TerrainPod::update(Terrain& t)
     Object::update(t);
     if (collideTrigger.isThrown(*this))
     {
-        if (!activated && IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+        if (!activated && IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE))
         {
             activated = true;
             followGravity = false;

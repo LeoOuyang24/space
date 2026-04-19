@@ -396,7 +396,6 @@ Vector2 Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, CheckF
         {
             oldA = newA;
             newA -= dir*Block::BLOCK_DIMEN;
-            //std::cout << dir.x << " " << dir.y << "\n";
         }
     }
     return lineBlockIntersect(newA,b,check);
@@ -433,10 +432,10 @@ Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFun
         {
             if (terr.ptr.lock() && check(terr.type))
             {
-                PossiblePoint pos = segmentIntersectCircle(a,b,terr.ptr.lock()->getPos(),GetDimen(terr.ptr.lock()->getShape()).x/2);
-                if (pos.exists)
+                Vector2 intersect = lineShapeIntersect(terr.ptr.lock()->getShape(),a,b);
+                if (Vector2DistanceSqr(intersect,a) < Vector2DistanceSqr(a,b))
                 {
-                    answer = Vector2DistanceSqr(answer,a) > Vector2DistanceSqr(pos.pos,a) ? pos.pos : answer ; //take the answer closer to "a"
+                    answer = intersect; //take the answer closer to "a"
                 }
             }
         }

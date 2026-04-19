@@ -327,6 +327,12 @@ void Player::addResetObject(PhysicsBody& body)
 
 void Player::resetPlayer()
 {
+
+    if (PhysicsBody* ptr = holding.lock().get())
+    {
+        ptr->set_followGravity(true);
+    }
+    holding.reset(); //drop what we're holding
     setDead(false);
     setState(DEAD);
     tangible = false;
@@ -355,7 +361,6 @@ void Player::resetPlayer()
                         resetState.restoreThese.clear();
                         orient = resetState.orient;
 
-                        holding.reset(); //drop what we're holding
                         setState(WALKING);
                         tangible = true;
                        return true;

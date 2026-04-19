@@ -8,6 +8,12 @@
 
 ## NEW RELEASE
 
+## 4/19/2026, Signals Update 
+* Added the `signals` system, which allows for level configs to trigger C++ code via strings
+* Fixed a bug causing parallel horizontal lines to count as intersecting when they were not on the same `y`
+* Added rectangular moving terrain (their collision is ass around the corners)
+* Removed the `pointInRectAngle` function (literally never used and has a confusing name)
+
 ## 4/11/2026 
 * Removed Barrel's Factory to prevent it from being saved in EDITOR mode.
 * Improved Circle Collider's collision with terrain
@@ -24,6 +30,7 @@
     * Reliance on lambda captures means that if `GameCamera` goes out of scope before `Sequences`, there may be memory issues. This is unlikely, however, as `GameCamera` is only owned by the global singleton.
 * Refactored `lineBlockIntersect` and `lineTerrainIntersect` to be more flexible
   * Player now only counts as `onGround` if on solid ground, all other objects can be on any non-air surface
+* `Generic Spawner` now only spawns objects after first interaction
 * Added a section to layer 1 of world 1 with some terrain pod stuff
 
 ## 3/24/2026 (andrew-music-demo)

@@ -32,48 +32,6 @@ Vector2 rotatePoint(const Vector2& p, const Vector2& rotateAround, float angle)
     return Vector2Rotate(p - rotateAround, angle) + rotateAround;
 }
 
-float pointInRectAngle(const Vector2& p1, const Rectangle& rect)
-{
-    float slope = rect.height/rect.width;
-    Vector2 center = Vector2(rect.x + rect.width/2, rect.y + rect.height/2);
-    float y2 = (p1.x - center.x)*slope;
-    float y1 = p1.y - center.y;
-
-
-    if (y1 > y2 && y1 > -y2) //bottom
-    {
-        return M_PI/2;
-    }
-    else if (y1 < y2 && y1 > -y2) //right
-    {
-        return 0;
-    }
-    else if (y1 < y2 && y1 < -y2) //top
-    {
-        return -M_PI/2;
-    }
-    else if (y1 > y2 && y1 < -y2) //LEFT
-    {
-        return M_PI;
-    }
-    else if (y1 == y2 && y1 <-y2) //perfectly at the top left corner
-    {
-        return -135*DEG2RAD;
-    }
-    else if (y1 == y2 && y1 < -y2) //perfectly at the bot right corner
-    {
-        return 45*DEG2RAD;
-    }
-    else if (y1 == -y2 && y1 < y2) //top right corner
-    {
-        return -45*DEG2RAD;
-    }
-    else //bottom left corner;
-    {
-        return 135*DEG2RAD;
-    }
-}
-
 Vector2 screenToWorld(const Vector2& screenPoint, const Camera3D& camera, float z)
 {
     Vector2 screenDimen = GetScreenDimen();
@@ -96,10 +54,8 @@ PossiblePoint segmentIntersect(const Vector2& a1, const Vector2& a2, const Vecto
         {
             return {true,std::max(std::min(b1.y,b2.y),std::min(a1.y,a2.y))}; //return 2nd lowest point, which since there is an intersection, must be on both lines
         }
-        else //non-vertical lines
+        else if (a1.y == b1.y)//non-vertical lines
         {
-
-
             float r1 = (b1.x - a1.x)/(v0.x); //r1*v0.x + a1.x = b1.x;
             float r2 = (b2.x - a1.x)/(v0.x); //r2*v1.x + a1.x = b2.x;
             //std::cout << a1.x << " " << a2.x << " " << b1.x << " " << b2.x << " " << "\n";
@@ -114,7 +70,7 @@ PossiblePoint segmentIntersect(const Vector2& a1, const Vector2& a2, const Vecto
                 return {true, v0*r2 + a1};
             }
         }
-        return {false,{}};
+        return {false,a2};
     }
 
     //https://stackoverflow.com/questions/4977491/determining-if-two-line-segments-intersect/4977569#4977569
@@ -128,12 +84,12 @@ PossiblePoint segmentIntersect(const Vector2& a1, const Vector2& a2, const Vecto
     }
     else
     {
-        return {false,{}};
+        return {false,a2};
     }
 
 }
 
-PossiblePoint segmentIntersectRect(const Vector2& a1, const Vector2& a2, const Rectangle& rect)
+PossiblePoint segmentIntersectRect(const Vector2& a1, const Vector2& a2, const Rectangle& rect, float rotation)
 {
     Vector2 points[4] =  {
             Vector2(rect.x,rect.y),
@@ -143,19 +99,26 @@ PossiblePoint segmentIntersectRect(const Vector2& a1, const Vector2& a2, const R
             };
 
 
-    PossiblePoint answer;
+    Vector2 adj1 = rotatePoint(a1,{rect.x + rect.width/2,rect.y + rect.height/2},-rotation);
+    Vector2 adj2 = rotatePoint(a2,{rect.x + rect.width/2,rect.y + rect.height/2},-rotation);
+
+    PossiblePoint answer = {false,a2};
+
+    float current = Vector2DistanceSqr(a1,a2);
+
     for (int i = 0; i < 4; i ++)
     {
         //DrawLine(points[i].x,points[i].y,points[(i + 1)%4].x,points[(i + 1)%4].y,Color{255,0,0,255});
-        PossiblePoint p = segmentIntersect(a1,a2,points[i],points[(i + 1)%4]);
+        PossiblePoint p = segmentIntersect(adj1,adj2,points[i],points[(i + 1)%4]);
 
-        if (p.exists)
+        if (Vector2DistanceSqr(p.pos,adj1) < current) //we actually don't even have to check if the position exists, since segmentIntersect returns adj2 if there is no intersection
         {
             answer = p;
-            break;
+            current = Vector2DistanceSqr(p.pos,adj1);
         }
     }
 
+    answer.pos = rotatePoint(answer.pos,{rect.x + rect.width/2,rect.y + rect.height/2},rotation);
     return answer;
 }
 
@@ -179,7 +142,7 @@ PossiblePoint segmentIntersectCircle(const Vector2& a1, const Vector2& a2, const
     //around the circle, so that it is flat at an angle of 0.
     //From there it is trivial to calculate the point closest to a1 that is on the circle (if there is one)
 
-    //idiot test, check if either point is in the circle
+    //idiot test, check if starting point is in the circle
     if (Vector2DistanceSqr(a1,center) <= radius*radius)
     {
         return {true,a1};
@@ -191,7 +154,7 @@ PossiblePoint segmentIntersectCircle(const Vector2& a1, const Vector2& a2, const
 
     if (abs(r1.y - center.y) > radius || center.x  > std::max(r2.x,r1.x) + radius*2 || center.x < std::min(r2.x,r1.x) - radius*2) //if after rotation circle is too far away, it's cooked
     {
-        return {false,a1};
+        return {false,a2};
     }
 
     //otherwise calculate the point

@@ -95,35 +95,74 @@ struct Factory<LaserBeamEnemy>
 //moving terrain
 //the entity itself doesn't matter, rather it exists purely so it works with the rest of the entity frameworks
 //construct, Debug mode, etc.
-struct MovingTerrain : public Object<CircleCollider,ShapeRenderer<CIRCLE>,MovingTerrain>
+template<typename Collider,ShapeType Shape>
+struct MovingTerrain : public Object<Collider,ShapeRenderer<Shape>,MovingTerrain<Collider,Shape>>
 {
     MoveFunc calcNewPos;
     Vector2 starting = {3000,3000};
     BlockType type = SOLID;
     MovingTerrain()
     {
-        collider.radius = 0;
-        followGravity = false;
+        this->followGravity = false;
         //tangible = false;
     }
-    void onAdd();
-    void update(Terrain&);
-    void collideWith(PhysicsBody&);
+
+    void onAdd()
+    {
+        this->setPos(starting);
+        Globals::Game.terrain.getTerrain(this->getOrient().layer)->addPlanet(*this,type);
+    }
+    void collideWith(PhysicsBody& other)
+    {
+        if (other.get_followGravity())
+        {
+            other.setPos(other.getPos() + moved);
+        }
+    }
+
+    void update(Terrain& t)
+    {
+        Vector2 newPos = calcNewPos(this->getOrient(),starting);
+        if (newPos != this->getPos())
+        {
+            moved = newPos - this->getPos();
+            this->setPos(newPos);
+        }
+    }
+
 protected:
     Vector2 moved = {};
 
 };
 
-template<>
-struct Factory<MovingTerrain>
-{
-    static constexpr std::string ObjectName = "moving_terrain";
+using CircleTerrain = MovingTerrain<CircleCollider,CIRCLE>;
 
-    using Base = FactoryBase<MovingTerrain,
-                    access<MovingTerrain,&MovingTerrain::starting>,
-                    access<MovingTerrain,&MovingTerrain::collider,&CircleCollider::radius>,
-                    access<MovingTerrain,&MovingTerrain::type>,
-                    access<MovingTerrain,&MovingTerrain::calcNewPos>>;
+template<>
+struct Factory<CircleTerrain>
+{
+    static constexpr char ObjectName[] = "circle_terrain";
+
+
+    using Base = FactoryBase<CircleTerrain,
+                    access<CircleTerrain,&CircleTerrain::starting>,
+                    access<CircleTerrain,&CircleTerrain::collider,&CircleCollider::radius>,
+                    access<CircleTerrain,&CircleTerrain::type>,
+                    access<CircleTerrain,&CircleTerrain::calcNewPos>>;
+};
+
+using RectTerrain = MovingTerrain<RectCollider,RECT>;
+
+template<>
+struct Factory<RectTerrain>
+{
+    static constexpr char ObjectName[] = "rect_terrain";
+
+    using Base = FactoryBase<RectTerrain,
+                    access<RectTerrain,&RectTerrain::starting>,
+                    access<RectTerrain,&RectTerrain::collider,&RectCollider::width>,
+                    access<RectTerrain,&RectTerrain::collider,&RectCollider::height>,
+                    access<RectTerrain,&RectTerrain::type>,
+                    access<RectTerrain,&RectTerrain::calcNewPos>>;
 };
 
 struct PushBot : public Object<RectCollider,TextureRenderer,PushBot>
