@@ -7,6 +7,8 @@
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
 
 ## NEW RELEASE
+
+## 4/19/2026, Signals Update 
 * Added the `signals` system, which allows for level configs to trigger C++ code via strings
 * Fixed a bug causing parallel horizontal lines to count as intersecting when they were not on the same `y`
 * Added rectangular moving terrain (their collision is ass around the corners)
