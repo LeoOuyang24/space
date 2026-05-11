@@ -26,13 +26,12 @@ void Globals::init()
     Sprites.addAnime({1,1,1},"sprites/animes/rover_off.png","rover_off.png");
     SoundLibrary::loadSounds("sounds");
 
+    interface.init();
+
     //Globals::Game.terrain.loadTerrain("sprites/layers/level2.png");
 
     Player* ptr = new Player(Vector2(5500,5500));
     player.reset(ptr);
-    objects.addObject(player);
-
-
     Camera.init();
 
 }
@@ -57,9 +56,9 @@ void Globals::setLayer(LayerType layer)
     if (terrain.getTerrain(layer))
     {
         currentLayer = layer;
-        if (player.get() && player->orient.layer != layer)
+        if (player.get())
         {
-            player->orient.layer = layer;
+            player->setLayer(layer);
             terrain.addObject(player,layer);
         }
         
@@ -93,7 +92,7 @@ Terrain* Globals::getCurrentTerrain()
     return terrain.getTerrain(getCurrentLayer());
 }
 
-void Globals::loadLevel(std::string_view path)
+void Globals::loadLevel(std::string_view path, LayerType layerNum)
 {
     std::ifstream levelFile;
     levelFile.open(path.data());
@@ -111,26 +110,26 @@ void Globals::loadLevel(std::string_view path)
                 {
                 case 0: //first line is terrain image
                     info.imagePath = line;
-                    terrain.loadTerrain(-1,line);
+                    terrain.loadTerrain(layerNum,line);
                     break;
                 case 1: //2nd line is player position
                     {
                         Vector2 pos = fromString<Vector2>(line);
                         info.playerPos = pos;
-                        if (terrain.getLayerCount() == 1) //first layer
+                        if (layerNum == 0) //first layer
                         {
                             Globals::Game.player->setPos(pos);
                         }
                         break;
                     }
                 default:
-                    addObject(ClassDeserializer::construct(line),terrain.getLayerCount() - 1);
+                    addObject(ClassDeserializer::construct(line),layerNum);
                     break;
                 }
                 lineNum ++;
             }
         }
-        terrain.setLayerInfo(terrain.getLayerCount() - 1,info);
+        terrain.setLayerInfo(layerNum,info);
 
         levelFile.close();
     }
@@ -166,9 +165,17 @@ void Globals::loadWorld(const World& world)
     terrain.clear();
     objects.clear();
 
+    int i = 0;
     for (std::string_view str : world.layers)
     {
-        loadLevel(str);
+        loadLevel(str,i);
+        i++;
+    }
+    if (terrain.getLayerCount() > 0 && Globals::Game.getPlayer())
+    {
+        Globals::Game.setLayer(0);
+        Globals::Game.getPlayer()->setPos(terrain.getLayerInfo(0).playerPos);
+        objects.addObject(player);
     }
 }
 
@@ -180,8 +187,6 @@ void Globals::setCurWorld(CurrentWorld cur)
         terrain.setSignalSet(worlds[cur].signals);
     }
     curWorld = cur;
-
-
 }
 
 Texture2D Globals::getBG()
@@ -193,13 +198,19 @@ Texture2D Globals::getBG()
     return worlds[curWorld].bg;
 }
 
-void Globals::addObject(PhysicsBody& body, LayerType layer)
+void Globals::addObject(PhysicsBody& body, Orient o)
 {
-    body.setOrient({body.getPos(),layer});
+    body.setOrient(o);
     body.orient.setStartingPos(body.getPos());
     objects.addObject(body);
-    terrain.addObject(objects.getObject(&body),layer);
+    terrain.addObject(objects.getObject(&body),o.layer);
     body.onAdd();
+}
+
+void Globals::addObject(PhysicsBody& body, LayerType layer)
+{
+    addObject(body,{body.getPos(),layer});
+
 }
 
 void Globals::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)

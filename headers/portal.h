@@ -41,7 +41,7 @@ struct Portal : public Object<CircleCollider,ShapeRenderer<CIRCLE>,Portal>
     static Shader PortalShader;
     RenderTexture2D texture;
     Portal();
-    Portal(const Vector2& pos, LayerType layer, const Vector2& pos_, LayerType layerDisp_);
+    Portal(const Vector2& pos, LayerType layer, const Vector2& destPos_, LayerType layerDisp_);
     bool unlocked();
     void interactWith(PhysicsBody& other);
     void render();

@@ -41,6 +41,14 @@ void Interface::processSign()
               Rectangle(0.8*Globals::screenDimen.x,0.7*Globals::screenDimen.y,100,100));
 }
 
+void Interface::init() 
+{
+
+    menus[0].reset(new MainMenu());
+    menus[1].reset(new WorldMap());
+
+}
+
 void Interface::setMessage(Sign* message)
 {
     justSet = message;
@@ -56,11 +64,11 @@ void Interface::setMenu(Menus newMenu)
     currentMenu = newMenu;
 }
 
-void Interface::render()
+void Interface::process()
 {
-    if (currentMenu == MAIN_MENU)
+    if (currentMenu != Menus::NONE && menus[currentMenu-1])
     {
-        menu.update();
+        menus[currentMenu-1]->process({GetScreenWidth()/2,GetScreenHeight()/2,GetScreenWidth(),GetScreenHeight()});
     }
     else
     {

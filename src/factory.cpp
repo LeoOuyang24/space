@@ -27,10 +27,15 @@ void ClassDeserializer::init()
     registerName<GenericSpawner<TerrainPod>>();
     registerName<PushBot>();
     registerName<LargePushBot>();
-    registerName<GlowStone>("glowstone");
+    registerName<GlowStone>();
     registerName<GravitySwitch>();
     registerName<DestroyLaser>();
     registerName<CameraMoveRegion>();
+    registerName<Telescope>();
+    registerName<GravityStream>();
+
+    registerName<LifePod>();
+    registerName<Battery>("battery");
 }
 
 std::shared_ptr<PhysicsBody> ClassDeserializer::construct(std::string_view cereal)

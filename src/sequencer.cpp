@@ -5,19 +5,20 @@
 Sequences::SequencerList Sequences::physicsSequences;
 Sequences::SequencerList Sequences::renderSequences;
 
-Sequence Sequences::add(Sequencer* lst, bool isPhysics)
+SequencePtr Sequences::add(Sequencer* lst, bool isPhysics)
 {
-    Sequence temp = Sequence(lst);
+    SequencePtr temp;
+    temp.reset(lst);
     add(temp,isPhysics);
     return isPhysics ? physicsSequences.front() : renderSequences.front();
 }
 
-Sequence Sequences::add(const RunThis& lst, bool isPhysics)
+SequencePtr Sequences::add(const RunThis& lst, bool isPhysics)
 {
     return add((new Sequencer{lst}),isPhysics);
 }
 
-void Sequences::add(Sequence& seq, bool isPhysics)
+void Sequences::add(SequencePtr& seq, bool isPhysics)
 {
     if (isPhysics)
     {
@@ -28,7 +29,15 @@ void Sequences::add(Sequence& seq, bool isPhysics)
         renderSequences.push_front(seq);
     }
 }
-#include <iostream>
+
+SequencePtr Sequences::waitFor(std::function<bool()> runThis,bool isPhysics)
+{
+    SequencePtr ptr;
+    ptr.reset(new Sequencer{RunThis([runThis](int){return runThis();})});
+    Sequences::add(ptr,isPhysics);
+    return ptr;
+}
+
 void Sequences::run(SequencerList& lst)
 {
     for (auto it = lst.begin(); it != lst.end();)
@@ -43,7 +52,7 @@ void Sequences::run(SequencerList& lst)
        }
     }
 }
-bool Sequences::run(Sequence& seq)
+bool Sequences::run(SequencePtr& seq)
 {
     if (seq->size() > 0) //run first function, if it's done, remove it
     {

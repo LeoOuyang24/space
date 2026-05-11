@@ -23,6 +23,11 @@ void PhysicsBody::setOrient(const Orient& orient)
     this->orient = orient;
 }
 
+void PhysicsBody::setLayer(LayerType layer)
+{
+    this->orient.layer = layer;
+}
+
 void PhysicsBody::setDead(bool val)
 {
     dead = val;
@@ -237,7 +242,7 @@ void PhysicsBody::planetGravity(Terrain& terrain)
                 Vector2 force = Vector2Normalize(pos - orient.pos)/pow(Vector2Length(pos - orient.pos),2);
                 if (terrain.isBlockType(pos,ANTI,true))
                 {
-                    force *= -1;
+                    force *= -0.5;
                 }
                 else if (terrain.isBlockType(pos,LAVA,true))
                 {
@@ -322,7 +327,6 @@ void PhysicsBody::stayOnGround(Terrain& terrain)
     Vector2 bruh = terrain.lineTerrainIntersect(orient.pos,orient.pos + norm*GetDimen(getShape()).y,false); //- normal*(collider.height)/2;
     
     Vector2 newPos = bruh - Vector2Normalize(norm)*(GetDimen(getShape()).y/2  - 1);
-
 
     setPos(newPos);
 

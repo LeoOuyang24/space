@@ -25,9 +25,19 @@ PlayerCollider::PlayerCollider(Player& owner_, float width, float height) : Rect
 
 bool PlayerCollider::isOnGround(PhysicsBody& body, Terrain& t)
 {
+    if (!owner.isTangible())
+    {
+        return false;
+    }
     if (Globals::Game.terrain.get_gravityMode() == GlobalTerrain::PLANET)
     {
-        return t.isBlockType(body.getShape(),SOLID); //player can only be on ground if on solid ground
+        Shape upperThreeQuarter = body.getShape();
+        if (!owner.get_onGround())
+        {
+            upperThreeQuarter.orient.pos += body.orient.getNormal()*(upperThreeQuarter.collider.dimens.y/2*-0.25);
+            upperThreeQuarter.collider.dimens.y *= 0.75;
+        }
+        return t.isBlockType(upperThreeQuarter,SOLID); //player can only be on ground if on solid ground
     }
     return RectCollider::isOnGround(body,t);
 
@@ -96,7 +106,7 @@ void Player::update(Terrain& terrain)
         //forces.setForce(orient.getFacingVector()*10,Forces::ENEMY);
         if (onGround)
         {
-            Object::stayOnGround(terrain);
+            //Object::stayOnGround(terrain);
             tint = WHITE;
         }
         else if (!freeFall)
@@ -107,8 +117,9 @@ void Player::update(Terrain& terrain)
         {
             tint = BLUE;
         }
-
-        Object::applyForces(terrain);
+        
+        //Object::applyForces(terrain);
+        forces.addFriction(AIR_FRICTION,Forces::BOOSTING); //boosting gets slightly more friction
 
         if (!onGround && !freeFall)
         {
@@ -122,7 +133,14 @@ void Player::update(Terrain& terrain)
         {
             terrainAngle = {};
         }
-        Object::adjustAngle(terrain);
+        //Object::adjustAngle(terrain);
+
+        Object::applyForces(terrain);
+        if (onGround && (resetState.orient.pos != getPos() || resetState.orient.rotation != orient.rotation))
+        {
+            Object::adjustAngle(terrain);
+            Object::stayOnGround(terrain);
+        }
 
         if (onGround && !wasOnGround)
         {
@@ -136,14 +154,14 @@ void Player::update(Terrain& terrain)
             boosted = false;
             freeFallTime = 0;
             saveResetState();
-            stayOnGround(terrain);
+            //stayOnGround(terrain);
         }
         else if (wasOnGround)
         {
             freeFallTime = GetTime();
         }
 
-        if (terrain.isBlockType(orient.pos,LAVA))
+        if (terrain.isBlockType(orient.pos,LAVA) && state != PORTALLING)
         {
             setDead(true);
         }
@@ -176,9 +194,11 @@ void Player::handleControls()
             {
                 float accel = (onGround ? PLAYER_GROUND_ACCEL : downGrav ? PLAYER_AIR_ACCEL : std::min(PLAYER_AIR_ACCEL,0.2f*abs(speed)));
                 float maxSpeed = !onGround ?
-                                    freeFall ?
-                                        PLAYER_MAX_AIR_FREEFALL_SPEED :
-                                        PLAYER_MAX_AIR_SPEED :
+                                    Globals::Game.terrain.get_gravityMode() == GlobalTerrain::DOWN ?
+                                        3 :
+                                        freeFall ?
+                                            PLAYER_MAX_AIR_FREEFALL_SPEED :
+                                            PLAYER_MAX_AIR_SPEED :
                                     PLAYER_MAX_SPEED;
                 if (onGround) //update facing, but only on ground
                 {
@@ -379,4 +399,14 @@ void Player::setHolding(PhysicsBody& obj)
 PhysicsBody* Player::getHolding()
 {
     return holding.lock().get();
+}
+
+void Player::setLayer(LayerType layer)
+{
+    PhysicsBody::setLayer(layer);
+    if (PhysicsBody* holding = getHolding())
+    {
+        Globals::Game.addObject(Globals::Game.objects.getObject(holding),layer);
+        holding->setLayer(layer);
+    }
 }

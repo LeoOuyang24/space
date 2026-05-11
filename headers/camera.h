@@ -70,15 +70,23 @@ struct GameCamera
     void clear();
 
     /**
+     * @brief returns true if camera no longer has any queued up movements (seq is empty)
+     * 
+     */
+     bool isDone();
+
+
+    /**
      * @brief Get the Camera object
      * 
      * @return const Camera3D& 
      */
     const Camera3D& getCamera();
+    SequencePtr seq; //the sequence to add camera transitions to
 
 private:
     /**
-     * @brief QUeues up a function call
+     * @brief Queues up a function call
      * 
      * @return const Camera3D& 
      */
@@ -95,7 +103,6 @@ private:
     Camera3D camera;
     bool cameraFollow = false;
     Vector3 cameraFollowPoint = {};
-    Sequence seq; //the sequence to add camera transitions to
     bool lock = false; //true if all camera state modifications will be ignored
     bool queueing = false; //true if we are queueing actions
 };

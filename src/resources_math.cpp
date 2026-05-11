@@ -170,8 +170,14 @@ PossiblePoint segmentIntersectCircle(const Vector2& a1, const Vector2& a2, const
 
 Vector3 toVector3(const Vector2& vector2)
 {
-    return {vector2.x,vector2.y,Globals::Game.getCurrentZ()};
+    return toVector3(vector2,Globals::Game.getCurrentZ());
 }
+
+Vector3 toVector3(const Vector2& vector2, float z)
+{
+    return {vector2.x,vector2.y,z};
+}
+
 
 Vector2 toVector2(const Vector3& vector3)
 {

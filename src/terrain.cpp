@@ -55,8 +55,13 @@ void GlobalTerrain::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
 {
     if (ptr.get() && layer < layers.size())
     {
-        layers[layer].objects.emplace_back(ptr);
+        layers[layer].objects.insert(ptr);
     }
+}
+
+void GlobalTerrain::moveObject(std::shared_ptr<PhysicsBody> obj, LayerType layer)
+{
+    addObject(obj,layer);
 }
 
 void GlobalTerrain::pushBackTerrain()
@@ -81,6 +86,9 @@ void GlobalTerrain::loadTerrain(LayerType layer, std::string imagePath)
 
     Image img = LoadImage(imagePath.c_str());
     Color* colors = LoadImageColors(img);
+
+    terr->drawBlocks();
+
     for (int i = 0; i < std::min(img.width,Terrain::MAX_WIDTH); i += 1)
     {
         for (int j = 0; j < std::min(img.height,Terrain::MAX_WIDTH); j += 1)
@@ -111,7 +119,10 @@ void GlobalTerrain::loadTerrain(LayerType layer, std::string imagePath)
         }
     }
 
+    terr->endDrawBlocks();
+
     delete[] colors;
+    UnloadImage(img);
 
 
 }
@@ -158,7 +169,7 @@ void GlobalTerrain::update(LayerType layer)
                 }
                 ++it;
             }
-            else if (obj->getDead() && obj == Globals::Game.getPlayer()) //player gets reset as opposed to removed
+            else if (obj == Globals::Game.getPlayer() && obj && obj->getDead()) //player gets reset as opposed to removed
             {
                 static_cast<Player*>(obj)->resetPlayer();
             }
@@ -200,10 +211,10 @@ void GlobalTerrain::render()
 
 void GlobalTerrain::clear()
 {
-    for (auto& layer : layers)
+    for (auto& layer: layers)
     {
+        layer.terrain.cleanUp();
         layer.objects.clear();
-        layer.terrain.clear();
     }
 }
 

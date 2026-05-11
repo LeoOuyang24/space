@@ -86,8 +86,9 @@ struct Shape;
 
 struct Terrain
 {
-    static constexpr int MAX_WIDTH = 2000; //maximum number of blocks in the width direction
-
+    static constexpr int MAX_WIDTH = 3000; //maximum number of blocks in the width direction
+    static constexpr int PIXEL_SIZE = 1;
+    static constexpr float PIXEL_RATIO = PIXEL_SIZE/static_cast<float>(Block::BLOCK_DIMEN); //multiply a world coordinate by this to convert it to texture coords 
     static constexpr int MAX_TERRAIN_SIZE = MAX_WIDTH*Block::BLOCK_DIMEN; //distance in width direction in pixels
 
     static Shader GravityFieldShader;
@@ -97,9 +98,10 @@ struct Terrain
     TerrainMap terrain{Block::BLOCK_DIMEN,MAX_WIDTH};
     RenderTexture blocksTexture;
     RenderTexture gravityTexture;
-
     Terrain();
+    void cleanUp();
 
+    static int count;
     void addBlock(const Vector2& pos, const Block& block);
     //remove all blocks in area
     void remove(const Vector2& pos, int radius);
@@ -171,19 +173,21 @@ struct Terrain
      *
      * @param pos, the position to check
      * @param checkPlanets, true if we want to check planets
+     * @param checkEdge, true to check neighbors as well
      *
      * @returns true if position does not contain air
      */
-    bool blockExists(const Vector2& pos, bool checkPlanets = true); 
+    bool blockExists(const Vector2& pos, bool checkPlanets = true, bool checkEdge = true); 
     /**
      * @brief Given a position, returns whether that position is a certain type
      *
      * @param pos, the position to check
      * @param checkPlanets, true if we want to check planets
+     * @param checkEdge, true to check neighbors as well
      *
      * @returns true if position contains the provided type
      */
-    bool isBlockType(const Vector2& pos,BlockType type, bool checkPlanets = true); //true if block at position is "type".
+    bool isBlockType(const Vector2& pos,BlockType type, bool checkPlanets = true, bool checkEdge = true); //true if block at position is "type".
 
     /**
      * @brief returns true if the perimeter of a Shape collides with terrain. Always checks Planets
@@ -215,6 +219,8 @@ struct Terrain
     };
     std::vector<EntityPlanet> planets;
 
+    void drawBlocks();
+    void endDrawBlocks();
 private:
     typedef std::function<bool(BlockType)> CheckFunc; //used by various terrain functions to check for the type of a block
     static constexpr auto blockExistsCheck = [](BlockType other){return other != AIR;}; 
@@ -226,10 +232,11 @@ private:
      * @param pos, the position to check
      * @param checkPlanets, true if we want to check planets. You almost always want this to be true, but sometimes it can be expensive (O(n), where n is the number of planets)
      * @param check, a function that, given a blocktype, returns true or false. This can allow us to check if a block at a position has a certain type or if it is NOT a certain type
-     *
+     * @param checkEdge, false if we only care about the block at the actual position, as opposed to adjacent blocks as well. You almost always want this to be true
+     * 
      * @returns true if "check" returns true on the block at "pos" or any neighboring points if its on an edge
      */
-    bool checkBlocks(const Vector2& pos, bool checkPlanets, CheckFunc check);
+    bool checkBlocks(const Vector2& pos, bool checkPlanets, CheckFunc check, bool checkEdge = true);
     bool checkBlocks(const Shape& shape, bool checkPlanets, CheckFunc check); //same as above for a shape
 
     /**
@@ -246,8 +253,6 @@ private:
 
     bool isDrawing = false; //true if BeginTextureMode has been called, allowing us to batch draw planets
 
-    void drawBlocks();
-    void endDrawBlocks();
 };
 
 

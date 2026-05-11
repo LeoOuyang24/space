@@ -165,6 +165,28 @@ struct Factory<RectTerrain>
                     access<RectTerrain,&RectTerrain::calcNewPos>>;
 };
 
+struct GravityStream : public Object<RectCollider,ShapeRenderer<RECT>,GravityStream>
+{
+    Vector2 gravDir = {};
+    GravityStream()
+    {
+        followGravity = false;
+    }
+    void collideWith(PhysicsBody& other);
+};
+
+template<>
+struct Factory<GravityStream>
+{
+     static constexpr char ObjectName[] = "gravity_stream";
+
+    using Base = FactoryBase<GravityStream,
+                    access<GravityStream,&GravityStream::collider,&RectCollider::width>,
+                    access<GravityStream,&GravityStream::collider,&RectCollider::height>,
+                    accessSetter<GravityStream,[](GravityStream& obj, const Vector2& pos){ return pos + Vector2(obj.collider.width,obj.collider.height)*0.5;},&GravityStream::orient,&Orient::pos>,
+                    access<GravityStream,&GravityStream::gravDir>>;   
+};
+
 struct PushBot : public Object<RectCollider,TextureRenderer,PushBot>
 {
     PushBot()
@@ -195,8 +217,9 @@ struct LargePushBot : public PushBot
     }
     void activate(int pushAmount = 5); //set push to 5
     virtual void update(Terrain& t);
+    void onCollide(PhysicsBody& other);
 private:
-    int push = 10; // if greater than 0, move to the right and decrement 1
+    int push = 0; // if greater than 0, move to the right and decrement 1
 };
 
 template<>
@@ -212,10 +235,18 @@ struct GlowStone : public Object<CircleCollider,TextureRenderer,GlowStone>
 {
     GlowStone()
     {
-        collider.radius = 200;
+        collider.radius = 300;
         renderer.sprite = Globals::Game.Sprites.getSprite("glowstone.png");
     }
     void onCollide(PhysicsBody& other);
+};
+
+template<>
+struct Factory<GlowStone>
+{
+    static constexpr std::string ObjectName = "glow_stone";
+    using Base = FactoryBase<GlowStone,
+                                access<GlowStone,&GlowStone::orient,&Orient::pos>>;
 };
 
 struct CameraMoveRegion : public Object<RectCollider,NoRenderer,CameraMoveRegion>

@@ -61,8 +61,11 @@ struct Factory<BigSign>
 
 struct GravitySwitch : public Object<RectCollider,TextureRenderer,GravitySwitch>
 {
+    Vector2 gravityDir = {}; //NORMALIZED vector 
+
     GravitySwitch();
     void interactWith(PhysicsBody& other);
+    void render();
 };
 
 template<>
@@ -70,6 +73,7 @@ struct Factory<GravitySwitch>
 {
     static constexpr std::string ObjectName = "gravity_switch";
     using Base = FactoryBase<GravitySwitch,
+                                access<GravitySwitch,&GravitySwitch::gravityDir>,
                                 access<GravitySwitch,&GravitySwitch::orient,&Orient::pos>>;
 };
 
@@ -89,8 +93,66 @@ struct Factory<DestroyLaser>
     using Base = FactoryBase<DestroyLaser,
                                 access<DestroyLaser,&DestroyLaser::orient,&Orient::pos>,
                                 //access<DestroyLaser,&DestroyLaser::orient,&Orient::rotation>,
-                                accessSetter<DestroyLaser,[](float deg){return DEG2RAD*deg;},&DestroyLaser::orient,&Orient::rotation>,
+                                accessSetter<DestroyLaser,[](DestroyLaser&,float deg){return DEG2RAD*deg;},&DestroyLaser::orient,&Orient::rotation>,
                                 access<DestroyLaser,&DestroyLaser::orient,&Orient::facing>>;
+};
+
+//an object that moves the camera to a specific spot
+struct Telescope : public Object<RectCollider,TextureRenderer,Telescope>
+{
+    Vector2 focusPoint = {};
+    float zDisp = 0; //z displacement, z is always relative
+    bool absolute = false; //whether "focusPoint" is relative or not
+    Telescope()
+    {
+        renderer.sprite = Globals::Game.Sprites.getSprite("telescope.png");
+
+        collider.width = 100;
+        collider.height = 100;
+
+        followGravity = true;
+    }
+    void interactWith(PhysicsBody& other);
+    void update(Terrain& t);
+    void setActivated(bool b);
+protected:
+    bool activated = false;
+    bool justSet = false;
+};
+
+template<>
+struct Factory<Telescope>
+{
+    static constexpr std::string ObjectName = "telescope";
+    using Base = FactoryBase<Telescope,
+                                access<Telescope,&Telescope::focusPoint>,
+                                access<Telescope,&Telescope::zDisp>,
+                                access<Telescope,&Telescope::absolute>,
+                                access<Telescope,&Telescope::orient,&Orient::pos>>;
+};
+
+struct LifePod : public Object<RectCollider,TextureRenderer,LifePod>
+{
+    LifePod()
+    {
+        renderer.sprite = Globals::Game.Sprites.getSprite("lifepod.png");
+
+        collider.width = 100;
+        collider.height = 133;
+        keyVal = 2;
+        followGravity = true;
+    }   
+
+    void onCollide(PhysicsBody& other);
+    void interactWith(PhysicsBody& other);
+};
+
+template<>
+struct Factory<LifePod>
+{
+    static constexpr std::string ObjectName = "lifepod";
+    using Base = FactoryBase<LifePod,
+                                access<LifePod,&LifePod::orient,&Orient::pos>>;    
 };
 
 #endif // INTERACTIVES_H_INCLUDED

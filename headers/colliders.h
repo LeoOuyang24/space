@@ -12,7 +12,7 @@ struct CircleCollider
 
 
     bool isOnGround(const PhysicsBody& body, Terrain& t);
-    float getLandingAngle(Orient& orient, Terrain& terrain);
+    float getLandingAngle(PhysicsBody& orient, Terrain& terrain);
 
     GET_SHAPE_TYPE(ShapeType::CIRCLE);
     ShapeCollider getCollider() const {  return {.radius = radius}; };
@@ -24,7 +24,7 @@ struct RectCollider
     float width = 0, height = 0;
 
     bool isOnGround(PhysicsBody& body, Terrain& t);
-    float getLandingAngle(Orient& orient, Terrain& terrain);
+    float getLandingAngle(PhysicsBody& orient, Terrain& terrain);
 
     GET_SHAPE_TYPE(ShapeType::RECT);
     ShapeCollider getCollider() const { return {Vector2(width,height)}; };
