@@ -6,7 +6,7 @@
 * TODO: Make ALT-TAB work
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
 
-## 5/10/2026
+## 5/10/2026 World Map and Level Resize
 * Levels are now 3000x3000
 * when in the air, only the top 75% of the player can collide with the ground, this prevents jumps from getting cut early
 * GravitySwitch now applies a very strong gravitational force in one direction as opposed to flipping gravity
