@@ -22,7 +22,7 @@ void GameCamera::init()
 
 void GameCamera::update()
 {
-    if (cameraFollow && Globals::Game.getPlayer() && !Debug::isDebugOn())
+    if (cameraFollow && Globals::Game.getPlayer() && !Debug::isDebugOn() && seq->size() == 0)
     {
         lookAt(toVector3(Globals::Game.getPlayer()->getPos()),0);
     }
@@ -167,6 +167,11 @@ void GameCamera::clear()
         lock = false;
         seq->clear();
     }
+}
+
+bool GameCamera::isDone()
+{
+    return seq->size() == 0;
 }
 
 const Camera3D& GameCamera::getCamera()

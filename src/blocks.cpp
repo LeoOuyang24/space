@@ -30,20 +30,28 @@ Vector2 Terrain::nearestPos(const Vector2& vec)
                     vec.y - remainY + (remainY >= Block::BLOCK_DIMEN/2)*Block::BLOCK_DIMEN);
 }
 
+
+int Terrain::count = 0;
 Terrain::Terrain()
 {
-    blocksTexture = LoadRenderTexture(MAX_TERRAIN_SIZE,MAX_TERRAIN_SIZE);
+    blocksTexture = LoadRenderTexture(MAX_TERRAIN_SIZE*PIXEL_RATIO,MAX_TERRAIN_SIZE*PIXEL_RATIO);
+    //blocksTexture = LoadRenderTexture(MAX_WIDTH,MAX_WIDTH);
     //gravityTexture = LoadRenderTexture(MAX_TERRAIN_SIZE,MAX_TERRAIN_SIZE);
     //terrain.data.reserve(MAX_WIDTH*MAX_WIDTH*TerrainMap::PALETTE_SIZE);
 //    upScaled.resize(upScaled.maxWidth*upScaled.maxWidth);
     //gravityFields.resize(gravityFields.maxWidth*gravityFields.maxWidth);
 
-    BeginTextureMode(blocksTexture);
-        ClearBackground(BLANK);
-    EndTextureMode();
+    cleanUp();
    /* BeginTextureMode(gravityTexture);
         ClearBackground(BLANK);
     EndTextureMode();*/
+} 
+
+void Terrain::cleanUp()
+{
+    BeginTextureMode(blocksTexture);
+        ClearBackground(BLANK);
+    EndTextureMode();
 }
 
 Rectangle Terrain::getBlockRect(const Vector2& pos)
@@ -87,30 +95,29 @@ void Terrain::addBlock(const Vector2& pos, const Block& block)
         color = block.color;
         break;
     }
-    Vector2 rounded = roundPos(pos);
+    Vector2 rounded = roundPos(pos)*(PIXEL_RATIO);
     if (!isDrawing) //true if this is was called as part of another function, so don't start/stop drawing to texture because that is controlled by the outer function
     {
         BeginTextureMode(blocksTexture);
     }
             for (int i = 0; i < 9; i ++)
             {
-                Vector2 neighbor = {rounded.x + Block::BLOCK_DIMEN*(i%3 - 1),rounded.y + Block::BLOCK_DIMEN*(i/3 - 1)};
+                Vector2 neighbor = {rounded.x + PIXEL_SIZE*(i%3 - 1),rounded.y + PIXEL_SIZE*(i/3 - 1)};
                 if (neighbor.x >= 0 && neighbor.y >= 0 &&
                     neighbor.x < blocksTexture.texture.width && neighbor.y < blocksTexture.texture.height &&
-                    !blockExists(neighbor))
+                    !blockExists(neighbor/PIXEL_RATIO))
                     {
-                        Vector2 pos = {neighbor.x,blocksTexture.texture.height - neighbor.y -  Block::BLOCK_DIMEN};
+                        //Vector2 pos = {neighbor.x,blocksTexture.texture.height - neighbor.y -  PIXEL_SIZE};
 
-                            DrawRectangle(pos.x,pos.y,
-                                              Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,
-                                              Color(color.r*.5,color.g*.5,color.b*.5,255));
+                            /*DrawRectangle(pos.x,pos.y,
+                                              pixelSize,pixelSize,
+                                              Color(color.r*.5,color.g*.5,color.b*.5,255));*/
 
 
                     }
             }
-            terrain.setVal(pointToIndex(rounded),block.type);
-
-            DrawRectangle(rounded.x,blocksTexture.texture.height - rounded.y - Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,color);
+            terrain.setVal(pointToIndex(roundPos(pos)),block.type);
+            DrawRectangle(rounded.x,blocksTexture.texture.height - rounded.y - PIXEL_SIZE,PIXEL_SIZE,PIXEL_SIZE,color);
             /*DrawCircle(rounded.x + Block::BLOCK_DIMEN/2,
                        blocksTexture.texture.height - rounded.y - Block::BLOCK_DIMEN + Block::BLOCK_DIMEN/2,
                        200,Color(0,200,200,100));*/
@@ -130,10 +137,10 @@ void Terrain::remove(const Vector2& pos, int radius)
             {
                 Vector2 neighbor = pos;//{pos.x + Block::BLOCK_DIMEN*(i%3 - 1),pos.y + Block::BLOCK_DIMEN*(i/3 - 1)};
                 terrain.setVal(pointToIndex(neighbor),BlockType::AIR);
-                DrawRectangle(neighbor.x,blocksTexture.texture.height - neighbor.y-  Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,Fade(BLACK, 0.0f));
+                DrawRectangle(neighbor.x*PIXEL_RATIO,(blocksTexture.texture.height - neighbor.y)*PIXEL_RATIO -  PIXEL_SIZE,PIXEL_SIZE,PIXEL_SIZE,Fade(BLACK, 0.0f));
 
             }
-               },pos,radius+Block::BLOCK_DIMEN*2);
+               },pos,radius+Block::BLOCK_DIMEN*2*(PIXEL_RATIO));
         rlSetBlendMode(BLEND_ALPHA);
     endDrawBlocks();
    // std::cout << GetTime() - time << "\n";
@@ -142,9 +149,7 @@ void Terrain::remove(const Vector2& pos, int radius)
 void Terrain::clear()
 {
     terrain.clear();
-    BeginTextureMode(blocksTexture);
-        ClearBackground(BLANK);
-    EndTextureMode();
+    cleanUp();
 }
 
 
@@ -230,7 +235,6 @@ void Terrain::generatePlanet(const Vector2& center, int radius, const Color& col
                     addBlock(pos,{color});
 
                },center,radius);
-
     endDrawBlocks();
 
 }
@@ -282,14 +286,14 @@ void Terrain::generateRightTriangle(const Vector2& corner, float height, const C
     endDrawBlocks();
 }
 
-bool Terrain::blockExists(const Vector2& pos, bool checkPlanets)
+bool Terrain::blockExists(const Vector2& pos, bool checkPlanets, bool checkEdge)
 {
-    return checkBlocks(pos,checkPlanets,blockExistsCheck);
+    return checkBlocks(pos,checkPlanets,blockExistsCheck, checkEdge);
 }
 
-bool Terrain::isBlockType(const Vector2& pos, BlockType type, bool checkPlanets)
+bool Terrain::isBlockType(const Vector2& pos, BlockType type, bool checkPlanets, bool checkEdge)
 {
-    return checkBlocks(pos,checkPlanets,isBlockTypeCheck(type));
+    return checkBlocks(pos,checkPlanets,isBlockTypeCheck(type), checkEdge);
 }
 
 bool Terrain::blockExists(const Shape& shape)
@@ -302,7 +306,7 @@ bool Terrain::isBlockType(const Shape& shape, BlockType type)
     return checkBlocks(shape,true,isBlockTypeCheck(type));
 }
 
-bool Terrain::checkBlocks(const Vector2& pos, bool checkPlanets, std::function<bool(BlockType)> check)
+bool Terrain::checkBlocks(const Vector2& pos, bool checkPlanets, std::function<bool(BlockType)> check, bool checkEdge)
 {
     if (checkPlanets)
     {
@@ -329,7 +333,7 @@ bool Terrain::checkBlocks(const Vector2& pos, bool checkPlanets, std::function<b
         return false;
     }
     bool answer = check(terrain[index]);
-    if ( !answer)
+    if ( !answer && checkEdge)
     {
         if ( static_cast<int>(pos.x) % Block::BLOCK_DIMEN == 0)
         {
@@ -413,17 +417,22 @@ Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFun
 
     Vector2 current = a;
     bool past = false;
-    //loop until we have gone past b or we hit a wall
-    while (!check(terrain[pointToIndex(current)]) && !past)
+    //loop until we have gone past b or we hit a wall. ignoring planets, since we calculate it later
+    while (!checkBlocks(current,false,check) && !past)
     {
         current = pointBoxEdgeIntersect(current,dir,Block::BLOCK_DIMEN);
         past = abs(current.y - a.y) > abs(b.y - a.y) || abs(current.x - a.x) > abs(b.x - a.x);
 
-        /*Debug::addDeferRender([current,this](){
+        /*if (Debug::isDebugOn())
+        {
+            Debug::addDeferRender([current,this,check](){
 
-                              DrawCircle3D(toVector3(current),2,{},0,blockExists(current,true) ? RED : WHITE);
+                                DrawCircle3D(toVector3(current),1,{},0,checkBlocks(current,false,check) ? RED : WHITE);
 
-                              });*/
+                                });
+        }*/
+
+
     }
 
 
@@ -459,9 +468,10 @@ void Terrain::render(int i, int z)
 
    //BeginShaderMode(GravityFieldShader);
 
+   float ratio =  Block::BLOCK_DIMEN/PIXEL_SIZE;
    DrawBillboardPro(Globals::Game.Camera.getCamera(),blocksTexture.texture,Rectangle(0,0,blocksTexture.texture.width,blocksTexture.texture.height)
-                    ,Vector3(blocksTexture.texture.width/2,blocksTexture.texture.height/2,z),Vector3(0,-1,0),
-                    Vector2(blocksTexture.texture.width,blocksTexture.texture.height),Vector2(blocksTexture.texture.width/2,blocksTexture.texture.height/2),
+                    ,Vector3(MAX_TERRAIN_SIZE/2,MAX_TERRAIN_SIZE/2,z),Vector3(0,-1,0),
+                    Vector2(blocksTexture.texture.width,blocksTexture.texture.height)*ratio,Vector2(blocksTexture.texture.width/2,blocksTexture.texture.height/2)*ratio,
                     0,balls);
     //EndShaderMode();
    //BeginShaderMode(GravityFieldShader);

@@ -39,25 +39,33 @@ typedef std::list<RunThis> Sequencer;
 //runs until empty. If a Sequence is the only pointer to a Sequencer, it is deleted
 //however, Sequencers with multiple pointers are kept, even if empty. This allows "queueing", where an object (like GameCamera),
 //can continuously add RunThis to one Sequence
-typedef std::shared_ptr<Sequencer> Sequence;
+typedef std::shared_ptr<Sequencer> SequencePtr;
 //stores Sequencers, which can be set to run either once per frame or once per loop
 struct Sequences
 {
-    typedef std::list<Sequence> SequencerList;
+    typedef std::list<SequencePtr> SequencerList;
     static SequencerList physicsSequences; //sequences that run once per frame
     static SequencerList renderSequences; //sequences that run once per loop
 
     static void run(SequencerList& lst);
-    static bool run(Sequence& seq); //run a sequence, return true if it is done (has no more units to run)
+    static bool run(SequencePtr& seq); //run a sequence, return true if it is done (has no more units to run)
 
 public:
     //isPhysics = true means we add to "physicsSequences", else "renderSequences"
-    static Sequence add(Sequencer* sequence, bool isPhysics);
-    static Sequence add(const RunThis& runThis, bool isPhysics);
-    static void add(Sequence& seq, bool isPhysics);  //add a Sequence, that already exists, probably because you want to have multiple pointers
+    static SequencePtr add(Sequencer* sequence, bool isPhysics);
+    static SequencePtr add(const RunThis& runThis, bool isPhysics);
+    /**
+     * @brief Waits until the provided function returns true
+     * 
+     * @param runThis function to wait on
+     * @param isPhysics true if physics
+     * @return SequencePtr 
+     */
+    static SequencePtr waitFor(std::function<bool()> runThis,bool isPhysics);
+    static void add(SequencePtr& seq, bool isPhysics);  //add a Sequence, that already exists, probably because you want to have multiple pointers
 
     template<typename... Callable>
-    static Sequence add(bool isPhysics, Callable... callable)
+    static SequencePtr add(bool isPhysics, Callable... callable)
     {
         return add((new Sequencer{RunThis::Func(callable)...}),isPhysics);
     }

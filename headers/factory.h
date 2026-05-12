@@ -51,17 +51,18 @@ auto& access(Obj& thing)
 
 //used to define a custom setter function for a particular field
 //use this the same way you'd use access, but replace access with accessSetter<obj,setFunc,accessors...> (defined below)
-template<typename FieldType, auto Func>
+template<typename Obj, typename FieldType, auto Func>
 struct Setter
 {
     FieldType& value;
-    Setter(FieldType& val) : value(val)
+    Obj& obj;
+    Setter(Obj& obj_, FieldType& val) : value(val),obj(obj_)
     {
 
     }
     void operator=(const FieldType& other)
     {
-        value = Func(other);
+        value = Func(obj,other);
     }
 };
 
@@ -69,7 +70,7 @@ template<typename Obj, auto Func, auto... Members>
 auto accessSetter(Obj& thing)
 {
     using FieldType = std::remove_reference<decltype(access<Obj,Members...>(std::declval<Obj&>()))>::type;
-    return Setter<FieldType,Func>(access<Obj,Members...>(thing));
+    return Setter<Obj,FieldType,Func>(thing,access<Obj,Members...>(thing));
 }
 
 //sets a field. For most fields, this is pretty simple; simply set it to the serialized version
@@ -82,8 +83,8 @@ void setValue(const SplitString& params, Accessed& accessed, size_t index)
     }
 }
 
-template<typename Accessed, auto Func>
-void setValue(const SplitString& params, Setter<Accessed,Func> setter, size_t index)
+template<typename Obj, typename Accessed, auto Func>
+void setValue(const SplitString& params, Setter<Obj,Accessed,Func> setter, size_t index)
 {
     if (index < params.size())
     {

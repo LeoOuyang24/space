@@ -236,6 +236,27 @@ struct Factory<GenericSpawner<TerrainPod>>
                             access<GenericSpawner<TerrainPod>,&GenericSpawner<TerrainPod>::orient,&Orient::pos>>;   
 };
 
+struct Battery : public Object<RectCollider,TextureRenderer,Battery,PickupComponent>
+{
+    Battery()
+    {
+        keyVal = 2;
+        followGravity = true;
+        collider.width = 30;
+        collider.height = 60;
+        renderer.sprite = Globals::Game.Sprites.getSprite("battery.png");
+    }
+};
+
+template<>
+struct Factory<Battery>
+{
+    static constexpr std::string ObjectName = "battery";
+    using Base = FactoryBase<Battery,
+                            access<Battery,&Battery::orient,&Orient::pos>>;         
+};
+
+
 bool operator==(const Key::KeyVal& left, const Key::KeyVal& right);
 
 

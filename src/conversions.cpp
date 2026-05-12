@@ -222,7 +222,7 @@ MoveFunc fromString(std::string_view str)
     SplitString split(str,'|');
     float speed = fromString<float>(split[1]);
     auto toString = [cereal=std::string(str.data())]() -> std::string {return cereal;}; //toString function each of these guys will have, which is just returning the string that was used to deserialize them
-    if (split[0] == "LINE") //LINE|<distance>|<angle in degrees>
+    if (split[0] == "LINE") //LINE|<speed>|<distance>|<angle in degrees>
     {
         return { //linear movement, can be diagonal based on 3rd parameter
             
@@ -238,7 +238,7 @@ MoveFunc fromString(std::string_view str)
             speed
         };
     }
-    else if (split[0] == "CIRCLE") //CIRCLE|<radius>
+    else if (split[0] == "CIRCLE") //CIRCLE|<speed>|<radius>
     {
         return {
         

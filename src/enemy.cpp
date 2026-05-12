@@ -74,6 +74,11 @@ void LaserBeamEnemy::collideWith(PhysicsBody& other)
     }
 }
 
+void GravityStream::collideWith(PhysicsBody& other)
+{
+    other.getForces().addForce(gravDir,Forces::GRAVITY);
+}
+
 void PushBot::update(Terrain& t)
 {
     Object::update(t);
@@ -102,12 +107,33 @@ void LargePushBot::activate(int pushAmount)
 
 void LargePushBot::update(Terrain& t)
 {
-    if (push > 0)
-    {
-        forces.addForce(orient.getFacingVector()*5,Forces::MOVE);
-        push --;
-    }
     Object::update(t);
+}
+
+void LargePushBot::onCollide(PhysicsBody& other)
+{
+    PushBot::onCollide(other);
+
+    if (other.getKeyVal() > 0)
+    {
+        other.setDead(true);
+        Globals::Game.Camera.setCameraFollow(getPos() + Vector2(100,0),120);
+        Sequences::add(true,[](int){
+
+            return Globals::Game.Camera.isDone();
+
+        },
+        [this](int x ){
+            if (Globals::Game.objects.getObject(this))
+            { 
+                setPos(getPos() + Vector2(10*pow(0.9,1 - x/50.0f),0));
+            } 
+        return x >= 100;},
+        [](int x){
+            Globals::Game.Camera.setCameraFollow(true,120);
+            return true;
+        });
+    }
 }
 
 void GlowStone::onCollide(PhysicsBody& other)
@@ -115,7 +141,7 @@ void GlowStone::onCollide(PhysicsBody& other)
     if (Vector2LengthSqr(forces.getForce(Forces::ENEMY)) > 0)
     {
         setDead(true);
-        Globals::Game.addObject(*(new Portal(getPos(),orient.layer,{},orient.layer)),orient.layer);
+        Globals::Game.addObject(*(new Portal(getPos(),orient.layer,{2433,1020},0)),orient.layer);
         Sequences::add(false,[start=GetTime(),pos=getPos()](int frames){
                    const Anime* anime = Globals::Game.Sprites.getAnime("death.png");
                    DrawAnime3D(anime->spritesheet,start,anime->info,{pos.x,pos.y,500,500},Globals::Game.getCurrentZ(),0,GRAY);
@@ -130,11 +156,8 @@ void CameraMoveRegion::collideWith(PhysicsBody& other)
     {
         if (!wasActivated)
         {
-            std::cout << "entered\n";
             Globals::Game.Camera.clear();
-            Globals::Game.Camera.startQueue();
-                Globals::Game.Camera.setCameraFollow(toVector3(getPos()) - Vector3(0,0,Globals::CAMERA_Z_DISP) + cameraTarget,100); //okay for this to not be in queue so other camera moves can be queued up, including by leaving the region
-            Globals::Game.Camera.stopQueue();
+            Globals::Game.Camera.setCameraFollow(toVector3(getPos()) - Vector3(0,0,Globals::CAMERA_Z_DISP) + cameraTarget,100); //okay for this to not be in queue so other camera moves can be queued up, including by leaving the region
         }
         activated = true;
     }
@@ -145,11 +168,8 @@ void CameraMoveRegion::update(Terrain& t)
 {
     if (wasActivated && !activated)
     {
-        std::cout << "left\n";
         Globals::Game.Camera.clear();
-        Globals::Game.Camera.startQueue();
-            Globals::Game.Camera.setCameraFollow(true,100);
-        Globals::Game.Camera.stopQueue();
+        Globals::Game.Camera.setCameraFollow(true,100);
     }
     wasActivated = activated;
     activated = false;

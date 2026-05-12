@@ -9,9 +9,10 @@ bool CircleCollider::isOnGround(const PhysicsBody& body, Terrain& terrain)
     return terrain.blockExists(body.getShape());
 }
 
-float CircleCollider::getLandingAngle(Orient& o, Terrain& terrain)
+float CircleCollider::getLandingAngle(PhysicsBody& body, Terrain& terrain)
 {
     int count = 10;
+    Orient o = body.getOrient();
     for (int i = 0; i < count; i ++)
     {
         float radians = 360.0f/count*DEG2RAD*i;
@@ -59,31 +60,31 @@ bool RectCollider::isOnGround(PhysicsBody& body, Terrain& t)
     }
 }
 
-float RectCollider::getLandingAngle(Orient& o, Terrain& terrain)
+float RectCollider::getLandingAngle(PhysicsBody& body, Terrain& terrain)
 {
 
-    Vector2 prevCorner = o.pos + Vector2Rotate(Vector2(-width/2,-height/2),o.rotation); //top left
 
-
+    Shape shape = body.getShape();
     Vector2 ground = {}; //vector towrads the ground, calculated by adding all intersections
-    for (int i = 0; i < 4; i ++) //top right, bot right, bot left, top left corners
+    for (size_t i = 0; i < getShapePoints(RECT); i ++) //top right, bot right, bot left, top left corners
     {
-        int index =(i + 1)%4;
-        Vector2 corner = o.pos + Vector2Rotate(Vector2(width/2,height/2)*Vector2(((index%3) != 0)*2 - 1,index/2*2 - 1),o.rotation);
-        Vector2 intersect = terrain.lineBlockIntersect(corner,prevCorner,true);
+        //int index =(i + 1)%4;
+        Vector2 prevCorner = getIthShapePoint(shape,i);
+        Vector2 corner = getIthShapePoint(shape,(i+1)%4);//.pos + Vector2Rotate(Vector2(width/2,height/2)*Vector2(((index%3) != 0)*2 - 1,index/2*2 - 1),o.rotation);
+        Vector2 intersect = terrain.lineBlockIntersect(corner,prevCorner,false);
 
-       if (terrain.isBlockType(intersect,SOLID,true))
+       if (!Vector2Equals(intersect,prevCorner))
         //if (terrain.blockExists(intersect,true,true))
         {
             //ground += o.pos - intersect2.pos;
-            ground += intersect - o.pos;
+            ground += intersect - body.getPos();
         }
 
         prevCorner = corner;
     }
     if (Vector2Equals(ground,{}))
         {
-            return o.rotation;
+            return body.getOrient().rotation;
         }
     return atan2(ground.y,ground.x) - M_PI/2;
 }

@@ -65,11 +65,11 @@ std::string toString(std::unique_ptr<T>& ptr)
 }
 
 
-template<typename FieldType, auto Func>
+template<typename Obj, typename FieldType, auto Func>
 struct Setter;
 
-template<typename FieldType,auto Func>
-std::string toString(Setter<FieldType,Func> setter)
+template<typename Obj, typename FieldType,auto Func>
+std::string toString(Setter<Obj,FieldType,Func> setter)
 {
     return toString<FieldType>(setter.value);
 }

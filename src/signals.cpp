@@ -44,7 +44,7 @@ SignalSet world1()
     sigs["spawn_bonus_portal"] = [](void* thing){
 
         Portal* p = spawn<Portal>(thing,{0,100});
-            p->destPos = {1800,1950};            
+            p->destPos = {3000,4599};            
 
     };
 
@@ -55,6 +55,12 @@ SignalSet world1()
             p->destPos = {2433,1020};
         Globals::Game.addObject(*p,static_cast<PhysicsBody*>(thing)->getOrient().layer);
     }};
+
+    sigs["finish_golf_course"] = [](void* thing){
+
+
+
+    };
 
 
     return sigs;

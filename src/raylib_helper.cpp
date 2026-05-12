@@ -4,6 +4,24 @@
 
 #include <iostream>
 
+
+Vector2 GetScreenDimen()
+{
+    return {GetScreenWidth(),GetScreenHeight()};
+}
+
+void DrawRectangleLines3D(Rectangle rect, float z, float rotation, Color color, int width)
+{
+    Vector2 center = {rect.x + rect.width/2, rect.y + rect.height/2};
+    for (int i = 0; i < 4; i ++)
+    {
+        Vector2 corner = rotatePoint(Vector2(rect.x,rect.y) + Vector2(rect.width*(i%3 == 0),rect.height*(i > 1)),center,rotation);
+        Vector2 next = rotatePoint(Vector2(rect.x,rect.y) + Vector2(rect.width*((i+1)%4%3 == 0),rect.height*((i + 1)%4 > 1)),center,rotation);
+        DrawLine3D({corner.x,corner.y,z},{next.x,next.y,z},
+                color,width);
+    }
+}
+
 void DrawLine3D(Vector3 startPos,Vector3 endPos, Color color, int width)
 {
     Vector3 centerPos = (startPos + endPos)/2;
@@ -29,16 +47,13 @@ void DrawLine3D(Vector3 startPos,Vector3 endPos, Color color, int width)
 
 void DrawArrow3D(Vector3 startPos,Vector3 endPos, Color color, int width)
 {
-    DrawLine3D(startPos,endPos,color,width);
+    if (!Vector3Equals(startPos,endPos))
+    {
+        DrawLine3D(startPos,endPos,color,width);
 
-    DrawLine3D(endPos + Vector3Normalize(Vector3RotateByAxisAngle(endPos - startPos,Vector3(0,0,1),5*M_PI/6))*100,endPos,color,width);
-    DrawLine3D(endPos + Vector3Normalize(Vector3RotateByAxisAngle(endPos - startPos,Vector3(0,0,1),-5*M_PI/6))*100,endPos,color,width);
-
-}
-
-Vector2 GetScreenDimen()
-{
-    return {GetScreenWidth(),GetScreenHeight()};
+        DrawLine3D(endPos + Vector3Normalize(Vector3RotateByAxisAngle(endPos - startPos,Vector3(0,0,1),5*M_PI/6))*100,endPos,color,width);
+        DrawLine3D(endPos + Vector3Normalize(Vector3RotateByAxisAngle(endPos - startPos,Vector3(0,0,1),-5*M_PI/6))*100,endPos,color,width);
+    }
 }
 
 void DrawSprite3D(const Texture2D& sprite, const Rectangle& pos, float rotation, Color tint)

@@ -7,7 +7,7 @@
 #include "signals.h"
 
 #include <list>
-
+#include <set>
 
 typedef size_t LayerType;
 
@@ -42,12 +42,20 @@ struct GlobalTerrain
         std::string imagePath = "";
         Vector2 playerPos = {};
     };
-    //adds an object to a given layer, does nothing if provided layer is out of bounds
+    /**
+     * @brief adds an object to a given layer, does nothing if provided layer is out of bounds
+     * 
+     */
     void addObject(std::shared_ptr<PhysicsBody> obj, LayerType layer);
-    //removing an object is intersting. We immediately kill it in ObjectLookup. However, the weak_ptr may persist in the old layer.
-    //We do a deferred removal in the layers, where when we call update(), if a weak_ptr is invalid (or is valid but object is not in this layer),
-    //we remove the weak_ptr. As a result, a weak_ptr may persist in Layer::objects for some time
-    void removeObject(PhysicsBody& obj);
+
+    /**
+     * @brief Moves "body" to newLayer. Does NOT add it to ObjectLookup, it is assumed it is already in there. If the object is the player, we explicity remove it from our layer
+     * 
+     * @param body
+     * @param newLayer
+     */
+    void moveObject(std::shared_ptr<PhysicsBody> body, LayerType newLayer);
+
 
     void pushBackTerrain(); //add terrain to furthest layer
     //load an image as the block data for the terrain at the provided layer
@@ -90,7 +98,7 @@ private:
     {
         Terrain terrain;
         //contains weak_ptrs that point to the shared_ptrs in ObjectLookup
-        std::list<std::weak_ptr<PhysicsBody>> objects;
+        std::set<std::weak_ptr<PhysicsBody>,std::owner_less<std::weak_ptr<PhysicsBody>>> objects;
         LayerInfo info;
     };
 

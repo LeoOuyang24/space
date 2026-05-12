@@ -15,10 +15,11 @@ struct std::equal_to<Color>
     }
 };
 
+Vector2 GetScreenDimen();
+
 void DrawLine3D(Vector3 startPos,Vector3 endPos, Color color, int width);
 void DrawArrow3D(Vector3 startPos, Vector3 endPos, Color color, int width); //draws a 3d line but the endpoint has an arrowhead
-
-Vector2 GetScreenDimen();
+void DrawRectangleLines3D(Rectangle rec, float z, float rotation, Color color, int width);
 
 struct AnimeInfo
 {

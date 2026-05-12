@@ -81,6 +81,24 @@ void exportBackground()
     ExportImage(LoadImageFromTexture(bg.texture),"sprites/bg_scatter2.png");
 }
 
+struct ASDF
+{
+    RenderTexture texture;
+
+    ASDF()
+    {
+        texture = LoadRenderTexture(Terrain::MAX_TERRAIN_SIZE,Terrain::MAX_TERRAIN_SIZE);
+        BeginTextureMode(texture);
+            ClearBackground(BLANK);
+        EndTextureMode();
+        cleanUp();
+    }  
+    void cleanUp()
+    {
+        UnloadRenderTexture(texture);
+    }
+};
+
 int main(void)
 {
     // Initialization
@@ -109,8 +127,31 @@ int main(void)
     //World world1 = {{"levels/layer0.txt","levels/layer1.txt","levels/layer2.txt"}};
     //Globals::Game.loadLevel("levels/block.txt");
 
+    Globals::Game.addWorld("worlds/world0");
     Globals::Game.addWorld("worlds/world1");
+
     Globals::Game.setCurWorld(0);
+    //std::cout << "done-----------------------\n";
+    //Globals::Game.setCurWorld(1);
+
+    //Terrain* terrains[10];
+    //ASDF terrains[10];
+    /*for (int i = 0; i < 1; i ++)
+    {
+        RenderTexture2D texture = LoadRenderTexture(Terrain::MAX_TERRAIN_SIZE,Terrain::MAX_TERRAIN_SIZE);
+        BeginTextureMode(texture);
+            ClearBackground(BLANK);
+        EndTextureMode();
+        UnloadRenderTexture(texture);
+    }*/
+    
+    /*RenderTexture2D textures[10];
+    for (int i = 0; i < 10; i ++)
+    {
+        textures[i] = LoadRenderTexture(Terrain::MAX_TERRAIN_SIZE,Terrain::MAX_TERRAIN_SIZE);
+        UnloadRenderTexture(textures[i]);
+    }*/
+
 
     Globals::Game.Camera.moveCamera(Vector3{Terrain::MAX_TERRAIN_SIZE*0.5,Terrain::MAX_TERRAIN_SIZE*0.5,Globals::BACKGROUND_Z*0.9});
 
@@ -123,17 +164,20 @@ int main(void)
 
     int frames = 0;
 
-    Terrain::GravityFieldShader = LoadShader(0,TextFormat("shaders/fragments/terrain.h",GLSL_VERSION));
+    Terrain::GravityFieldShader = LoadShader(0,TextFormat("shaders/fragments/terrain_outline.h",GLSL_VERSION));
     Texture& blocks = Globals::Game.getCurrentTerrain()->blocksTexture.texture;
     Vector2 pixelSizes = {1.0/blocks.width,1.0/blocks.height};
     SetShaderValue(Terrain::GravityFieldShader,GetShaderLocation(Terrain::GravityFieldShader,"pixelSizes"),&pixelSizes,SHADER_UNIFORM_VEC2);
 
     SoundLibrary::loadBGM("music/world0_together.wav");
+    //SoundLibrary::loadBGM("music/world1/world1.wav");
     SoundLibrary::toggleBGM(false);
 
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-     //   SoundLibrary::update();
+        SoundLibrary::update();
+
+       // std::cout << GetFrameTime() << "\n";
 
         float deltaTime = GetFrameTime();
         if ( IsKeyPressed(KEY_RIGHT_BRACKET) || !Debug::isPaused())
@@ -194,6 +238,7 @@ int main(void)
                 DrawBillboardRec(camera,bg,Rectangle(0,0,bg.width,bg.height),
                                  Vector3(Terrain::MAX_TERRAIN_SIZE/2,Terrain::MAX_TERRAIN_SIZE/2,Globals::BACKGROUND_Z),
                                  Vector2(bg.width,bg.height),WHITE);
+
                 Globals::Game.terrain.render();
 
                 Sequences::runRenders();
@@ -212,8 +257,7 @@ int main(void)
                 DrawCircle(pos.pos.x,pos.pos.y,5,RED);
             }
             DrawLine(450,450,GetMousePosition().x,GetMousePosition().y,WHITE);*/
-
-            Globals::Game.interface.render();
+            Globals::Game.interface.process();
             Debug::drawInterface();
             DrawFPS(10, 10);
 

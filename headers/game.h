@@ -43,12 +43,13 @@ struct Globals
     Camera3D getCamera();
     LayerType getCurrentLayer();
     Terrain* getCurrentTerrain();
-    void loadLevel(std::string_view path);
+    void loadLevel(std::string_view path, LayerType i);
     void addWorld(std::string_view path); //adds a new world from folder
     void loadWorld(const World& world); //load a preexisting world
     void setCurWorld(CurrentWorld cur);
     Texture2D getBG();
 
+    void addObject(PhysicsBody& body, Orient o);
     void addObject(PhysicsBody& body, LayerType layer);
     void addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer);
     void addObject(std::shared_ptr<PhysicsBody> ptr);

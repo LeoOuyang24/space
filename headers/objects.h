@@ -61,6 +61,7 @@ struct PhysicsBody
     virtual Vector2 getPos() const = 0;
     Orient getOrient() const;
     void setOrient(const Orient& orient);
+    virtual void setLayer(LayerType layer);
     virtual void setPos(const Vector2& pos);
     Forces& getForces();
     virtual void onCollide(PhysicsBody& other)
@@ -163,7 +164,7 @@ struct Object : public PhysicsBody
         return collider.isOnGround(*this,t);
     }
 
-    void onCollide(PhysicsBody& other)
+    virtual void onCollide(PhysicsBody& other)
     {
         //if there is a collide with function,
         if constexpr (has_interactWith<Descendant>)
@@ -180,7 +181,7 @@ struct Object : public PhysicsBody
                 }
             }
         }
-        else if constexpr (has_collideWith<Descendant>)
+        if constexpr (has_collideWith<Descendant>)
         {
            static_cast<Descendant*>(this)->collideWith(other);
         }
@@ -243,7 +244,7 @@ protected:
         {
             if (!wasOnGround) //just landed
             {
-                orient.rotation = collider.getLandingAngle(orient,terrain);
+                orient.rotation = collider.getLandingAngle(*this,terrain);
                 freeFall = false;
             }
             else //otherwise adjust angle based on terrain angle
