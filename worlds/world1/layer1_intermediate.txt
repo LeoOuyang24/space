@@ -1,0 +1,2 @@
+sprites/layers/world1/intermediate.png
+3010.000000,3200.000000
