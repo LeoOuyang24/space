@@ -92,57 +92,9 @@ Terrain* Globals::getCurrentTerrain()
     return terrain.getTerrain(getCurrentLayer());
 }
 
-void Globals::loadLevel(std::string_view path, LayerType layerNum)
-{
-    std::ifstream levelFile;
-    levelFile.open(path.data());
-
-    if (levelFile.is_open())
-    {
-        std::string line;
-        int lineNum = 0;
-        GlobalTerrain::LayerInfo info = {path.data()};
-        while(std::getline(levelFile,line))
-        {
-            if (line != "") //skip blank lines
-            {
-                switch (lineNum)
-                {
-                case 0: //first line is terrain image
-                    info.imagePath = line;
-                    terrain.loadTerrain(layerNum,line);
-                    break;
-                case 1: //2nd line is player position
-                    {
-                        Vector2 pos = fromString<Vector2>(line);
-                        info.playerPos = pos;
-                        if (layerNum == 0) //first layer
-                        {
-                            Globals::Game.player->setPos(pos);
-                        }
-                        break;
-                    }
-                default:
-                    addObject(ClassDeserializer::construct(line),layerNum);
-                    break;
-                }
-                lineNum ++;
-            }
-        }
-        terrain.setLayerInfo(layerNum,info);
-
-        levelFile.close();
-    }
-    else
-    {
-        std::cerr << "ERROR Globals::loadLevel: error loading level: " << path << "\n";
-    }
-}
-
 void Globals::addWorld(std::string_view path)
 {
     World world;
-    world.signals = getWorldsSet(1);
     for (const auto & entry : std::filesystem::directory_iterator(path))
    {
        std::string extension = entry.path().filename().extension().string();
@@ -157,20 +109,12 @@ void Globals::addWorld(std::string_view path)
        }
    }
 
-   worlds.push_back(world);
+    worlds.push_back(world);
+    world.signals = getWorldsSet(1);//worlds.size() - 1);
 }
 
-void Globals::loadWorld(const World& world)
+void Globals::onWorldLoaded()
 {
-    terrain.clear();
-    objects.clear();
-
-    int i = 0;
-    for (std::string_view str : world.layers)
-    {
-        loadLevel(str,i);
-        i++;
-    }
     if (terrain.getLayerCount() > 0 && Globals::Game.getPlayer())
     {
         Globals::Game.setLayer(0);
@@ -179,16 +123,24 @@ void Globals::loadWorld(const World& world)
     }
 }
 
-void Globals::setCurWorld(CurrentWorld cur)
+void Globals::startLoadWorld(const World& world)
+{
+    terrain.clear();
+    objects.clear();
+
+    levelLoader.loadWorld(world);
+
+}
+
+void Globals::setCurWorldThreaded(CurrentWorld cur)
 {
     if (curWorld != cur && cur < worlds.size())
     {
-        loadWorld(worlds[cur]);
-        terrain.setSignalSet(worlds[cur].signals);
+        terrain.setSignalSet(worlds[curWorld].signals);
+        startLoadWorld(worlds[cur]);
     }
     curWorld = cur;
 }
-
 Texture2D Globals::getBG()
 {
     if (curWorld >= worlds.size())

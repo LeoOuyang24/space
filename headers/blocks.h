@@ -91,7 +91,7 @@ struct Terrain
     static constexpr float PIXEL_RATIO = PIXEL_SIZE/static_cast<float>(Block::BLOCK_DIMEN); //multiply a world coordinate by this to convert it to texture coords 
     static constexpr int MAX_TERRAIN_SIZE = MAX_WIDTH*Block::BLOCK_DIMEN; //distance in width direction in pixels
 
-    static Shader GravityFieldShader;
+    static Shader TerrainOutline;
 
     //typedef std::vector<Block> TerrainMap;
     //typedef std::vector<bool> TerrainMap;
@@ -101,8 +101,15 @@ struct Terrain
     Terrain();
     void cleanUp();
 
-    static int count;
-    void addBlock(const Vector2& pos, const Block& block);
+
+    /**
+     * @brief Adds a block at a given position with a given type
+     * 
+     * @param pos the position to add
+     * @param block the Block to add
+     * @param draw wheter or not to draw to our texture. You almost always want this, but when we are loading a level, we don't because we can just load the image in one go
+     */
+    void addBlock(const Vector2& pos, const Block& block, bool draw = true);
     //remove all blocks in area
     void remove(const Vector2& pos, int radius);
     void clear();

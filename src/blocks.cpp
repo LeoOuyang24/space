@@ -12,7 +12,7 @@
 
 #include "rlgl.h"
 
-Shader Terrain::GravityFieldShader;
+Shader Terrain::TerrainOutline;
 //Terrain::CheckFunc Terrain::blockExistsCheck = [](BlockType other){return other != AIR;}; 
 //Terrain::CheckFunc Terrain::isBlockTypeCheck = [](BlockType type){return [type](BlockType other){ return other == type;};}; 
 
@@ -31,7 +31,6 @@ Vector2 Terrain::nearestPos(const Vector2& vec)
 }
 
 
-int Terrain::count = 0;
 Terrain::Terrain()
 {
     blocksTexture = LoadRenderTexture(MAX_TERRAIN_SIZE*PIXEL_RATIO,MAX_TERRAIN_SIZE*PIXEL_RATIO);
@@ -49,6 +48,7 @@ Terrain::Terrain()
 
 void Terrain::cleanUp()
 {
+    terrain.clear();
     BeginTextureMode(blocksTexture);
         ClearBackground(BLANK);
     EndTextureMode();
@@ -59,7 +59,7 @@ Rectangle Terrain::getBlockRect(const Vector2& pos)
     Vector2 rounded = roundPos(pos);
     return {rounded.x,rounded.y,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN};
 }
-void Terrain::addBlock(const Vector2& pos, const Block& block)
+void Terrain::addBlock(const Vector2& pos, const Block& block, bool draw)
 {
 
     size_t index = pointToIndex(pos);
@@ -95,35 +95,36 @@ void Terrain::addBlock(const Vector2& pos, const Block& block)
         color = block.color;
         break;
     }
-    Vector2 rounded = roundPos(pos)*(PIXEL_RATIO);
-    if (!isDrawing) //true if this is was called as part of another function, so don't start/stop drawing to texture because that is controlled by the outer function
+    Vector2 rounded = roundPos(pos);
+    terrain.setVal(pointToIndex(rounded),block.type);
+    if (draw)
     {
-        BeginTextureMode(blocksTexture);
-    }
-            for (int i = 0; i < 9; i ++)
-            {
-                Vector2 neighbor = {rounded.x + PIXEL_SIZE*(i%3 - 1),rounded.y + PIXEL_SIZE*(i/3 - 1)};
-                if (neighbor.x >= 0 && neighbor.y >= 0 &&
-                    neighbor.x < blocksTexture.texture.width && neighbor.y < blocksTexture.texture.height &&
-                    !blockExists(neighbor/PIXEL_RATIO))
-                    {
-                        //Vector2 pos = {neighbor.x,blocksTexture.texture.height - neighbor.y -  PIXEL_SIZE};
+        rounded *= PIXEL_RATIO;
+        if (!isDrawing) //true if this is was called as part of another function, so don't start/stop drawing to texture because that is controlled by the outer function
+        {
+            BeginTextureMode(blocksTexture);
+        }
+                /*for (int i = 0; i < 9; i ++)
+                {
+                    Vector2 neighbor = {rounded.x + PIXEL_SIZE*(i%3 - 1),rounded.y + PIXEL_SIZE*(i/3 - 1)};
+                    if (neighbor.x >= 0 && neighbor.y >= 0 &&
+                        neighbor.x < blocksTexture.texture.width && neighbor.y < blocksTexture.texture.height &&
+                        !blockExists(neighbor/PIXEL_RATIO))
+                        {
+                            //Vector2 pos = {neighbor.x,blocksTexture.texture.height - neighbor.y -  PIXEL_SIZE};
 
-                            /*DrawRectangle(pos.x,pos.y,
-                                              pixelSize,pixelSize,
-                                              Color(color.r*.5,color.g*.5,color.b*.5,255));*/
+                                DrawRectangle(pos.x,pos.y,
+                                                pixelSize,pixelSize,
+                                                Color(color.r*.5,color.g*.5,color.b*.5,255));
 
 
-                    }
-            }
-            terrain.setVal(pointToIndex(roundPos(pos)),block.type);
-            DrawRectangle(rounded.x,blocksTexture.texture.height - rounded.y - PIXEL_SIZE,PIXEL_SIZE,PIXEL_SIZE,color);
-            /*DrawCircle(rounded.x + Block::BLOCK_DIMEN/2,
-                       blocksTexture.texture.height - rounded.y - Block::BLOCK_DIMEN + Block::BLOCK_DIMEN/2,
-                       200,Color(0,200,200,100));*/
-    if (!isDrawing)
-    {
-        EndTextureMode();
+                        }
+                }*/
+                DrawRectangle(rounded.x,blocksTexture.texture.height - rounded.y - PIXEL_SIZE,PIXEL_SIZE,PIXEL_SIZE,color);
+        if (!isDrawing)
+        {
+            EndTextureMode();
+        }
     }
 }
 
@@ -466,14 +467,18 @@ void Terrain::render(int i, int z)
 
    Color balls = {white.x,white.y,white.z,255}; //can't do math with raylib colors breaking_bad_crawl_space.gif
 
-   //BeginShaderMode(GravityFieldShader);
+    float shade = pow(.5,i);
+    SetShaderValue(TerrainOutline,GetShaderLocation(TerrainOutline,"shade"),&shade,SHADER_UNIFORM_FLOAT);
+
+
+   BeginShaderMode(TerrainOutline);
 
    float ratio =  Block::BLOCK_DIMEN/PIXEL_SIZE;
    DrawBillboardPro(Globals::Game.Camera.getCamera(),blocksTexture.texture,Rectangle(0,0,blocksTexture.texture.width,blocksTexture.texture.height)
                     ,Vector3(MAX_TERRAIN_SIZE/2,MAX_TERRAIN_SIZE/2,z),Vector3(0,-1,0),
                     Vector2(blocksTexture.texture.width,blocksTexture.texture.height)*ratio,Vector2(blocksTexture.texture.width/2,blocksTexture.texture.height/2)*ratio,
                     0,balls);
-    //EndShaderMode();
+    EndShaderMode();
    //BeginShaderMode(GravityFieldShader);
     //DrawSprite3D(gravityTexture.texture,Rectangle(MAX_TERRAIN_SIZE/2,MAX_TERRAIN_SIZE/2,MAX_TERRAIN_SIZE,MAX_TERRAIN_SIZE));
     //EndShaderMode();

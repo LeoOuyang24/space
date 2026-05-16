@@ -48,7 +48,7 @@ void Editor::handleInput()
         {
             auto ptr = ClassDeserializer::construct(searchText);
 
-            if (ptr.get())
+            if (ptr)
             {
                 ptr->setPos(coords);
                 Globals::Game.addObject(ptr,Globals::Game.getCurrentLayer());
@@ -163,7 +163,7 @@ void Cheats::handleInput()
         switch (mode)
         {
         case PLANETS:
-            Globals::Game.getCurrentTerrain()->generatePlanet(mousePos,2*Block::BLOCK_DIMEN,Color(100,255,100,255 ));
+            Globals::Game.getCurrentTerrain()->generatePlanet(mousePos,10*Block::BLOCK_DIMEN,Color(100,255,100,255 ));
             break;
         case OBJECTS:
             {

@@ -104,61 +104,61 @@ void Player::update(Terrain& terrain)
     if (state != DEAD)
     {
         //forces.setForce(orient.getFacingVector()*10,Forces::ENEMY);
-        if (onGround)
-        {
-            //Object::stayOnGround(terrain);
-            tint = WHITE;
-        }
-        else if (!freeFall)
-        {
-            tint = RED;
-        }
-        else
-        {
-            tint = BLUE;
-        }
-        
+
         //Object::applyForces(terrain);
-        forces.addFriction(AIR_FRICTION,Forces::BOOSTING); //boosting gets slightly more friction
 
-        if (!onGround && !freeFall)
-        {
-            Vector2 grav = forces.getForce(Forces::GRAVITY);
-            if (Vector2LengthSqr(grav) != 0)
-            {
-                orient.rotation = atan2(-terrainAngle.x,terrainAngle.y);
-            }
-        }
-        else
-        {
-            terrainAngle = {};
-        }
-        //Object::adjustAngle(terrain);
-
-        Object::applyForces(terrain);
-        if (onGround && (resetState.orient.pos != getPos() || resetState.orient.rotation != orient.rotation))
-        {
-            Object::adjustAngle(terrain);
-            Object::stayOnGround(terrain);
-        }
-
-        if (onGround && !wasOnGround)
-        {
-            freeFallTime = -1;
-        }
 
         handleControls();
-
-        if (onGround )
+        Object::applyForces(terrain);
+        forces.addFriction(AIR_FRICTION,Forces::BOOSTING); //boosting gets slightly more friction
+        if ( !freeFall) //jump force should always be perpendicular to direction we are facing UNLESS we are long jumping
         {
+           // forces.setForce(orient.getNormal()*-1*Vector2Length(forces.getForce(Forces::JUMP)),Forces::JUMP);
+        }
+        if (onGround)
+        {
+            forces.setForce({0,0},Forces::GRAVITY);
+            forces.setForce({0,0},Forces::JUMP);
+            Object::adjustAngle(terrain);
+            Object::stayOnGround(terrain);
+
             boosted = false;
             freeFallTime = 0;
             saveResetState();
-            //stayOnGround(terrain);
         }
-        else if (wasOnGround)
+        else
         {
-            freeFallTime = GetTime();
+            freeFallTime = wasOnGround ? GetTime() : -1;
+            if (!freeFall)
+            {
+                Vector2 grav = forces.getForce(Forces::GRAVITY);
+                if (Vector2LengthSqr(grav) != 0)
+                {
+                    orient.rotation = atan2(-terrainAngle.x,terrainAngle.y);
+                }
+            }
+        }
+        if (onGround || freeFall)
+        {
+            terrainAngle = {};
+        }
+            
+
+        if (Globals::DEBUG)
+        {
+            if (onGround)
+            {
+                //Object::stayOnGround(terrain);
+                tint = WHITE;
+            }
+            else if (!freeFall)
+            {
+                tint = RED;
+            }
+            else
+            {
+                tint = BLUE;
+            }
         }
 
         if (terrain.isBlockType(orient.pos,LAVA) && state != PORTALLING)
@@ -223,9 +223,9 @@ void Player::handleControls()
                 Vector2 jump = IsKeyDown(KEY_LEFT_CONTROL) ?
                                     orient.getNormal()*-5 + orient.getFacingVector()*6 :
                                     orient.getNormal()*-7;
-                forces.addForce(jump,Forces::JUMP);
+                forces.setForce(jump,Forces::JUMP);
                 freeFall = IsKeyDown(KEY_LEFT_CONTROL);
-                onGround = false;
+                set_onGround(false);
             }
             if (PhysicsBody* body = holding.lock().get())
             {
