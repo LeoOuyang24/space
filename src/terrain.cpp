@@ -279,10 +279,8 @@ void GlobalTerrain::emitSignal(SignalName name, void* data)
 
 void LevelLoader::loadWorld(const World& world)
 {
-    float time = GetTime();
     ready = false;
     loaded = 0;
-    started = 0;
     size_t layers = world.layers.size();
     threads.resize(layers);
     preloads.resize(layers);
@@ -314,7 +312,6 @@ void LevelLoader::monitor()
 {
     if (!getIsLoading())
     {
-        std::cout << GetTime() - started << "\n";
         Globals::Game.objects.clear();
         Globals::Game.terrain.clear();
         for (size_t i = 0; i < preloads.size(); i ++)
