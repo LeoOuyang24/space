@@ -203,7 +203,6 @@ void Globals::startLoadWorld(const World& world)
 {
     terrain.clear();
     objects.clear();
-
     levelLoader.loadWorld(world);
 
 }
@@ -212,7 +211,7 @@ void Globals::setCurWorldThreaded(CurrentWorld cur)
 {
     if (curWorld != cur && cur < worlds.size())
     {
-        terrain.setSignalSet(worlds[curWorld].signals);
+        terrain.setSignalSet(worlds[cur].signals);
         startLoadWorld(worlds[cur]);
     }
     curWorld = cur;

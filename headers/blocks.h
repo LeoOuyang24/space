@@ -158,9 +158,9 @@ struct Terrain
                     //if y == 0, only do the 1st and 3rd quadrants (botRight, botLeft, basically only x matters)
                     //and if x and y == 0, only do one quadrant, (botLeft, arbitrary though), since that is the center
                     Vector2 point = center + Vector2(x*(1 - i/2*2), y*(1 - i%2*2)) * Block::BLOCK_DIMEN;
-                   if constexpr (std::is_same<decltype(func(std::declval<const Vector2&>())),bool>::value)
+                    if constexpr (std::is_same<decltype(func(std::declval<const Vector2&>())),bool>::value)
                     {
-                       // std::cout << "DONE\n";
+                    // std::cout << "DONE\n";
                         if (func(point))
                         {
                             return;

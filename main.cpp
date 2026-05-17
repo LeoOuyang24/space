@@ -122,12 +122,6 @@ int main(void)
 
     Portal::PortalShader = LoadShader(0,TextFormat("shaders/fragments/portal.h",GLSL_VERSION));
 
-    const Camera3D& camera = Globals::Game.Camera.getCamera();
-    //Globals::Game.loadLevel("levels/load_this.txt");
-
-    //World world1 = {{"levels/layer0.txt","levels/layer1.txt","levels/layer2.txt"}};
-    //Globals::Game.loadLevel("levels/block.txt");
-
     Globals::Game.addWorld("worlds/world0");
     Globals::Game.addWorld("worlds/world1");
 

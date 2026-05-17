@@ -86,9 +86,13 @@ void GlobalTerrain::loadTerrain(LayerType layer, const Image& img)
 
     Color* colors = LoadImageColors(img);
 
-    terr->blocksTexture.texture = LoadTextureFromImage(img);
+    Texture2D load = LoadTextureFromImage(img);
+    BeginTextureMode(terr->blocksTexture);
+        DrawTexturePro(load,{0,0,load.width,load.height*-1},{0,0,load.width,load.height},{0,0},0,WHITE);
+    EndTextureMode();
+    UnloadTexture(load);
 
-    for (int i = 0; i < std::min(img.width,Terrain::MAX_WIDTH); i += 1)
+   for (int i = 0; i < std::min(img.width,Terrain::MAX_WIDTH); i += 1)
     {
         for (int j = 0; j < std::min(img.height,Terrain::MAX_WIDTH); j += 1)
         {
@@ -277,7 +281,6 @@ void LevelLoader::loadWorld(const World& world)
 {
     ready = false;
     loaded = 0;
-
     size_t layers = world.layers.size();
     threads.resize(layers);
     preloads.resize(layers);
@@ -328,7 +331,7 @@ void LevelLoader::monitor()
 
 float LevelLoader::getProgress()
 {
-    return preloads.size() == 0 ? 0 : loaded.load()/preloads.size();
+    return preloads.size() == 0 ? 0 : (static_cast<float>(loaded.load()))/preloads.size();
 }
 
 void LevelLoader::loadPreLayer(PreLayer& preloaded, std::string layerPath)
