@@ -91,7 +91,8 @@ void WorldMap::WorldNode::update(const Rectangle& rect)
         DrawRectangle(rect.x,rect.y,rect.width,rect.height,WHITE);
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
         {
-            Globals::Game.setCurWorld(world);
+            //std::cout << "clicked\n";
+            Globals::Game.setCurWorldThreaded(world);
             Globals::Game.interface.setMenu(Menus::NONE);
         }
     }

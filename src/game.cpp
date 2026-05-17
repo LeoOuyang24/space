@@ -36,6 +36,95 @@ void Globals::init()
 
 }
 
+//benchmark to test how fast terrain collision is
+void benchmark()
+{
+    float time = GetTime();
+    for (int i = 0; i < 150; i ++)
+    {
+        Vector2 start = {3000,3000};
+        Vector2 end = {3000,4000};
+        Globals::Game.terrain.getTerrain(0)->lineBlockIntersect(start,end,false);
+    }
+    std::cout << time << " " << GetTime() - time << "\n";
+}
+
+void Globals::update()
+{
+    if (!levelLoader.isReady())
+    {
+        levelLoader.monitor();
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+    else
+    {
+    //SoundLibrary::update();
+
+    float deltaTime = GetFrameTime();
+     if ( IsKeyPressed(KEY_RIGHT_BRACKET) || !Debug::isPaused())
+            {
+            accum += deltaTime;
+            Debug::clearRenderDefers();
+            }
+
+            while (accum >= tick/speed )
+            {
+                //player.update(*getCurrentTerrain());
+                terrain.update(getCurrentLayer());
+                Sequences::runPhysics();
+
+                accum -= tick/speed;
+                frames ++;
+            }
+            frames = 0;
+
+            if (GetMouseWheelMove())
+            {
+
+                //camera.zoom += ((float)GetMouseWheelMove()*0.05f);
+                float move = GetMouseWheelMove()*5;
+                //camera.position.z += move;
+                //camera.target.z += move;
+                Camera.moveCamera(Camera.getCamera().position + Vector3(0,0,move));
+            }
+            Camera.update();
+            if constexpr (Globals::DEBUG)
+                Debug::handleInput();
+    }
+}
+
+void Globals::render()
+{
+    if (levelLoader.isReady())
+    {
+        BeginMode3D(Camera.getCamera());
+            ClearBackground(BLACK);
+
+            Texture2D bg  = getBG();
+            DrawBillboardRec(Camera.getCamera(),bg,Rectangle(0,0,bg.width,bg.height),
+                            Vector3(Terrain::MAX_TERRAIN_SIZE/2,Terrain::MAX_TERRAIN_SIZE/2,Globals::BACKGROUND_Z),
+                            Vector2(bg.width,bg.height),WHITE);
+
+            terrain.render();
+
+            Sequences::runRenders();
+        if constexpr (DEBUG)
+            Debug::renderDefers();
+
+
+        EndMode3D();
+
+        interface.process();
+        Debug::drawInterface();
+    }
+    else
+    {
+        Rectangle rect = {0.1*GetScreenWidth(), 0.8*GetScreenHeight(), 0.7*GetScreenWidth(),0.1*GetScreenHeight()};
+        DrawRectangle(rect.x,rect.y,rect.width,rect.height,WHITE);
+        DrawRectangle(rect.x,rect.y,rect.width*levelLoader.getProgress(),rect.height,RED);
+    }
+}
+
 void Globals::addCollects(int val)
 {
     collects += val;
@@ -92,57 +181,9 @@ Terrain* Globals::getCurrentTerrain()
     return terrain.getTerrain(getCurrentLayer());
 }
 
-void Globals::loadLevel(std::string_view path, LayerType layerNum)
-{
-    std::ifstream levelFile;
-    levelFile.open(path.data());
-
-    if (levelFile.is_open())
-    {
-        std::string line;
-        int lineNum = 0;
-        GlobalTerrain::LayerInfo info = {path.data()};
-        while(std::getline(levelFile,line))
-        {
-            if (line != "") //skip blank lines
-            {
-                switch (lineNum)
-                {
-                case 0: //first line is terrain image
-                    info.imagePath = line;
-                    terrain.loadTerrain(layerNum,line);
-                    break;
-                case 1: //2nd line is player position
-                    {
-                        Vector2 pos = fromString<Vector2>(line);
-                        info.playerPos = pos;
-                        if (layerNum == 0) //first layer
-                        {
-                            Globals::Game.player->setPos(pos);
-                        }
-                        break;
-                    }
-                default:
-                    addObject(ClassDeserializer::construct(line),layerNum);
-                    break;
-                }
-                lineNum ++;
-            }
-        }
-        terrain.setLayerInfo(layerNum,info);
-
-        levelFile.close();
-    }
-    else
-    {
-        std::cerr << "ERROR Globals::loadLevel: error loading level: " << path << "\n";
-    }
-}
-
 void Globals::addWorld(std::string_view path)
 {
     World world;
-    world.signals = getWorldsSet(1);
     for (const auto & entry : std::filesystem::directory_iterator(path))
    {
        std::string extension = entry.path().filename().extension().string();
@@ -157,20 +198,12 @@ void Globals::addWorld(std::string_view path)
        }
    }
 
-   worlds.push_back(world);
+    worlds.push_back(world);
+    world.signals = getWorldsSet(1);//worlds.size() - 1);
 }
 
-void Globals::loadWorld(const World& world)
+void Globals::onWorldLoaded()
 {
-    terrain.clear();
-    objects.clear();
-
-    int i = 0;
-    for (std::string_view str : world.layers)
-    {
-        loadLevel(str,i);
-        i++;
-    }
     if (terrain.getLayerCount() > 0 && Globals::Game.getPlayer())
     {
         Globals::Game.setLayer(0);
@@ -179,16 +212,23 @@ void Globals::loadWorld(const World& world)
     }
 }
 
-void Globals::setCurWorld(CurrentWorld cur)
+void Globals::startLoadWorld(const World& world)
+{
+    terrain.clear();
+    objects.clear();
+    levelLoader.loadWorld(world);
+
+}
+
+void Globals::setCurWorldThreaded(CurrentWorld cur)
 {
     if (curWorld != cur && cur < worlds.size())
     {
-        loadWorld(worlds[cur]);
         terrain.setSignalSet(worlds[cur].signals);
+        startLoadWorld(worlds[cur]);
     }
     curWorld = cur;
 }
-
 Texture2D Globals::getBG()
 {
     if (curWorld >= worlds.size())

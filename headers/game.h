@@ -2,7 +2,6 @@
 #define GAME_H_INCLUDED
 
 #include <memory>
-
 #include <raylib.h>
 
 #include "terrain.h"
@@ -13,6 +12,8 @@
 typedef uint16_t Frame;
 
 class Player;
+
+
 struct Globals
 {
     static Globals Game;
@@ -33,6 +34,9 @@ struct Globals
     std::shared_ptr<Player> player;
 
     void init();
+    void update();
+    void render();
+
     void setLayer(LayerType layer); //set layer, move the player, and the camera
 
     size_t getCollects();
@@ -43,10 +47,14 @@ struct Globals
     Camera3D getCamera();
     LayerType getCurrentLayer();
     Terrain* getCurrentTerrain();
-    void loadLevel(std::string_view path, LayerType i);
     void addWorld(std::string_view path); //adds a new world from folder
-    void loadWorld(const World& world); //load a preexisting world
-    void setCurWorld(CurrentWorld cur);
+    void startLoadWorld(const World& world); //load a preexisting world
+    void setCurWorldThreaded(CurrentWorld cur);
+    /**
+     * @brief Run when a world is loaded
+     * 
+     */
+    void onWorldLoaded(); 
     Texture2D getBG();
 
     void addObject(PhysicsBody& body, Orient o);
@@ -60,11 +68,18 @@ struct Globals
     ObjectLookup objects;
     Interface interface;
     GameCamera Camera;
+    LevelLoader levelLoader;
 
     Worlds worlds;
     CurrentWorld curWorld = -1;
 
 private:
+
+    float accum = 0;
+    float tick = 1/60.0f;
+    float speed = 1;
+    int frames = 0;
+
     Globals();
 };
 

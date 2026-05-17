@@ -4,6 +4,7 @@
 #include <fstream>
 #include <vector>
 #include <tuple>
+#include <chrono>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -121,150 +122,35 @@ int main(void)
 
     Portal::PortalShader = LoadShader(0,TextFormat("shaders/fragments/portal.h",GLSL_VERSION));
 
-    const Camera3D& camera = Globals::Game.Camera.getCamera();
-    //Globals::Game.loadLevel("levels/load_this.txt");
-
-    //World world1 = {{"levels/layer0.txt","levels/layer1.txt","levels/layer2.txt"}};
-    //Globals::Game.loadLevel("levels/block.txt");
-
     Globals::Game.addWorld("worlds/world0");
     Globals::Game.addWorld("worlds/world1");
-
-    Globals::Game.setCurWorld(0);
-    //std::cout << "done-----------------------\n";
-    //Globals::Game.setCurWorld(1);
-
-    //Terrain* terrains[10];
-    //ASDF terrains[10];
-    /*for (int i = 0; i < 1; i ++)
-    {
-        RenderTexture2D texture = LoadRenderTexture(Terrain::MAX_TERRAIN_SIZE,Terrain::MAX_TERRAIN_SIZE);
-        BeginTextureMode(texture);
-            ClearBackground(BLANK);
-        EndTextureMode();
-        UnloadRenderTexture(texture);
-    }*/
-    
-    /*RenderTexture2D textures[10];
-    for (int i = 0; i < 10; i ++)
-    {
-        textures[i] = LoadRenderTexture(Terrain::MAX_TERRAIN_SIZE,Terrain::MAX_TERRAIN_SIZE);
-        UnloadRenderTexture(textures[i]);
-    }*/
-
 
     Globals::Game.Camera.moveCamera(Vector3{Terrain::MAX_TERRAIN_SIZE*0.5,Terrain::MAX_TERRAIN_SIZE*0.5,Globals::BACKGROUND_Z*0.9});
 
 
-    float accum = 0;
-    float tick = 1/60.0f;
-    float speed = 1;
-
-    //exportBackground();
-
-    int frames = 0;
-
-    Terrain::GravityFieldShader = LoadShader(0,TextFormat("shaders/fragments/terrain_outline.h",GLSL_VERSION));
-    Texture& blocks = Globals::Game.getCurrentTerrain()->blocksTexture.texture;
-    Vector2 pixelSizes = {1.0/blocks.width,1.0/blocks.height};
-    SetShaderValue(Terrain::GravityFieldShader,GetShaderLocation(Terrain::GravityFieldShader,"pixelSizes"),&pixelSizes,SHADER_UNIFORM_VEC2);
+    Terrain::TerrainOutline = LoadShader(0,TextFormat("shaders/fragments/terrain_outline.h",GLSL_VERSION));
+    SetShaderValue(Terrain::TerrainOutline,GetShaderLocation(Terrain::TerrainOutline,"pixelSizes"),&Terrain::PIXEL_SIZE,SHADER_UNIFORM_VEC2);
+    SetShaderValue(Terrain::TerrainOutline,GetShaderLocation(Terrain::TerrainOutline,"outline_thickness"),&Block::BLOCK_DIMEN,SHADER_UNIFORM_VEC2);
 
     SoundLibrary::loadBGM("music/world0_together.wav");
     //SoundLibrary::loadBGM("music/world1/world1.wav");
     SoundLibrary::toggleBGM(false);
 
+    Globals::Game.setCurWorldThreaded(0);
+
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-        SoundLibrary::update();
 
-       // std::cout << GetFrameTime() << "\n";
+        Globals::Game.update();
+           
+            // Draw
+            //----------------------------------------------------------------------------------
+            BeginDrawing();
 
-        float deltaTime = GetFrameTime();
-        if ( IsKeyPressed(KEY_RIGHT_BRACKET) || !Debug::isPaused())
-        {
-        accum += deltaTime;
-        Debug::clearRenderDefers();
-        }
+                Globals::Game.render();
+                DrawFPS(10, 10);
 
-        while (accum >= tick/speed )
-        {
-            //player.update(*Globals::Game.getCurrentTerrain());
-            Globals::Game.terrain.update(Globals::Game.getCurrentLayer());
-            Sequences::runPhysics();
-          /*  if (GetTime() > 10)
-            {
-                Globals::Game.terrain.getTerrain(0)->remove(point,100);
-                //std::cout << "REMOVAL: " << GetTime() - time << "\n";
-                point.y = 3000 + 50*sin(GetTime());
-
-                Globals::Game.terrain.getTerrain(0)->generatePlanet(point,100,GREEN);
-            }*/
-           // std::cout << "ADDING: " << GetTime() - time << "\n";
-
-            accum -= tick/speed;
-            frames ++;
-        }
-        frames = 0;
-
-        if (GetMouseWheelMove())
-        {
-
-            //camera.zoom += ((float)GetMouseWheelMove()*0.05f);
-            float move = GetMouseWheelMove()*5;
-            //camera.position.z += move;
-            //camera.target.z += move;
-            Globals::Game.Camera.moveCamera(Globals::Game.Camera.getCamera().position + Vector3(0,0,move));
-        }
-        Globals::Game.Camera.update();
-        if constexpr (Globals::DEBUG)
-            Debug::handleInput();
-        // Draw
-        //----------------------------------------------------------------------------------
-        BeginDrawing();
-
-            BeginMode3D(camera);
-
-
-                ClearBackground(BLACK);
-
-                /*BeginShaderMode(stars);
-                    DrawTexture(bg.texture,0,0,WHITE);
-                EndShaderMode();
-               BeginShaderMode(sun);
-                    DrawTexture(bg.texture,0,0,WHITE);
-                EndShaderMode();*/
-
-                Texture2D bg  = Globals::Game.getBG();//Globals::Game.Sprites.getSprite("bg_scatter.png");
-                DrawBillboardRec(camera,bg,Rectangle(0,0,bg.width,bg.height),
-                                 Vector3(Terrain::MAX_TERRAIN_SIZE/2,Terrain::MAX_TERRAIN_SIZE/2,Globals::BACKGROUND_Z),
-                                 Vector2(bg.width,bg.height),WHITE);
-
-                Globals::Game.terrain.render();
-
-                Sequences::runRenders();
-            if constexpr (Globals::DEBUG)
-                Debug::renderDefers();
-
-
-            EndMode3D();
-
-            /*Vector2 circle = {300,300};
-            float radius = 100;
-            DrawCircleLines(circle.x,circle.y,radius,WHITE);
-            auto pos = segmentIntersectCircle({450,450},GetMousePosition(),circle,radius);
-            if (pos.exists)
-            {
-                DrawCircle(pos.pos.x,pos.pos.y,5,RED);
-            }
-            DrawLine(450,450,GetMousePosition().x,GetMousePosition().y,WHITE);*/
-            Globals::Game.interface.process();
-            Debug::drawInterface();
-            DrawFPS(10, 10);
-
-        EndDrawing();
-
-
-        //----------------------------------------------------------------------------------
+            EndDrawing();
     }
 
 

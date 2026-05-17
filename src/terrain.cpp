@@ -1,4 +1,6 @@
 #include <sstream>
+#include <fstream>
+#include <algorithm>
 
 #include "../headers/terrain.h"
 #include "../headers/game.h"
@@ -69,27 +71,28 @@ void GlobalTerrain::pushBackTerrain()
     layers.emplace_back();
 }
 
-void GlobalTerrain::loadTerrain(LayerType layer, std::string imagePath)
+void GlobalTerrain::loadTerrain(LayerType layer, const Image& img)
 {
     if (layer >= layers.size())
     {
-        pushBackTerrain();
-        layer = layers.size() - 1;
+        layers.resize(layer + 1);
     }
-    else
+    if (!IsImageValid(img))
     {
-        getTerrain(layer)->clear();
+        std::cerr << "ERROR : GlobalTerrain::loadTerrain: invalid image for layer " << layer << "\n";
+        return;
     }
     Terrain* terr = getTerrain(layer);
 
-    layers[layer].info.imagePath = imagePath;
-
-    Image img = LoadImage(imagePath.c_str());
     Color* colors = LoadImageColors(img);
 
-    terr->drawBlocks();
+    Texture2D load = LoadTextureFromImage(img);
+    BeginTextureMode(terr->blocksTexture);
+        DrawTexturePro(load,{0,0,load.width,load.height*-1},{0,terr->blocksTexture.texture.height - load.height,load.width,load.height},{0,0},0,WHITE);
+    EndTextureMode();
+    UnloadTexture(load);
 
-    for (int i = 0; i < std::min(img.width,Terrain::MAX_WIDTH); i += 1)
+   for (int i = 0; i < std::min(img.width,Terrain::MAX_WIDTH); i += 1)
     {
         for (int j = 0; j < std::min(img.height,Terrain::MAX_WIDTH); j += 1)
         {
@@ -113,17 +116,13 @@ void GlobalTerrain::loadTerrain(LayerType layer, std::string imagePath)
                 type = WATER;
             }
             if (color.a > 0)
-                {
-                    terr->addBlock(point,{color,type});
-                }
+            {
+                terr->addBlock(point,{color,type},false);
+            }
         }
     }
 
-    terr->endDrawBlocks();
-
     delete[] colors;
-    UnloadImage(img);
-
 
 }
 void GlobalTerrain::setLayerInfo(LayerType layer, const LayerInfo& info)
@@ -276,4 +275,120 @@ void GlobalTerrain::emitSignal(SignalName name, void* data)
     {
         (*signals)[name](data);
     }
+}
+
+void LevelLoader::loadWorld(const World& world)
+{
+    ready = false;
+    loaded = 0;
+    size_t layers = world.layers.size();
+    threads.resize(layers);
+    preloads.resize(layers);
+
+    for (size_t i = 0; i < layers; i ++)
+    {
+        threads[i] = std::jthread(&LevelLoader::loadPreLayer,this,std::ref(preloads[i]),world.layers[i]);
+    }
+}
+
+bool LevelLoader::isReady()
+{
+    return ready;
+}
+
+LevelLoader::PreLayer LevelLoader::getLoadedLayer(size_t i)
+{
+    if (i >= preloads.size())
+    {
+        return {};
+    }
+    else
+    {
+        return preloads[i];
+    }
+} 
+
+void LevelLoader::monitor()
+{
+    if (!getIsLoading())
+    {
+        Globals::Game.objects.clear();
+        Globals::Game.terrain.clear();
+        for (size_t i = 0; i < preloads.size(); i ++)
+        {
+            Globals::Game.terrain.loadTerrain(i,preloads[i].blocks);
+            Globals::Game.terrain.setLayerInfo(i,preloads[i].info);
+            std::for_each(preloads[i].objs.begin(),preloads[i].objs.end(),[i](std::shared_ptr<PhysicsBody>& ptr)
+            {
+                Globals::Game.addObject(ptr,i);
+            });
+        }
+        Globals::Game.onWorldLoaded();
+        clear();
+        ready = true;
+    }
+}
+
+float LevelLoader::getProgress()
+{
+    return preloads.size() == 0 ? 0 : (static_cast<float>(loaded.load()))/preloads.size();
+}
+
+void LevelLoader::loadPreLayer(PreLayer& preloaded, std::string layerPath)
+{
+    std::ifstream levelFile;
+    levelFile.open(layerPath.data());
+
+    if (levelFile.is_open())
+    {
+        std::string line;
+        int lineNum = 0;
+        preloaded.info = {layerPath};
+        while(std::getline(levelFile,line))
+        {
+            if (line != "") //skip blank lines
+            {
+                switch (lineNum)
+                {
+                case 0: //first line is terrain image
+                    {
+                        preloaded.info.imagePath = line;
+                        Image img = LoadImage(line.c_str());
+                        preloaded.blocks = img;
+                        break;
+                    }
+                case 1: //2nd line is player position
+                    {
+                        Vector2 pos = fromString<Vector2>(line);
+                        preloaded.info.playerPos = pos;
+                        break;
+                    }
+                default:
+                    preloaded.objs.push_back(ClassDeserializer::construct(line));
+                    break;
+                }
+                lineNum ++;
+            }
+        }
+        loaded++;
+        levelFile.close();
+    }
+
+}
+
+bool LevelLoader::getIsLoading()
+{
+    return loaded < preloads.size();
+}
+
+void LevelLoader::clear()
+{
+    for (auto& pre : preloads)
+    {
+        if (IsImageValid(pre.blocks))
+        {
+            UnloadImage(pre.blocks);
+        }
+    }
+    preloads.clear();
 }

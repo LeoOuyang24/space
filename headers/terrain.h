@@ -8,6 +8,8 @@
 
 #include <list>
 #include <set>
+#include <thread>
+#include <atomic>
 
 typedef size_t LayerType;
 
@@ -42,6 +44,7 @@ struct GlobalTerrain
         std::string imagePath = "";
         Vector2 playerPos = {};
     };
+
     /**
      * @brief adds an object to a given layer, does nothing if provided layer is out of bounds
      * 
@@ -58,15 +61,20 @@ struct GlobalTerrain
 
 
     void pushBackTerrain(); //add terrain to furthest layer
-    //load an image as the block data for the terrain at the provided layer
-    //if it's out of bounds, push back a layer and modify that layer
-    void loadTerrain(LayerType layer, std::string imagePath);
+ 
+    /**
+     * @brief Loads blocks at index "layer" using the provided Image. DOES NOT CLEAN UP THE IMAGE
+     * 
+     * @param layer the layer index
+     * @param img, the image that contains our blocks
+     */
+    void loadTerrain(LayerType layer, const Image& img);
     void setLayerInfo(LayerType layer, const LayerInfo& info); //set a level's info.
     LayerType getLayerCount();
     Terrain* getTerrain(LayerType layer); //null if index is not valid
     void update(LayerType layer);
     void render();
-    void clear();
+    void clear(); //clears out each layer's blocks and objects, but doesn't delete the layers to reuse them later
 
     int getZOfLayer(LayerType index); //-1 if index is out of bounds. Returns an int because floating point values causes billboards to not be rendered
     Vector3 orientToVec3(const Orient& orient);
@@ -118,5 +126,66 @@ struct World
 
 typedef std::vector<World> Worlds;
 typedef size_t CurrentWorld;
+
+struct LevelLoader
+{
+
+    //an object that represents an unloaded layer. Can be made by multithreaded processes then loaded all at once to load a world
+    struct PreLayer
+    {
+        GlobalTerrain::LayerInfo info;
+        Image blocks; //image containing all the blocks.
+        std::vector<std::shared_ptr<PhysicsBody>> objs;//loaded objects to be added to the level
+    };  
+    /**
+     * @brief Begins loading a world at given path
+     * 
+     * @param worldPath 
+     */
+    void loadWorld(const World& world);
+    /**
+     * @brief  Returns true if any thread is still loading a level
+     * 
+     * @return true 
+     * @return false 
+     */
+    bool getIsLoading();
+
+    /**
+     * @brief Get the ith preloaded layer. Make sure to call getIsLoading to maek sure loading is not in progress!
+     * 
+     * @param i 
+     * @return PreLayer 
+     */
+    PreLayer getLoadedLayer(size_t i); 
+
+    /**
+     * @brief Return true if world is fully loaded
+     * 
+     * @return true 
+     * @return false 
+     */
+    bool isReady();
+
+    /**
+     * @brief check if we have are done pre-loading. If so, load the world
+     * 
+     */
+    void monitor();
+
+    float getProgress();
+private:
+    /**
+     * @brief clear preload list
+     * 
+     */
+    void clear(); 
+    void loadPreLayer(PreLayer& preload, std::string layerFile);
+
+    std::vector<std::jthread> threads;
+    std::vector<PreLayer> preloads;
+    std::atomic<int> loaded = 0;
+    bool ready = false;
+};
 
 #endif // TERRAIN_H_INCLUDED

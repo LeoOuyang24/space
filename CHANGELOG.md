@@ -6,7 +6,15 @@
 * TODO: Make ALT-TAB work
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
 
-## 5/10/2026
+## 5/17/2026 Multhreading 
+* When loading a world, loading is now multhreaded
+  * Each layer is loaded independently into a preload stated called a PreLayer by a thread
+  * Then on the main thread, each PreLayer is sequentially loaded.
+  * Loading a world now goes from about 6 seconds to a little more than 1
+  * A lot of lag still comes from having a lot of objects resolve physics at the beginning of a level's load
+  * Loading objects in a thread prevents FrameBuffers from being made, which notably messes with Portal rendering, which is broken rn
+
+## 5/10/2026 World Map and Level Resize
 * Levels are now 3000x3000
 * when in the air, only the top 75% of the player can collide with the ground, this prevents jumps from getting cut early
 * GravitySwitch now applies a very strong gravitational force in one direction as opposed to flipping gravity

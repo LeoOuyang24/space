@@ -239,7 +239,7 @@ protected:
 
     void adjustAngle(Terrain& terrain)
     {
-            //if on ground, adjust our angle based on the angle of the terrain
+        //if on ground, adjust our angle based on the angle of the terrain
         if (onGround)
         {
             if (!wasOnGround) //just landed
