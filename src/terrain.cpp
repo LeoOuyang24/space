@@ -88,7 +88,7 @@ void GlobalTerrain::loadTerrain(LayerType layer, const Image& img)
 
     Texture2D load = LoadTextureFromImage(img);
     BeginTextureMode(terr->blocksTexture);
-        DrawTexturePro(load,{0,0,load.width,load.height*-1},{0,0,load.width,load.height},{0,0},0,WHITE);
+        DrawTexturePro(load,{0,0,load.width,load.height*-1},{0,terr->blocksTexture.texture.height - load.height,load.width,load.height},{0,0},0,WHITE);
     EndTextureMode();
     UnloadTexture(load);
 
@@ -281,6 +281,7 @@ void LevelLoader::loadWorld(const World& world)
 {
     ready = false;
     loaded = 0;
+    started = 0;
     size_t layers = world.layers.size();
     threads.resize(layers);
     preloads.resize(layers);

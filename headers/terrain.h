@@ -186,6 +186,7 @@ private:
     std::vector<PreLayer> preloads;
     std::atomic<int> loaded = 0;
     bool ready = false;
+    float started = 0;
 };
 
 #endif // TERRAIN_H_INCLUDED
