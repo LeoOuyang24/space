@@ -1,2 +1,0 @@
-sprites/layers/world1/center.png
-3010.000000,3200.000000

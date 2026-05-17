@@ -150,7 +150,7 @@ int main(void)
     //SoundLibrary::loadBGM("music/world1/world1.wav");
     SoundLibrary::toggleBGM(false);
 
-    Globals::Game.setCurWorldThreaded(0);
+    Globals::Game.setCurWorldThreaded(1);
 
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {

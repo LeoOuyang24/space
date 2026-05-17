@@ -309,6 +309,8 @@ void LevelLoader::monitor()
 {
     if (!getIsLoading())
     {
+        Globals::Game.objects.clear();
+        Globals::Game.terrain.clear();
         for (size_t i = 0; i < preloads.size(); i ++)
         {
             Globals::Game.terrain.loadTerrain(i,preloads[i].blocks);
@@ -376,11 +378,10 @@ void LevelLoader::clear()
 {
     for (auto& pre : preloads)
     {
-        pre.info = {};
-        pre.objs.clear();
         if (IsImageValid(pre.blocks))
         {
             UnloadImage(pre.blocks);
         }
     }
+    preloads.clear();
 }

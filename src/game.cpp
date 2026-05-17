@@ -169,7 +169,7 @@ void Globals::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
 {
     if (ptr.get())
     {
-        ptr->setOrient({ptr->getPos(),layer,ptr->orient.rotation,ptr->orient.facing});
+        ptr->setOrient({ptr->getPos() + Vector2(1500,1500),layer,ptr->orient.rotation,ptr->orient.facing});
         ptr->orient.setStartingPos(ptr->getPos());
         objects.addObject(ptr);
         terrain.addObject(ptr,layer);
