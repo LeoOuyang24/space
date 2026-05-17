@@ -288,7 +288,7 @@ void LevelLoader::loadWorld(const World& world)
     }
 }
 
-bool LevelLoader::getReady()
+bool LevelLoader::isReady()
 {
     return ready;
 }
@@ -326,6 +326,10 @@ void LevelLoader::monitor()
     }
 }
 
+float LevelLoader::getProgress()
+{
+    return preloads.size() == 0 ? 0 : loaded.load()/preloads.size();
+}
 
 void LevelLoader::loadPreLayer(PreLayer& preloaded, std::string layerPath)
 {

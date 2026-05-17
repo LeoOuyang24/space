@@ -165,13 +165,15 @@ struct LevelLoader
      * @return true 
      * @return false 
      */
-    bool getReady();
+    bool isReady();
 
     /**
      * @brief check if we have are done pre-loading. If so, load the world
      * 
      */
     void monitor();
+
+    float getProgress();
 private:
     /**
      * @brief clear preload list

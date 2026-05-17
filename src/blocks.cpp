@@ -470,13 +470,12 @@ void Terrain::render(int i, int z)
     float shade = pow(.5,i);
     SetShaderValue(TerrainOutline,GetShaderLocation(TerrainOutline,"shade"),&shade,SHADER_UNIFORM_FLOAT);
 
-
    BeginShaderMode(TerrainOutline);
 
    float ratio =  Block::BLOCK_DIMEN/PIXEL_SIZE;
    DrawBillboardPro(Globals::Game.Camera.getCamera(),blocksTexture.texture,Rectangle(0,0,blocksTexture.texture.width,blocksTexture.texture.height)
-                    ,Vector3(MAX_TERRAIN_SIZE/2,MAX_TERRAIN_SIZE/2,z),Vector3(0,-1,0),
-                    Vector2(blocksTexture.texture.width,blocksTexture.texture.height)*ratio,Vector2(blocksTexture.texture.width/2,blocksTexture.texture.height/2)*ratio,
+                    ,Vector3(blocksTexture.texture.width*ratio/2,blocksTexture.texture.height*ratio/2,z),Vector3(0,-1,0),
+                    Vector2(blocksTexture.texture.width*ratio,blocksTexture.texture.height*ratio),Vector2(blocksTexture.texture.width/2,blocksTexture.texture.height/2)*ratio,
                     0,balls);
     EndShaderMode();
    //BeginShaderMode(GravityFieldShader);

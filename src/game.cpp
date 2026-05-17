@@ -36,6 +36,82 @@ void Globals::init()
 
 }
 
+void Globals::update()
+{
+    if (!levelLoader.isReady())
+    {
+        levelLoader.monitor();
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+    else
+    {
+    //SoundLibrary::update();
+
+    float deltaTime = GetFrameTime();
+     if ( IsKeyPressed(KEY_RIGHT_BRACKET) || !Debug::isPaused())
+            {
+            accum += deltaTime;
+            Debug::clearRenderDefers();
+            }
+
+            while (accum >= tick/speed )
+            {
+                //player.update(*getCurrentTerrain());
+                terrain.update(getCurrentLayer());
+                Sequences::runPhysics();
+
+                accum -= tick/speed;
+                frames ++;
+            }
+            frames = 0;
+
+            if (GetMouseWheelMove())
+            {
+
+                //camera.zoom += ((float)GetMouseWheelMove()*0.05f);
+                float move = GetMouseWheelMove()*5;
+                //camera.position.z += move;
+                //camera.target.z += move;
+                Camera.moveCamera(Camera.getCamera().position + Vector3(0,0,move));
+            }
+            Camera.update();
+            if constexpr (Globals::DEBUG)
+                Debug::handleInput();
+    }
+}
+
+void Globals::render()
+{
+    if (levelLoader.isReady())
+    {
+        BeginMode3D(Camera.getCamera());
+            ClearBackground(BLACK);
+
+            Texture2D bg  = getBG();
+            DrawBillboardRec(Camera.getCamera(),bg,Rectangle(0,0,bg.width,bg.height),
+                            Vector3(Terrain::MAX_TERRAIN_SIZE/2,Terrain::MAX_TERRAIN_SIZE/2,Globals::BACKGROUND_Z),
+                            Vector2(bg.width,bg.height),WHITE);
+
+            terrain.render();
+
+            Sequences::runRenders();
+        if constexpr (DEBUG)
+            Debug::renderDefers();
+
+
+        EndMode3D();
+
+        interface.process();
+        Debug::drawInterface();
+    }
+    else
+    {
+        Rectangle rect = {0.1*GetScreenWidth(), 0.8*GetScreenHeight(), 0.7*GetScreenWidth(),0.1*GetScreenHeight()};
+        DrawRectangle(rect.x,rect.y,rect.width,rect.height,WHITE);
+        DrawRectangle(rect.x,rect.y,rect.width*levelLoader.getProgress(),rect.height,RED);
+    }
+}
+
 void Globals::addCollects(int val)
 {
     collects += val;
@@ -169,7 +245,7 @@ void Globals::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
 {
     if (ptr.get())
     {
-        ptr->setOrient({ptr->getPos() + Vector2(1500,1500),layer,ptr->orient.rotation,ptr->orient.facing});
+        ptr->setOrient({ptr->getPos(),layer,ptr->orient.rotation,ptr->orient.facing});
         ptr->orient.setStartingPos(ptr->getPos());
         objects.addObject(ptr);
         terrain.addObject(ptr,layer);

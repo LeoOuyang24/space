@@ -34,6 +34,9 @@ struct Globals
     std::shared_ptr<Player> player;
 
     void init();
+    void update();
+    void render();
+
     void setLayer(LayerType layer); //set layer, move the player, and the camera
 
     size_t getCollects();
@@ -71,6 +74,11 @@ struct Globals
     CurrentWorld curWorld = -1;
 
 private:
+
+    float accum = 0;
+    float tick = 1/60.0f;
+    float speed = 1;
+    int frames = 0;
 
     Globals();
 };
