@@ -36,6 +36,21 @@ void Globals::init()
 
 }
 
+//benchmark to test how fast terrain collision is
+void benchmark()
+{
+    float time = GetTime();
+    int radius = 220;
+
+    for (int i = 0; i < 150; i ++)
+    {
+        Vector2 start = {3000,3000};
+        Vector2 end = {3000,4000};
+        Vector2 pos = Globals::Game.terrain.getTerrain(0)->lineBlockIntersect(start,end,false);
+    }
+    std::cout << time << " " << GetTime() - time << "\n";
+}
+
 void Globals::update()
 {
     if (!levelLoader.isReady())

@@ -419,11 +419,12 @@ Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFun
     Vector2 current = a;
     bool past = false;
     //loop until we have gone past b or we hit a wall. ignoring planets, since we calculate it later
+    int i = 0;
     while (!checkBlocks(current,false,check) && !past)
     {
         current = pointBoxEdgeIntersect(current,dir,Block::BLOCK_DIMEN);
         past = abs(current.y - a.y) > abs(b.y - a.y) || abs(current.x - a.x) > abs(b.x - a.x);
-
+        i++;
         /*if (Debug::isDebugOn())
         {
             Debug::addDeferRender([current,this,check](){
@@ -435,7 +436,6 @@ Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFun
 
 
     }
-
 
     Vector2 answer = past ? b : current;
     for (EntityPlanet& terr : planets) //calculate the answer completely separately, by only accounting for planets
