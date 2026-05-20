@@ -280,7 +280,7 @@ void GlobalTerrain::emitSignal(SignalName name, void* data)
 void LevelLoader::loadWorld(const World& world)
 {
     ready = false;
-    loaded = 0;
+    loaded.store(0);
     size_t layers = world.layers.size();
     threads.resize(layers);
     preloads.resize(layers);
@@ -331,7 +331,9 @@ void LevelLoader::monitor()
 
 float LevelLoader::getProgress()
 {
-    return preloads.size() == 0 ? 0 : (static_cast<float>(loaded.load()))/preloads.size();
+    return preloads.size() == 0 
+                    ? 0 
+                    : (static_cast<float>(loaded.load())/preloads.size());
 }
 
 void LevelLoader::loadPreLayer(PreLayer& preloaded, std::string layerPath)
@@ -344,6 +346,7 @@ void LevelLoader::loadPreLayer(PreLayer& preloaded, std::string layerPath)
         std::string line;
         int lineNum = 0;
         preloaded.info = {layerPath};
+
         while(std::getline(levelFile,line))
         {
             if (line != "") //skip blank lines
@@ -370,7 +373,7 @@ void LevelLoader::loadPreLayer(PreLayer& preloaded, std::string layerPath)
                 lineNum ++;
             }
         }
-        loaded++;
+        loaded.store(loaded.load() + 1);
         levelFile.close();
     }
 

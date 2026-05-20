@@ -46,7 +46,6 @@ void benchmark()
         Vector2 end = {3000,4000};
         Globals::Game.terrain.getTerrain(0)->lineBlockIntersect(start,end,false);
     }
-    std::cout << time << " " << GetTime() - time << "\n";
 }
 
 void Globals::update()
@@ -54,7 +53,6 @@ void Globals::update()
     if (!levelLoader.isReady())
     {
         levelLoader.monitor();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
     else
     {
@@ -198,16 +196,18 @@ void Globals::addWorld(std::string_view path)
        }
    }
 
-    worlds.push_back(world);
     world.signals = getWorldsSet(1);//worlds.size() - 1);
+    worlds.push_back(world);
+
 }
 
 void Globals::onWorldLoaded()
 {
     if (terrain.getLayerCount() > 0 && Globals::Game.getPlayer())
     {
-        Globals::Game.setLayer(0);
-        Globals::Game.getPlayer()->setPos(terrain.getLayerInfo(0).playerPos);
+        setLayer(0);
+        terrain.setSignalSet(worlds[curWorld].signals);
+        getPlayer()->setPos(terrain.getLayerInfo(0).playerPos);
         objects.addObject(player);
     }
 }

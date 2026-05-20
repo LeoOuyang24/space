@@ -220,7 +220,7 @@ void PhysicsBody::planetGravity(Terrain& terrain)
 
     if (!onGround && followGravity)
     {
-        int divide = 50;
+        int divide = 20;
         const int landingDivide = 3;
         int upTo = divide;//freeFall ? divide : landingDivide;
         Vector2 grav = {0,0};

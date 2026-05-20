@@ -14,7 +14,7 @@ void SoundLibrary::addSound(std::string_view path)
     sounds[path.data()] = LoadSound(read.c_str());
     if (!IsSoundValid(sounds[path.data()]))
     {
-        std::cout << "ERROR SoundLibrary::addSound: Failed to load sound: " << path << "\n";
+        std::cerr << "ERROR SoundLibrary::addSound: Failed to load sound: " << path << "\n";
     }
 }
 

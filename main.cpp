@@ -146,6 +146,7 @@ int main(void)
             // Draw
             //----------------------------------------------------------------------------------
             BeginDrawing();
+                ClearBackground(BLACK);
 
                 Globals::Game.render();
                 DrawFPS(10, 10);
