@@ -175,12 +175,5 @@ void LifePod::onCollide(PhysicsBody& other)
 
 void LifePod::interactWith(PhysicsBody& other)
 {
-    Globals::Game.Camera.setCameraFollow(false);
-    Globals::Game.Camera.moveCamera(-Globals::BACKGROUND_Z*2,60);
-    auto sequence = Sequences::waitFor(std::bind(Globals::Game.Camera.isDone,&Globals::Game.Camera),false);
-    sequence->push_back(RunThis([](int){
-        Globals::Game.interface.setMenu(Menus::WORLD_MAP); 
-        Globals::Game.Camera.setCameraFollow(true);
-        return true;
-    }));
+    Globals::Game.setState(GameState::WORLD_MAP);
 }

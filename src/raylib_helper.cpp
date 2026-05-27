@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+Shader GlobalShaders::EllipseGradientShader;
 
 Vector2 GetScreenDimen()
 {
@@ -58,16 +59,20 @@ void DrawArrow3D(Vector3 startPos,Vector3 endPos, Color color, int width)
 
 void DrawSprite3D(const Texture2D& sprite, const Rectangle& pos, float rotation, Color tint)
 {
-    DrawBillboardPro(Globals::Game.getCamera(),
+   DrawSprite3D(sprite,Globals::Game.getCamera(),pos,Globals::Game.getCurrentZ(),rotation,tint);
+}
+
+void DrawSprite3D(const Texture2D& sprite, const Camera3D& camera, const Rectangle& pos, float z, float rotation, Color tint)
+{
+    DrawBillboardPro(camera,
                     sprite,
                     Rectangle(0,0,sprite.width,sprite.height),
-                    toVector3({pos.x,pos.y}),
+                    {pos.x,pos.y,z},
                      Vector3(0,-1,0),
                      Vector2(pos.width,pos.height),
                      Vector2(pos.width/2,pos.height/2),
                      rotation*RAD2DEG,
-                     tint);
-}
+                     tint);}
 
 
 void DrawAnime(const Texture2D& sprite, double start, const AnimeInfo& info, const Rectangle& pos, float rotation, Color tint )
@@ -106,6 +111,38 @@ void DrawAnime3D(const Texture2D& sprite, double start, const AnimeInfo& info, c
                    Vector2(pos.width/2,pos.height/2),
                    rotation*RAD2DEG*-1,
                    tint);
+}
+
+void DrawEllipseGradient(const Vector3& pos, int horizRadius, int vertRadius, const Color& centerColor, const Color& edgeColor)
+{
+    if (IsShaderValid(GlobalShaders::EllipseGradientShader))
+    {
+        Vector4 normalizedCenter = Vector4(centerColor.r,centerColor.g,centerColor.b,centerColor.a)*(1/255.0);
+        Vector4 normalizedEdge = Vector4(edgeColor.r,edgeColor.g,edgeColor.b,edgeColor.a)*(1/255.0);
+        
+        SetShaderValue(GlobalShaders::EllipseGradientShader,GetShaderLocation(GlobalShaders::EllipseGradientShader,"centerColor"),&normalizedCenter,SHADER_UNIFORM_VEC4);
+        SetShaderValue(GlobalShaders::EllipseGradientShader,GetShaderLocation(GlobalShaders::EllipseGradientShader,"borderColor"),&normalizedEdge,SHADER_UNIFORM_VEC4);
+
+        BeginShaderMode(GlobalShaders::EllipseGradientShader);
+            rlBegin(RL_QUADS);
+                rlTexCoord2f(0,0);
+                rlVertex3f(pos.x - horizRadius,pos.y - vertRadius,pos.z);
+
+                rlTexCoord2f(1,0);
+                rlVertex3f(pos.x + horizRadius,pos.y - vertRadius,pos.z);
+
+                rlTexCoord2f(1,1);
+                rlVertex3f(pos.x + horizRadius,pos.y + vertRadius,pos.z);
+
+                rlTexCoord2f(0,1);
+                rlVertex3f(pos.x - horizRadius,pos.y + vertRadius,pos.z);
+            rlEnd();
+        EndShaderMode();
+    }
+    else
+    {
+        std::cerr << "ERROR DrawEllipseGradient: unable to draw ellipse gradient because shader is somehow invalid\n";
+    }
 }
 
 std::string fitText(Font font, std::string_view text, float fontSize, float fontSpacing, float maxWidth)
