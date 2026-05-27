@@ -6,6 +6,12 @@
 * TODO: Make ALT-TAB work
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
 
+## 5/26/2026 World Map UI Updates
+* World Map now has a gradient ellipse for each level
+  * It actually looks kinda like how I want it to look now, as opposed to a placeholder
+* `StateLoader` class was added to keep track of the Game's state. This is useful because we don't ALWAYS want to render the player and the level
+  * Might remove later? It kind of overlaps with `Interface`. One or the other will probably go in a future update
+
 ## 5/17/2026 Multhreading 
 * When loading a world, loading is now multhreaded
   * Each layer is loaded independently into a preload stated called a PreLayer by a thread
