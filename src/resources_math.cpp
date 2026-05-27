@@ -183,3 +183,14 @@ Vector2 toVector2(const Vector3& vector3)
 {
     return {vector3.x,vector3.y};
 }
+
+float ellipseRadius(float radians, float horizRadius, float vertRadius)
+{
+    if (horizRadius == 0 && vertRadius == 0)
+    {
+        return 0;
+    }
+
+    return (horizRadius*vertRadius)/(sqrt(pow(vertRadius*cos(radians),2) + pow(horizRadius*sin(radians),2))); 
+
+}

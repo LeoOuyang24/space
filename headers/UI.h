@@ -8,6 +8,7 @@
 
 #include <raylib.h>
 
+#include "camera.h"
 #include "terrain.h"
 
 //abstract class for any UI Element
@@ -47,7 +48,7 @@ struct UIElement
     virtual Vector2 getMinDimens() 
     {
         return {0,0};
-    }
+    }    
 };
 
 
@@ -90,13 +91,23 @@ class WorldMap : public UIElement
         WorldNode(){};
         void render(const Rectangle&);
         void update(const Rectangle&);
-    public:
+        bool isHovered(const Rectangle&); //true if mouse is hovering over    
+        bool isClicked(const Rectangle&); //true if mouse is hovering over AND left mouse button is clicked
+
+        WorldMap* parent = nullptr;
         Vector2 center;
         CurrentWorld world = 0;
+        Color color;
     };
-    std::array<WorldNode,5> nodes;
+    std::array<WorldNode,2> nodes;
 public:
+
+    static constexpr float BG_Z = 0; //z at which the background should be rendered at
+    static constexpr float NODE_Z = -10; //z at which the nodes should be rendered at
+    static constexpr float CAMERA_Z = -500; //z at which the camera is at
+
     RenderTexture bg;
+    GameCamera camera;
 
     WorldMap();
     void render(const Rectangle&);

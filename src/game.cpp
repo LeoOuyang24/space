@@ -10,6 +10,64 @@
 #include "../headers/audio.h"
 #include "../headers/signals.h"
 
+void StateLoader::setState(GameState newState, bool strict)
+{
+    if (strict)
+    {
+        if (state == GameState::PLAYING && newState == GameState::MAIN_MENU)
+        {
+            //unimplemented
+        }
+        else if (state == GameState::MAIN_MENU && newState == GameState::PLAYING)
+        {
+            Globals::Game.interface.setMenu(NONE);
+            Globals::Game.setLayer(0);
+            SoundLibrary::toggleBGM(true);
+            Globals::Game.Camera.startQueue();
+                Globals::Game.Camera.setCameraFollow(false,0);
+                Globals::Game.Camera.setCameraFollow(toVector2(Globals::Game.Camera.getCamera().position));
+                Globals::Game.Camera.lookAt(Globals::Game.terrain.getZOfLayer(0),300);
+                Globals::Game.Camera.setCameraFollow(true,100);
+                //Globals::Game.Camera.lookAt(toVector3(Globals::Game.getPlayer()->getPos()),100);
+            Globals::Game.Camera.stopQueue();
+            state = newState;
+
+        }
+        else if ( state == GameState::WORLD_MAP && newState == GameState::PLAYING)
+        {
+            //unimplemented
+            state = newState;
+        }
+        else if (state == GameState::PLAYING && newState == GameState::WORLD_MAP )
+        {
+            Globals::Game.Camera.setCameraFollow(false);
+
+            Globals::Game.Camera.moveCamera(-Globals::BACKGROUND_Z*2,60);
+            auto sequence = Sequences::waitFor(std::bind(Globals::Game.Camera.isDone,&Globals::Game.Camera),false);
+            sequence->push_back(RunThis([this,newState](int){
+                Globals::Game.interface.setMenu(Menus::WORLD_MAP); 
+                Globals::Game.Camera.setCameraFollow(true);
+                state = newState;
+                return true;
+            }));
+        }
+        else
+        {
+            std::cerr << "ERROR StateLoader::setState: invalid transition: from " << static_cast<int>(state) << " to " << static_cast<int>(newState) << "\n";
+            return;
+        }
+    }
+    else
+    {
+        state = newState;
+    }
+}
+
+GameState StateLoader::getState()
+{
+    return state;
+}
+
 Globals Globals::Game;
 
 
@@ -32,14 +90,13 @@ void Globals::init()
 
     Player* ptr = new Player(Vector2(5500,5500));
     player.reset(ptr);
-    Camera.init();
+    Camera.init({Terrain::MAX_TERRAIN_SIZE,Terrain::MAX_TERRAIN_SIZE},CAMERA_Z_DISP);
 
 }
 
 //benchmark to test how fast terrain collision is
 void benchmark()
 {
-    float time = GetTime();
     for (int i = 0; i < 150; i ++)
     {
         Vector2 start = {3000,3000};
@@ -90,11 +147,12 @@ void Globals::update()
                 Debug::handleInput();
     }
 }
-
 void Globals::render()
 {
     if (levelLoader.isReady())
     {
+        if (stateLoader.getState() != GameState::WORLD_MAP)
+        {
         BeginMode3D(Camera.getCamera());
             ClearBackground(BLACK);
 
@@ -106,14 +164,18 @@ void Globals::render()
             terrain.render();
 
             Sequences::runRenders();
-        if constexpr (DEBUG)
-            Debug::renderDefers();
-
+            if constexpr (DEBUG)
+                Debug::renderDefers();
 
         EndMode3D();
 
         interface.process();
         Debug::drawInterface();
+        }
+        else
+        {
+            interface.process();
+        }
     }
     else
     {
@@ -217,7 +279,6 @@ void Globals::startLoadWorld(const World& world)
     terrain.clear();
     objects.clear();
     levelLoader.loadWorld(world);
-
 }
 
 void Globals::setCurWorldThreaded(CurrentWorld cur)
@@ -229,6 +290,12 @@ void Globals::setCurWorldThreaded(CurrentWorld cur)
     }
     curWorld = cur;
 }
+
+CurrentWorld Globals::getCurWorld()
+{
+    return curWorld;
+}
+
 Texture2D Globals::getBG()
 {
     if (curWorld >= worlds.size())
@@ -280,6 +347,10 @@ PhysicsBody* Globals::getPlayer()
     return player.get();
 }
 
+void Globals::setState(GameState newState)
+{
+    stateLoader.setState(newState,true);
+}
 
 Globals::Globals()
 {

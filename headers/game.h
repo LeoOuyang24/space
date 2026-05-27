@@ -14,6 +14,35 @@ typedef uint16_t Frame;
 class Player;
 
 
+enum struct GameState : uint8_t
+{
+    MAIN_MENU, //on the main menu
+    PLAYING, //playing the game as normal
+    WORLD_MAP //on the world map
+};
+
+//represents the current state of the game
+struct StateLoader
+{
+    /**
+     * @brief Set a new state. If "strict" is true, will only allow certain transitions and will do some additioanl actions. Otherwise just acts as a setter
+     * 
+     * @param state_ new state
+     * @param strict true will only allow certain transitions and will "setup" the next state
+     */
+    void setState(GameState state_, bool strict = true);
+    /**
+     * @brief Getter for "state"
+     * 
+     * @return GameState 
+     */
+    GameState getState();
+
+private:
+    GameState state = GameState::MAIN_MENU;
+
+};
+
 struct Globals
 {
     static Globals Game;
@@ -26,8 +55,6 @@ struct Globals
     static constexpr int BACKGROUND_Z = MAX_Z - SPACE_Z; //z coordinate of background
     static constexpr int START_Z = BACKGROUND_Z - SPACE_Z*50;
     static constexpr int CAMERA_Z_DISP = 500; //how far the camera is at all times from getCurrentZ(). Constant magic number    static constexpr int CAMERA_Z_DISP = 500; //how far the camera is at all times from getCurrentZ(). Constant magic number
-
-
 
     size_t collects = 0;
     LayerType currentLayer = 0; //layer player is at
@@ -50,6 +77,7 @@ struct Globals
     void addWorld(std::string_view path); //adds a new world from folder
     void startLoadWorld(const World& world); //load a preexisting world
     void setCurWorldThreaded(CurrentWorld cur);
+    CurrentWorld getCurWorld();
     /**
      * @brief Run when a world is loaded
      * 
@@ -63,17 +91,21 @@ struct Globals
     void addObject(std::shared_ptr<PhysicsBody> ptr);
     PhysicsBody* getPlayer();
 
+    void setState(GameState newState);
+
     SpritesGlobal Sprites;
     GlobalTerrain terrain;
     ObjectLookup objects;
     Interface interface;
     GameCamera Camera;
     LevelLoader levelLoader;
+    StateLoader stateLoader;
 
     Worlds worlds;
     CurrentWorld curWorld = -1;
 
 private:
+
 
     float accum = 0;
     float tick = 1/60.0f;

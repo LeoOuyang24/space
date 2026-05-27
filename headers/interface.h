@@ -25,13 +25,14 @@ class Interface
     std::weak_ptr<Sign> sign;
     size_t messageIndex = 0;
 
-    Menus currentMenu = Menus::MAIN_MENU;
     MainMenu menu;
+    Menus currentMenu = Menus::MAIN_MENU;
 
     std::array<std::unique_ptr<UIElement>,static_cast<size_t>(Menus::MENU_AMOUNT)-1> menus;
 
     void processSign();//handle rendering sign message
-public:
+public:    
+
     void init();
     void setMessage(Sign* message);
     void setMenu(Menus menu);

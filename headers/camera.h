@@ -8,7 +8,7 @@
 
 struct GameCamera
 {
-    void init();
+    void init(const Vector2& bounds_, float maxCameraDisp_);
     void update();
     /**
      * @brief set "cameraFollow" to a boolean value
@@ -100,6 +100,9 @@ private:
             return true;
         }));
     }
+    Vector2 bounds = {}; //point between 0,0 and "bounds" that the camera can not leave
+    float maxCameraDisp = 0; //maximum distance from the background a camera can have
+
     Camera3D camera;
     bool cameraFollow = false;
     Vector3 cameraFollowPoint = {};

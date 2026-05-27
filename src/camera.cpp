@@ -4,7 +4,7 @@
 #include "../headers/game.h"
 #include "../headers/objects.h"
 
-void GameCamera::init()
+void GameCamera::init(const Vector2& bounds_, float maxCameraDisp_)
 {
     
     camera.projection = CAMERA_PERSPECTIVE;
@@ -15,6 +15,9 @@ void GameCamera::init()
     //camera.zoom = 1.0f;
     camera.up = {0,-1,0};
     camera.fovy = 90;
+
+    bounds = bounds_;
+    maxCameraDisp = maxCameraDisp_;
 
     seq.reset(new Sequencer());
     Sequences::add(seq,false);
@@ -89,12 +92,12 @@ void GameCamera::moveCamera(const Vector3& pos, int transition )
     }
     else if (!lock)
     {
-        float disp = Globals::CAMERA_Z_DISP*tan(camera.fovy/2*DEG2RAD); //distance from the edge of the screen
+        float disp = maxCameraDisp*tan(camera.fovy/2*DEG2RAD); //distance from the edge of the screen
 
         //clamps camera to level area
         Vector2 clampedPos = {
-            Clamp(pos.x,disp,Terrain::MAX_TERRAIN_SIZE - disp),
-            Clamp(pos.y,disp,Terrain::MAX_TERRAIN_SIZE - disp)
+            Clamp(pos.x,disp,bounds.x - disp),
+            Clamp(pos.y,disp,bounds.y - disp)
         };
 
 

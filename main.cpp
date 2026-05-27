@@ -26,9 +26,6 @@
 #include "headers/item.h"
 #include "headers/audio.h"
 
-
-
-
 #include <rlgl.h>
 #include <raymath.h>
 
@@ -54,6 +51,8 @@ void exportBackground()
     SetShaderValue(sun,GetShaderLocation(sun,"centerColor"),&sunCenter,SHADER_UNIFORM_VEC4);
     SetShaderValue(sun,GetShaderLocation(sun,"borderColor"),&sunEdge,SHADER_UNIFORM_VEC4);
     //auto timeLocation = GetShaderLocation(sun,"time");
+
+
 
     RenderTexture2D bg = LoadRenderTexture(8000*2,8000);//LoadRenderTexture(Terrain::MAX_WIDTH*screenDimen.x/screenDimen.y*2,Terrain::MAX_WIDTH*2);
 
@@ -81,24 +80,6 @@ void exportBackground()
 
     ExportImage(LoadImageFromTexture(bg.texture),"sprites/bg_scatter2.png");
 }
-
-struct ASDF
-{
-    RenderTexture texture;
-
-    ASDF()
-    {
-        texture = LoadRenderTexture(Terrain::MAX_TERRAIN_SIZE,Terrain::MAX_TERRAIN_SIZE);
-        BeginTextureMode(texture);
-            ClearBackground(BLANK);
-        EndTextureMode();
-        cleanUp();
-    }  
-    void cleanUp()
-    {
-        UnloadRenderTexture(texture);
-    }
-};
 
 int main(void)
 {
@@ -132,6 +113,8 @@ int main(void)
     SetShaderValue(Terrain::TerrainOutline,GetShaderLocation(Terrain::TerrainOutline,"pixelSizes"),&Terrain::PIXEL_SIZE,SHADER_UNIFORM_VEC2);
     SetShaderValue(Terrain::TerrainOutline,GetShaderLocation(Terrain::TerrainOutline,"outline_thickness"),&Block::BLOCK_DIMEN,SHADER_UNIFORM_VEC2);
 
+    GlobalShaders::EllipseGradientShader = LoadShader(0,TextFormat("shaders/fragments/oval.h",GLSL_VERSION));
+
     SoundLibrary::loadBGM("music/world0_together.wav");
     //SoundLibrary::loadBGM("music/world1/world1.wav");
     SoundLibrary::toggleBGM(false);
@@ -142,19 +125,14 @@ int main(void)
     {
 
         Globals::Game.update();
-           
             // Draw
             //----------------------------------------------------------------------------------
             BeginDrawing();
                 ClearBackground(BLACK);
-
                 Globals::Game.render();
                 DrawFPS(10, 10);
-
             EndDrawing();
     }
-
-
     // De-Initialization
     //--------------------------------------------------------------------------------------
     CloseWindow();        // Close window and OpenGL context

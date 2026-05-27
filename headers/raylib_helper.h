@@ -6,6 +6,12 @@
 
 #include "raylib.h"
 
+namespace GlobalShaders
+{
+    extern Shader EllipseGradientShader;
+}
+
+
 template<>
 struct std::equal_to<Color>
 {
@@ -29,9 +35,33 @@ struct AnimeInfo
 };
 
 //x,y of "pos" is the center of the object, not the top left for all of these Draw functions
+/**
+ * @brief Convenience function for drawing a sprite in 3D
+ * 
+ * @param sprite the sprite to draw
+ * @param camera camera to use
+ * @param pos position for the center of the sprite to be drawn
+ * @param z z coordinate
+ * @param rotation rotation in radians
+ * @param tint 
+ */
+void DrawSprite3D(const Texture2D& sprite, const Camera3D& camera, const Rectangle& pos, float z, float rotation = 0, Color tint = WHITE);
+//same as above but "camera" defaults to Globals::Game.getCamera() and "z" defaults to the current layer
 void DrawSprite3D(const Texture2D& sprite, const Rectangle& pos, float rotation = 0, Color tint = WHITE);
+
 void DrawAnime(const Texture2D& sprite, double start, const AnimeInfo& info, const Rectangle& pos, float rotation = 0, Color tint = WHITE );
 void DrawAnime3D(const Texture2D& sprite, double start, const AnimeInfo& info, const Rectangle& pos, float z, float rotation = 0, Color tint = WHITE );
+
+/**
+ * @brief Draws an ellipse gradient as  2d texture in 3d. Requires EllipseGradientShader to be ready
+ * 
+ * @param pos center of the ellipse
+ * @param horizRadius 
+ * @param vertRadius 
+ * @param center 
+ * @param edge 
+ */
+void DrawEllipseGradient(const Vector3& pos, int horizRadius, int vertRadius, const Color& center, const Color& edge);
 
 //no idea where to put this LUL
 //moves camera to look at "pos"

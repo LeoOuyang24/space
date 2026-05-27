@@ -47,6 +47,16 @@ Vector3 toVector3(const Vector2& vector2);
 Vector3 toVector3(const Vector2& vector2, float z);
 Vector2 toVector2(const Vector3& vector3);
 
+/**
+ * @brief Given an angle on an ellipse, returns the radius. 0 if the ellipse has radians of 0
+ * 
+ * @param radians, angle (in radians) along the ellipse. 0 is directly to the right.
+ * @param horizRadius, radius along the x axis
+ * @param vertRadius, radius along the y axis
+ * @return float 
+ */
+float ellipseRadius(float radians, float horizRadius, float vertRadius);
+
 template<typename T>
 concept has_y = requires { &T::y; };
 
