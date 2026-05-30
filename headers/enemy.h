@@ -170,8 +170,13 @@ struct GravityStream : public Object<RectCollider,ShapeRenderer<RECT>,GravityStr
     Vector2 gravDir = {};
     GravityStream()
     {
+         followGravity = false;
+    }
+    GravityStream(const Vector2& gravDir_) :  gravDir(gravDir_)
+    {
         followGravity = false;
     }
+    Shape getShape() const;
     void collideWith(PhysicsBody& other);
 };
 

@@ -2,6 +2,7 @@
 #include "../headers/audio.h"
 #include "../headers/item.h"
 #include "../headers/player.h"
+#include "../headers/enemy.h"
 
 Sign::Sign() : Object({},
                       std::make_tuple(SIGN_DIMEN.x,SIGN_DIMEN.y),
@@ -52,12 +53,23 @@ GravitySwitch::GravitySwitch()
 {
     collider.width = 100;
     collider.height = 100;
+
+    set_followGravity(false);
 }
 
 void GravitySwitch::interactWith(PhysicsBody& other)
 {
     //Globals::Game.terrain.flipGravity();
-    Globals::Game.getPlayer()->getForces().addForce(gravityDir*100.0f,Forces::GRAVITY);
+    //Globals::Game.getPlayer()->getForces().addForce(gravityDir*100.0f,Forces::GRAVITY);
+    
+    if (active)
+    {
+        GravityStream* stream = new GravityStream(gravityDir*10);
+
+        Globals::Game.addObject(*stream,{getPos(),orient.layer});
+        active = false;
+    }
+
     //Globals::Game.getPlayer()->setTangible(false);
 
     /*Sequences::add(true,
@@ -73,14 +85,14 @@ void GravitySwitch::render()
     float z = Globals::Game.terrain.getZOfLayer(orient.layer);
 
     float layers = Globals::Game.worlds[0].layers.size();
-    float ratio = 3*Globals::CAMERA_Z_DISP/(Globals::CAMERA_Z_DISP + (Globals::BACKGROUND_Z - Globals::START_Z)/layers);
+    /*float ratio = 3*Globals::CAMERA_Z_DISP/(Globals::CAMERA_Z_DISP + (Globals::BACKGROUND_Z - Globals::START_Z)/layers);
 
     DrawSprite3D(Globals::Game.Sprites.getSprite("left.png"),
                 {1608*3,1643.5*3,
                     766*ratio,667*ratio},
                 0,WHITE
 
-            );
+            );*/
 
 
     DrawArrow3D(toVector3(pos - gravityDir*collider.width/2,z),

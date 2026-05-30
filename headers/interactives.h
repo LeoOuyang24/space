@@ -62,6 +62,7 @@ struct Factory<BigSign>
 struct GravitySwitch : public Object<RectCollider,TextureRenderer,GravitySwitch>
 {
     Vector2 gravityDir = {}; //NORMALIZED vector 
+    bool active = true;
 
     GravitySwitch();
     void interactWith(PhysicsBody& other);

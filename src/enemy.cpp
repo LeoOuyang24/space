@@ -74,9 +74,17 @@ void LaserBeamEnemy::collideWith(PhysicsBody& other)
     }
 }
 
+Shape GravityStream::getShape() const
+{
+    return {ShapeType::RECT,getOrient(),Vector2{std::max(abs(gravDir.x)*10,100.0f),std::max(abs(gravDir.y)*10,100.0f)}};
+}
+
 void GravityStream::collideWith(PhysicsBody& other)
 {
-    other.getForces().addForce(gravDir,Forces::GRAVITY);
+    if (other.get_followGravity())
+    {
+        other.getForces().addForce(gravDir,Forces::GRAVITY);
+    }
 }
 
 void PushBot::update(Terrain& t)

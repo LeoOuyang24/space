@@ -52,7 +52,8 @@ SignalSet world1()
         Portal* p = new Portal();
             p->setPos({3704,4733});
             p->cond.reset();
-            p->destPos = {2433,1020};
+            p->destPos = {3704,4733};
+            p->layerDisp = 2;
         Globals::Game.addObject(*p,static_cast<PhysicsBody*>(thing)->getOrient().layer);
     }};
 
