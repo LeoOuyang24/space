@@ -72,7 +72,6 @@ void Terrain::addBlock(const Vector2& pos, const Block& block, bool draw)
     {
         terrain.resize((index + 1)*TerrainMap::PALETTE_SIZE);
     }
-    terrain.setVal(index,AIR);
     //std::cout << pos << "  " << index << " "<< terrain.size()<< "\n";
 
     Color color;
@@ -134,15 +133,9 @@ void Terrain::remove(const Vector2& pos, int radius)
         rlSetBlendMode(BLEND_CUSTOM);
     //double time = GetTime();
     forEachPos([this](const Vector2& pos){
-            //for (int i = 0; i < 9; i ++)
-            {
-                //Vector2 neighbor = pos;//{pos.x + Block::BLOCK_DIMEN*(i%3 - 1),pos.y + Block::BLOCK_DIMEN*(i/3 - 1)};
-                //terrain.setVal(pointToIndex(neighbor),BlockType::AIR);
-                //DrawRectangle(neighbor.x*PIXEL_RATIO,(blocksTexture.texture.height - neighbor.y)*PIXEL_RATIO -  PIXEL_SIZE,PIXEL_SIZE,PIXEL_SIZE,Fade(BLACK, 0.0f));
 
-                addBlock(pos,{BlockType::AIR},true);
+                addBlock(pos,{WHITE,BlockType::AIR},true);
 
-            }
                },pos,radius+Block::BLOCK_DIMEN*2*(PIXEL_RATIO));
         rlSetBlendMode(BLEND_ALPHA);
     endDrawBlocks();
@@ -236,6 +229,7 @@ void Terrain::generatePlanet(const Vector2& center, int radius, const Color& col
     forEachPos([this,color](const Vector2& pos){
                     addBlock(pos,{color});
                },center,radius);
+
     endDrawBlocks();
 
 }

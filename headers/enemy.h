@@ -165,22 +165,14 @@ struct Factory<RectTerrain>
                     access<RectTerrain,&RectTerrain::calcNewPos>>;
 };
 
+//a circular piece of terrain that disintegrates
 struct Disintegrate : public CircleTerrain
 {
     Disintegrate() : CircleTerrain()
     {
-        collider.radius = 100;
+        
     }
     void render();
-    void update(Terrain& t)
-    {
-
-    }
-    void onAdd()
-    {
-        //this->setPos(starting);
-        Globals::Game.terrain.getTerrain(this->getOrient().layer)->addPlanet(*this,type);
-    }
     void collideWith(PhysicsBody& other);
     bool isTangible();
 private:
@@ -194,6 +186,18 @@ private:
      * @return float 
      */
     float getDisintegratedState(); 
+};
+
+template<>
+struct Factory<Disintegrate>
+{
+    static constexpr char ObjectName[] = "disintegrate";
+
+    using Base = FactoryBase<Disintegrate,
+                    access<Disintegrate,&Disintegrate::starting>,
+                    access<Disintegrate,&Disintegrate::collider,&CircleCollider::radius>,
+                    access<Disintegrate,&Disintegrate::type>,
+                    access<Disintegrate,&Disintegrate::calcNewPos>>;
 };
 
 struct GravityStream : public Object<RectCollider,ShapeRenderer<RECT>,GravityStream>
