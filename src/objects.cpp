@@ -137,7 +137,7 @@ void PhysicsBody::applyForces(Terrain& terrain)
     Vector2 total = forces.getTotalForce();
     setPos(getPos() + total);
 
-    if (Globals::Game.terrain.get_gravityMode() == GlobalTerrain::DOWN)
+    /*if (Globals::Game.terrain.get_gravityMode() == GlobalTerrain::DOWN)
     {
         Vector2 dimen = GetDimen(getShape());
         Vector2 left = orient.pos + Vector2(-dimen.x/2 - 1,2);
@@ -174,7 +174,7 @@ void PhysicsBody::applyForces(Terrain& terrain)
             DrawSphere(toVector3(rpos),2,rColor);
 
         });
-    }
+    }*/
 
     /*Vector2 horiz = {forces.getTotalForce().x,0};
     Vector2 vert = {0,forces.getTotalForce().y};
@@ -194,15 +194,9 @@ void PhysicsBody::applyForces(Terrain& terrain)
     }*/
 
     forces.addFriction(onGround ? 0.5 : .99);
-    //forces.setForce(grav,Forces::GRAVITY);
-
-    /*if (Globals::Game.terrain.get_gravityMode() == GlobalTerrain::DOWN && onGround)
-    {
-        forces.setForce(grav*0.9,Forces::GRAVITY);
-    }*/
 
     wasOnGround = onGround;
-    onGround = isOnGround(terrain);
+    set_onGround(isOnGround(terrain));
     freeFall = freeFall && !onGround;
 
 }
@@ -251,6 +245,10 @@ void PhysicsBody::planetGravity(Terrain& terrain)
                 else if (terrain.isBlockType(pos,WATER,true))
                 {
                     force *= 0.1;
+                }
+                else if (terrain.isBlockType(pos,HOLE,true))
+                {
+                    force *= 1.2;
                 }
                 if (i < landingDivide)
                 {

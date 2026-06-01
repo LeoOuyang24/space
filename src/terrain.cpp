@@ -115,6 +115,10 @@ void GlobalTerrain::loadTerrain(LayerType layer, const Image& img)
             {
                 type = WATER;
             }
+            else if (color == BLACK)
+            {
+                type = HOLE;
+            }
             if (color.a > 0)
             {
                 terr->addBlock(point,{color,type},false);

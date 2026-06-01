@@ -36,6 +36,8 @@ void ClassDeserializer::init()
 
     registerName<LifePod>();
     registerName<Battery>("battery");
+
+    registerName<Disintegrate>("disintegrate");
 }
 
 std::shared_ptr<PhysicsBody> ClassDeserializer::construct(std::string_view cereal)

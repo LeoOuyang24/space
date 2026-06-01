@@ -107,12 +107,12 @@ struct MovingTerrain : public Object<Collider,ShapeRenderer<Shape>,MovingTerrain
         //tangible = false;
     }
 
-    void onAdd()
+    virtual void onAdd()
     {
         this->setPos(starting);
         Globals::Game.terrain.getTerrain(this->getOrient().layer)->addPlanet(*this,type);
     }
-    void collideWith(PhysicsBody& other)
+    virtual void collideWith(PhysicsBody& other)
     {
         if (other.get_followGravity())
         {
@@ -163,6 +163,37 @@ struct Factory<RectTerrain>
                     access<RectTerrain,&RectTerrain::collider,&RectCollider::height>,
                     access<RectTerrain,&RectTerrain::type>,
                     access<RectTerrain,&RectTerrain::calcNewPos>>;
+};
+
+struct Disintegrate : public CircleTerrain
+{
+    Disintegrate() : CircleTerrain()
+    {
+        collider.radius = 100;
+    }
+    void render();
+    void update(Terrain& t)
+    {
+
+    }
+    void onAdd()
+    {
+        //this->setPos(starting);
+        Globals::Game.terrain.getTerrain(this->getOrient().layer)->addPlanet(*this,type);
+    }
+    void collideWith(PhysicsBody& other);
+    bool isTangible();
+private:
+    float start = 0;
+    static constexpr float TOTAL_DURATION = 10; //seconds until the object reforms
+    static constexpr float DISINTEGRATE_TIME = 3; //seconds before object disintegrates
+
+    /**
+     * @brief Returns a number from 0-1 representing how disintegrated we are. 1 is perfectly solid. 0 is completely gone. Numbers in between are still solid but in the process of disintegrating.
+     * 
+     * @return float 
+     */
+    float getDisintegratedState(); 
 };
 
 struct GravityStream : public Object<RectCollider,ShapeRenderer<RECT>,GravityStream>

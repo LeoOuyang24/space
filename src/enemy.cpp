@@ -74,6 +74,47 @@ void LaserBeamEnemy::collideWith(PhysicsBody& other)
     }
 }
 
+void Disintegrate::collideWith(PhysicsBody& other)
+{
+    CircleTerrain::collideWith(other);
+    if (start == 0 || getDisintegratedState() == 1)
+    {
+        start = GetTime();
+    }
+}
+
+bool Disintegrate::isTangible()
+{
+    return getDisintegratedState() > 0;
+}
+
+void Disintegrate::render()
+{
+    tint.a = getDisintegratedState()*255;
+    CircleTerrain::render();
+}
+
+float Disintegrate::getDisintegratedState()
+{
+    if (start != 0)
+    {
+        float duration = GetTime() - start;
+        if (duration >= TOTAL_DURATION) //we have reconstituted
+        {
+            return 1; 
+        }
+        else if (duration > DISINTEGRATE_TIME) //we have disintegrated and not reconstituted
+        {
+            return 0;
+        }
+        else //in the proces of disintegrating
+        {
+            return 1 - duration/DISINTEGRATE_TIME; 
+        }
+    }
+    return 1; //havent' even begun disintegrating yet
+}
+
 Shape GravityStream::getShape() const
 {
     return {ShapeType::RECT,getOrient(),Vector2{std::max(abs(gravDir.x)*10,100.0f),std::max(abs(gravDir.y)*10,100.0f)}};

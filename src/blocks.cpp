@@ -313,7 +313,7 @@ bool Terrain::checkBlocks(const Vector2& pos, bool checkPlanets, std::function<b
     {
         for (auto it = planets.begin(); it != planets.end();)
         {
-            if (it->ptr.lock() && check(it->type) && CheckCollisionPointShape(pos,it->ptr.lock()->getShape()))
+            if (it->ptr.lock() && it->ptr.lock()->isTangible() && check(it->type)  && CheckCollisionPointShape(pos,it->ptr.lock()->getShape()))
             {
                 return true;
             }
@@ -440,7 +440,7 @@ Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFun
     Vector2 answer = past ? b : current;
     for (EntityPlanet& terr : planets) //calculate the answer completely separately, by only accounting for planets
         {
-            if (terr.ptr.lock() && check(terr.type))
+            if (terr.ptr.lock() && terr.ptr.lock()->isTangible() && check(terr.type))
             {
                 Vector2 intersect = lineShapeIntersect(terr.ptr.lock()->getShape(),a,b);
                 if (Vector2DistanceSqr(intersect,a) < Vector2DistanceSqr(a,b))

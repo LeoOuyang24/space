@@ -108,8 +108,8 @@ void Player::update(Terrain& terrain)
         //Object::applyForces(terrain);
 
 
-        handleControls();
         Object::applyForces(terrain);
+        handleControls();
         forces.addFriction(AIR_FRICTION,Forces::BOOSTING); //boosting gets slightly more friction
         if ( !freeFall) //jump force should always be perpendicular to direction we are facing UNLESS we are long jumping
         {
@@ -227,7 +227,7 @@ void Player::handleControls()
             {
                 Vector2 jump = IsKeyDown(KEY_LEFT_CONTROL) ?
                                     orient.getNormal()*-5 + orient.getFacingVector()*6 :
-                                    orient.getNormal()*-8;
+                                    orient.getNormal()*-7;
                 forces.setForce(jump,Forces::JUMP);
                 freeFall = IsKeyDown(KEY_LEFT_CONTROL);
                 set_onGround(false);
