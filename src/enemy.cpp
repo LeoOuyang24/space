@@ -115,6 +115,11 @@ float Disintegrate::getDisintegratedState()
     return 1; //havent' even begun disintegrating yet
 }
 
+std::string Disintegrate::serialize()
+{
+    return Factory<Disintegrate>::Base::serialize(*this);
+}
+
 Shape GravityStream::getShape() const
 {
     return {ShapeType::RECT,getOrient(),Vector2{std::max(abs(gravDir.x)*10,100.0f),std::max(abs(gravDir.y)*10,100.0f)}};

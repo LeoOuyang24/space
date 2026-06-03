@@ -186,6 +186,13 @@ private:
      * @return float 
      */
     float getDisintegratedState(); 
+
+    /**
+     * @brief We must override serialize since we are inheriting from an Object
+     * 
+     * @return std::string 
+     */
+    std::string serialize();
 };
 
 template<>

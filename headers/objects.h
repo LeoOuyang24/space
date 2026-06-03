@@ -117,8 +117,6 @@ protected:
     float gravRadius = 130;
 };
 
-
-
 //renders a suggested button press over an object
 void suggestButtonPress(const Shape& shape,std::string_view str);
 
@@ -195,7 +193,7 @@ struct Object : public PhysicsBody
     }
 
     //calls the corresponding Factory<>::Base::serialize
-    std::string serialize()
+    virtual std::string serialize()
     {
         if constexpr(!std::is_same<Descendant,EMPTY_TYPE>::value)
         {
