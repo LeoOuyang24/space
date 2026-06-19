@@ -64,7 +64,7 @@ void GravitySwitch::interactWith(PhysicsBody& other)
     
     if (active)
     {
-        GravityStream* stream = new GravityStream(gravityDir*10);
+        GravityStream* stream = new GravityStream(gravityDir*20);
 
         Globals::Game.addObject(*stream,{getPos(),orient.layer});
         active = false;

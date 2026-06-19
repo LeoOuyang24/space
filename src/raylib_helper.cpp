@@ -57,6 +57,38 @@ void DrawArrow3D(Vector3 startPos,Vector3 endPos, Color color, int width)
     }
 }
 
+void DrawEllipseGradient(const Vector3& pos, int horizRadius, int vertRadius, const Color& centerColor, const Color& edgeColor)
+{
+    if (IsShaderValid(GlobalShaders::EllipseGradientShader))
+    {
+        Vector4 normalizedCenter = Vector4(centerColor.r,centerColor.g,centerColor.b,centerColor.a)*(1/255.0);
+        Vector4 normalizedEdge = Vector4(edgeColor.r,edgeColor.g,edgeColor.b,edgeColor.a)*(1/255.0);
+        
+        SetShaderValue(GlobalShaders::EllipseGradientShader,GetShaderLocation(GlobalShaders::EllipseGradientShader,"centerColor"),&normalizedCenter,SHADER_UNIFORM_VEC4);
+        SetShaderValue(GlobalShaders::EllipseGradientShader,GetShaderLocation(GlobalShaders::EllipseGradientShader,"borderColor"),&normalizedEdge,SHADER_UNIFORM_VEC4);
+
+        BeginShaderMode(GlobalShaders::EllipseGradientShader);
+            rlBegin(RL_QUADS);
+                rlTexCoord2f(0,0);
+                rlVertex3f(pos.x - horizRadius,pos.y - vertRadius,pos.z);
+
+                rlTexCoord2f(1,0);
+                rlVertex3f(pos.x + horizRadius,pos.y - vertRadius,pos.z);
+
+                rlTexCoord2f(1,1);
+                rlVertex3f(pos.x + horizRadius,pos.y + vertRadius,pos.z);
+
+                rlTexCoord2f(0,1);
+                rlVertex3f(pos.x - horizRadius,pos.y + vertRadius,pos.z);
+            rlEnd();
+        EndShaderMode();
+    }
+    else
+    {
+        std::cerr << "ERROR DrawEllipseGradient: unable to draw ellipse gradient because shader is somehow invalid\n";
+    }
+}
+
 void DrawSprite3D(const Texture2D& sprite, const Rectangle& pos, float rotation, Color tint)
 {
    DrawSprite3D(sprite,Globals::Game.getCamera(),pos,Globals::Game.getCurrentZ(),rotation,tint);
@@ -113,37 +145,6 @@ void DrawAnime3D(const Texture2D& sprite, double start, const AnimeInfo& info, c
                    tint);
 }
 
-void DrawEllipseGradient(const Vector3& pos, int horizRadius, int vertRadius, const Color& centerColor, const Color& edgeColor)
-{
-    if (IsShaderValid(GlobalShaders::EllipseGradientShader))
-    {
-        Vector4 normalizedCenter = Vector4(centerColor.r,centerColor.g,centerColor.b,centerColor.a)*(1/255.0);
-        Vector4 normalizedEdge = Vector4(edgeColor.r,edgeColor.g,edgeColor.b,edgeColor.a)*(1/255.0);
-        
-        SetShaderValue(GlobalShaders::EllipseGradientShader,GetShaderLocation(GlobalShaders::EllipseGradientShader,"centerColor"),&normalizedCenter,SHADER_UNIFORM_VEC4);
-        SetShaderValue(GlobalShaders::EllipseGradientShader,GetShaderLocation(GlobalShaders::EllipseGradientShader,"borderColor"),&normalizedEdge,SHADER_UNIFORM_VEC4);
-
-        BeginShaderMode(GlobalShaders::EllipseGradientShader);
-            rlBegin(RL_QUADS);
-                rlTexCoord2f(0,0);
-                rlVertex3f(pos.x - horizRadius,pos.y - vertRadius,pos.z);
-
-                rlTexCoord2f(1,0);
-                rlVertex3f(pos.x + horizRadius,pos.y - vertRadius,pos.z);
-
-                rlTexCoord2f(1,1);
-                rlVertex3f(pos.x + horizRadius,pos.y + vertRadius,pos.z);
-
-                rlTexCoord2f(0,1);
-                rlVertex3f(pos.x - horizRadius,pos.y + vertRadius,pos.z);
-            rlEnd();
-        EndShaderMode();
-    }
-    else
-    {
-        std::cerr << "ERROR DrawEllipseGradient: unable to draw ellipse gradient because shader is somehow invalid\n";
-    }
-}
 
 std::string fitText(Font font, std::string_view text, float fontSize, float fontSpacing, float maxWidth)
 {

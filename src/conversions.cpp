@@ -221,7 +221,7 @@ MoveFunc fromString(std::string_view str)
     //basically return two functions, one is how we move, the other is how to serialize
     SplitString split(str,'|');
     float speed = fromString<float>(split[1]);
-    auto toString = [cereal=std::string(str.data())]() -> std::string {return cereal;}; //toString function each of these guys will have, which is just returning the string that was used to deserialize them
+    auto toString = [cereal=std::string(str)]() -> std::string {return cereal;}; //toString function each of these guys will have, which is just returning the string that was used to deserialize them
     if (split[0] == "LINE") //LINE|<speed>|<distance>|<angle in degrees>
     {
         return { //linear movement, can be diagonal based on 3rd parameter
@@ -242,8 +242,8 @@ MoveFunc fromString(std::string_view str)
     {
         return {
         
-            [radius=fromString<float>(split[1])](const Orient& o,const Vector2& starting,float frame){
-                float angle = frame/1000.0f;
+            [radius=fromString<float>(split[2])](const Orient& o,const Vector2& starting,float frame){
+                float angle = lerp(0.0f,2*M_PI,frame);
                 return starting + Vector2(cos(angle),sin(angle))*radius;
             },
             toString,

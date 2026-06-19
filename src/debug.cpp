@@ -51,7 +51,9 @@ void Editor::handleInput()
             if (ptr)
             {
                 ptr->setPos(coords);
+                ptr->orient.setStartingPos(coords);
                 Globals::Game.addObject(ptr,Globals::Game.getCurrentLayer());
+                ptr->onDeserialize();
             }
 
             activeSearch = false;

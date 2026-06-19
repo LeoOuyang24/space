@@ -102,11 +102,21 @@ private:
     GravityMode gravityMode = PLANET;
     Vector2 gravityCenter = {}; //point at which gravity is focusing on when gravityMode is POINT
 
+    /**
+     * @brief Compares two weak_ptr<PhysicsBody>. Does not do the std::owner_less behavior of comparing control blocks, we only care about the dereferenced pointer
+     * Unless either pointer is null, then we use std::owner_less
+     * 
+     */
+    struct ObjLesser
+    {
+        bool operator()(const std::weak_ptr<PhysicsBody>& a, const std::weak_ptr<PhysicsBody>& b) const;
+    };
+
     struct Layer
     {
         Terrain terrain;
         //contains weak_ptrs that point to the shared_ptrs in ObjectLookup
-        std::set<std::weak_ptr<PhysicsBody>,std::owner_less<std::weak_ptr<PhysicsBody>>> objects;
+        std::set<std::weak_ptr<PhysicsBody>,ObjLesser> objects;
         LayerInfo info;
     };
 

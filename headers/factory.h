@@ -49,8 +49,12 @@ auto& access(Obj& thing)
     return access<decltype(thing.*Member),Members...>(thing.*Member);
 }
 
-//used to define a custom setter function for a particular field
-//use this the same way you'd use access, but replace access with accessSetter<obj,setFunc,accessors...> (defined below)
+/**
+ * @brief A wrapper class that basically just wraps the = operator around a specific functionality. Read about accessSetter below for the real meat and potatoes
+ * @tparam Obj the object type
+ * @tparam FieldType the type of the field (usually set automatically)
+ * @tparam Func (Obj& obj,const FieldType& value) => void, usually sets a field in "obj" with the provided "value"
+ */
 template<typename Obj, typename FieldType, auto Func>
 struct Setter
 {
@@ -66,6 +70,15 @@ struct Setter
     }
 };
 
+/**
+ * @brief Used to provide a specific behavior when setting a field in an object
+ * Use as you would "access" but with a function as the 2nd parameter
+ * @tparam Obj, this is the object type you are trying to deserialize
+ * @tparam Func (Obj& obj,const FieldType& value) => FieldType, given an object and a value, sets the field in the object to the corresponding value when deserializing, possibly doing some other things in the process
+ * @tparam Members, the access path for the field to set, same as "acces"
+ * @param thing when actually called, this will be the object that is having its field set. Don't worry about this when creating Factorys
+ * @return auto Returns a wrapper object that will basically call the provided function when setting (deserializing) the provided field path
+ */
 template<typename Obj, auto Func, auto... Members>
 auto accessSetter(Obj& thing)
 {

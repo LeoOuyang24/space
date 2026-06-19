@@ -120,17 +120,40 @@ std::string Disintegrate::serialize()
     return Factory<Disintegrate>::Base::serialize(*this);
 }
 
-Shape GravityStream::getShape() const
+/*Shape GravityStream::getShape() const
 {
     return {ShapeType::RECT,getOrient(),Vector2{std::max(abs(gravDir.x)*10,100.0f),std::max(abs(gravDir.y)*10,100.0f)}};
+}*/
+
+void GravityStream::onDeserialize()
+{
+    Vector2 pos = getPos();
+    Vector2 endpoint = Globals::Game.terrain.getTerrain(orient.layer)->lineBlockIntersect(pos,pos + gravDir*(Terrain::MAX_TERRAIN_SIZE),false);
+    endpoint.x = Clamp(endpoint.x,0,Terrain::MAX_TERRAIN_SIZE);
+    endpoint.y = Clamp(endpoint.y,0,Terrain::MAX_TERRAIN_SIZE);
+    
+    collider.width = Vector2Distance(endpoint,pos);
+    collider.height = 200;
+
+    setOrient({(pos + endpoint)*0.5,orient.layer,atan2(endpoint.y - pos.y, endpoint.x - pos.x)});
 }
 
 void GravityStream::collideWith(PhysicsBody& other)
 {
     if (other.get_followGravity())
     {
-        other.getForces().addForce(gravDir,Forces::GRAVITY);
+        Shape shape = other.getShape();
+        other.getForces().addForce(gravDir,Forces::ENEMY);
+
     }
+}
+
+void GravityStream::render()
+{
+    int horizComponent = gravDir.x ? gravDir.x/abs(gravDir.x) : 0; //1 if gravDir.x > 0, 0 if gravDir.x == 0, -1 if gravDir.x < 0
+    int vertComponent = gravDir.y ? gravDir.y/abs(gravDir.y) : 0; //1 if gravDir.y > 0, 0 if gravDir.y == 0, -1 if gravDir.y < 0
+    tint = Color{static_cast<unsigned char>(horizComponent*255/2.0f + 255/2.0f),static_cast<unsigned char>(vertComponent*255/2.0f + 255/2.0f),0,255};
+    Object::render();
 }
 
 void PushBot::update(Terrain& t)

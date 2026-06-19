@@ -24,8 +24,11 @@ struct ShapeRenderer
                          Globals::Game.terrain.getZOfLayer(shape.orient.layer)},shape.collider.radius,{0,0,0},0,color);
             break;
         case RECT:
-             DrawCube(Vector3(shape.orient.pos.x,shape.orient.pos.y,Globals::Game.terrain.getZOfLayer(shape.orient.layer)),
-                                     shape.collider.dimens.x,shape.collider.dimens.y,1,color);
+            Vector2 width = Vector2(cos(shape.orient.rotation),sin(shape.orient.rotation))*shape.collider.dimens.x/2;
+            DrawLine3D( toVector3(shape.orient.pos - width,Globals::Game.terrain.getZOfLayer(shape.orient.layer)),
+                        toVector3(shape.orient.pos + width,Globals::Game.terrain.getZOfLayer(shape.orient.layer)),
+                        color,
+                        shape.collider.dimens.y);
 
             break;
         }

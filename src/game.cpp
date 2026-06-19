@@ -125,9 +125,14 @@ void Globals::update()
             while (accum >= tick/speed )
             {
                 //player.update(*getCurrentTerrain());
+                auto time = GetTime();
                 terrain.update(getCurrentLayer());
+                double afterUpdate = GetTime();
                 Sequences::runPhysics();
+                double afterPhysics = GetTime();
 
+                std::cout << afterUpdate - time << " " << afterPhysics - afterUpdate << "\n";
+            
                 accum -= tick/speed;
                 frames ++;
             }

@@ -84,7 +84,13 @@ struct Factory<LaserBeamEnemy>
 {
     static constexpr std::string ObjectName = "laser_beamer";
     using Base = FactoryBase<LaserBeamEnemy,
-                                access<LaserBeamEnemy,&LaserBeamEnemy::orient,&Orient::pos>,
+                                //when setting the starting position, also set our actual position to match
+                                accessSetter<LaserBeamEnemy,[](LaserBeamEnemy& beamer, const Vector2& pos)
+                                {
+                                    beamer.setPos(pos);
+                                    return pos;
+                                }
+                                ,&LaserBeamEnemy::orient,&Orient::startingPos>,
                                 access<LaserBeamEnemy,&LaserBeamEnemy::arc>,
                                 access<LaserBeamEnemy,&LaserBeamEnemy::beamLength>,
                                 access<LaserBeamEnemy,&LaserBeamEnemy::startingRot>,
@@ -210,6 +216,7 @@ struct Factory<Disintegrate>
 struct GravityStream : public Object<RectCollider,ShapeRenderer<RECT>,GravityStream>
 {
     Vector2 gravDir = {};
+    
     GravityStream()
     {
          followGravity = false;
@@ -218,8 +225,10 @@ struct GravityStream : public Object<RectCollider,ShapeRenderer<RECT>,GravityStr
     {
         followGravity = false;
     }
-    Shape getShape() const;
+    //when spawned by editor, stretch as far as possible until we hit terrain
+    void onDeserialize();
     void collideWith(PhysicsBody& other);
+    void render();
 };
 
 template<>
@@ -228,10 +237,11 @@ struct Factory<GravityStream>
      static constexpr char ObjectName[] = "gravity_stream";
 
     using Base = FactoryBase<GravityStream,
+                    access<GravityStream,&GravityStream::gravDir>,
+                    access<GravityStream,&GravityStream::orient,&Orient::pos>,
                     access<GravityStream,&GravityStream::collider,&RectCollider::width>,
                     access<GravityStream,&GravityStream::collider,&RectCollider::height>,
-                    accessSetter<GravityStream,[](GravityStream& obj, const Vector2& pos){ return pos + Vector2(obj.collider.width,obj.collider.height)*0.5;},&GravityStream::orient,&Orient::pos>,
-                    access<GravityStream,&GravityStream::gravDir>>;   
+                    access<GravityStream,&GravityStream::orient,&Orient::rotation>>;   
 };
 
 struct PushBot : public Object<RectCollider,TextureRenderer,PushBot>

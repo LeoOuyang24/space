@@ -72,6 +72,10 @@ struct PhysicsBody
     {
 
     }
+    virtual void onDeserialize() // a special function that is called when an object has been deserialized in EDITOR mode. Called AFTER being added to the world and after onAdd
+    {
+
+    }
    virtual std::string serialize()
     {
         return EMPTY_SERIAL;

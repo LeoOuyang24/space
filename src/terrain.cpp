@@ -48,6 +48,11 @@ void ObjectLookup::clear()
     objects.clear();
 }
 
+bool GlobalTerrain::ObjLesser::operator()(const std::weak_ptr<PhysicsBody>& a, const std::weak_ptr<PhysicsBody>& b) const
+{
+    return (a.lock() && b.lock()) ? a.lock()->getPos().x < b.lock()->getPos().x : std::owner_less<std::weak_ptr<PhysicsBody>>{}(a,b);
+}
+
 bool GlobalTerrain::isValidObject(PhysicsBody* obj, LayerType layer)
 {
     return obj && obj->orient.layer == layer && !obj->isDead();

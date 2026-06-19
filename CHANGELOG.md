@@ -6,6 +6,14 @@
 * TODO: Make ALT-TAB work
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
 
+## Messing Around, Finalizing Levels
+* `LaserBeamer` now saves its starting location, preventing them from wandering every time we save
+* Made some slightly better docs for `accessSetter`
+* `GravityStream` and `GravitySwitch` have been reworked (again)
+  * `GravitySwitch` is no longer used
+  * `GravityStream` is now a constant stream of force that moves a player in a specific direction. 
+* Added `onDeserialize`, a function to be called specifically when an object is added in the editor 
+
 ## 5/26/2026 World Map UI Updates
 * World Map now has a gradient ellipse for each level
   * It actually looks kinda like how I want it to look now, as opposed to a placeholder
