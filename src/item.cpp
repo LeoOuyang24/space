@@ -165,6 +165,11 @@ void BigGear::update(Terrain& t)
     }
 }
 
+void BigGearReceiver::onReceive()
+{
+    Globals::Game.addCollects(5);
+}
+
 bool operator==(const Key::KeyVal& left, const Key::KeyVal& right)
 {
     return left.r == right.r &&

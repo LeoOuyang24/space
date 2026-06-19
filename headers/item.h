@@ -159,7 +159,6 @@ template<typename T>
 requires IsObject<T>
 struct ObjReceiver : public Object<RectCollider,TextureRenderer,ObjReceiver<T>>
 {
-    std::unique_ptr<OnTrigger> onTrigger;
     T renderSlave; //keep a copy of the thing we are receiving around, just to render it
     SignalName signal;
 
@@ -178,12 +177,10 @@ struct ObjReceiver : public Object<RectCollider,TextureRenderer,ObjReceiver<T>>
             other.setDead(true);
             activated = true;
             Globals::Game.terrain.emitSignal(signal,this);
-            if (onTrigger.get())
-            {
-                (*onTrigger)(*this);
-            }
+            onReceive();
         }
     }
+    virtual void onReceive(){};
     void render()
     {
         float rotation = this->getOrient().rotation - M_PI/2;
@@ -214,16 +211,15 @@ template<typename T,CompileString ObjName>
 struct ReceiverFactory
 {
     static constexpr std::string_view ObjectName = ObjName.data;
-    using Base = FactoryBase<ObjReceiver<T>,
-                            access<ObjReceiver<T>,&ObjReceiver<T>::orient,&Orient::pos>,
-                            access<ObjReceiver<T>,&ObjReceiver<T>::keyVal>,
-                            access<ObjReceiver<T>,&ObjReceiver<T>::onTrigger>,
-                            access<ObjReceiver<T>,&ObjReceiver<T>::signal>>;
+    using Base = FactoryBase<T,
+                            access<T,&T::orient,&Orient::pos>,
+                            access<T,&T::keyVal>,
+                            access<T,&T::signal>>;
 };
 
 using BarrelReceiver = ObjReceiver<Barrel>;
 template<>
-struct Factory<BarrelReceiver> : ReceiverFactory<Barrel,"barrel_receiver">{};
+struct Factory<BarrelReceiver> : ReceiverFactory<BarrelReceiver,"barrel_receiver">{};
 
 struct BigGear : public Object<CircleCollider,TextureRenderer,BigGear,PickupComponent>
 {
@@ -247,8 +243,13 @@ struct Factory<BigGear>
                         access<BigGear,&BigGear::orient,&Orient::pos>>;
 };
 
-using BigGearReceiver = ObjReceiver<BigGear>;
-template<> struct Factory<BigGearReceiver> : ReceiverFactory<BigGear,"big_gear_receiver">{};
+struct BigGearReceiver : public ObjReceiver<BigGear>
+{
+    BigGearReceiver() : ObjReceiver<BigGear>(){};
+    void onReceive();
+};
+
+template<> struct Factory<BigGearReceiver> : ReceiverFactory<BigGearReceiver,"big_gear_receiver">{};
 
 struct TerrainPod :  public Object<CircleCollider,TextureRenderer,TerrainPod,PickupComponent>
 {
