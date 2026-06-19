@@ -59,6 +59,7 @@ struct PhysicsBody
     virtual void render() = 0;
     virtual void update(Terrain&) = 0;
     virtual Vector2 getPos() const = 0;
+    virtual constexpr std::string_view getName() const = 0;
     Orient getOrient() const;
     void setOrient(const Orient& orient);
     virtual void setLayer(LayerType layer);
@@ -161,6 +162,11 @@ struct Object : public PhysicsBody
 
     }
 
+    virtual constexpr std::string_view getName() const
+    {
+        return Factory<Descendant>::ObjectName;
+    }
+
     bool isOnGround(Terrain& t)
     {
         return collider.isOnGround(*this,t);
@@ -196,10 +202,11 @@ struct Object : public PhysicsBody
         }
     }
 
-    //calls the corresponding Factory<>::Base::serialize
+    //calls the corresponding Factory<>::Base::serialize,
+    //or return a blank string, if there is no Factory<>::Base::serialize or if we have explicitly said to not serialize
     virtual std::string serialize()
     {
-        if constexpr(!std::is_same<Descendant,EMPTY_TYPE>::value)
+        if constexpr(!std::is_same<Descendant,EMPTY_TYPE>::value && (!has_DontSerialize<Factory<Descendant>>))
         {
             return Factory<Descendant>::Base::serialize(*static_cast<Descendant*>(this));
         }

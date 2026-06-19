@@ -71,6 +71,7 @@ void PickupComponent::collideWith(PhysicsBody& owner, PhysicsBody& other)
         else if (&other == player && GetTime() - lastHeld >= 1) //if not being held by player but collided with player, we can be picked back up if it's been 1 second
         {
             player->setHolding(owner);
+            onPickup();
         }
     }
 }
@@ -90,7 +91,7 @@ void Barrel::update(Terrain& terrain)
 {
     Debug::debugForces(*this);
     Object::update(terrain);
-    if ((onGround || terrain.blockExists(getShape()) ) && collideTrigger.isThrown(*this)) //last two conditions are only true if we have been dropped
+    if ((onGround || terrain.blockExists(getShape()) ) && collideTrigger.isThrown(*this)) //disappear if colliding with terrain after being thrown
     {
         setDead(true);
         Sequences::add(false,[start=GetTime(),pos=getPos()](int frames){
@@ -101,35 +102,29 @@ void Barrel::update(Terrain& terrain)
     }
 }
 
-void BarrelReceiver::onCollide(PhysicsBody& other)
+/*void BarrelReceiver::onCollide(PhysicsBody& other)
 {
     if (other.getKeyVal() == this->getKeyVal() && !activated)
     {
-        other.setDead(true);
-        activated = true;
-        Globals::Game.terrain.emitSignal(signal,this);
-        if (onTrigger.get())
-        {
-            (*onTrigger)(*this);
-        }
+
         //onTrigger(*this);
         /*Globals::Game.addObject(*(new Portal(this->getPos() + this->orient.getNormal()*-100,
                                              this->orient.layer,
                                              {},
                                              this->orient.layer
-                                             )),this->orient.layer);*/
+                                             )),this->orient.layer);
        // onTrigger(*this);
     }
-}
+}*/
 
-void BarrelReceiver::render()
+/*void BarrelReceiver::render()
 {
     if (activated)
     {
         DrawSprite3D(Globals::Game.Sprites.getSprite("barrel.png"),Rectangle(getPos().x,getPos().y,30,60),-orient.rotation);
     }
     Object::render();
-}
+}*/
 
 void TerrainPod::update(Terrain& t)
 {
@@ -145,6 +140,28 @@ void TerrainPod::update(Terrain& t)
             tint = YELLOW;
             Globals::Game.terrain.getTerrain(orient.layer)->addPlanet(*this,type);
         }
+    }
+}
+
+void BigGear::onPickup()
+{
+    set_followGravity(true);
+}
+
+void BigGear::update(Terrain& t)
+{
+    if (t.blockExists(getShape()) && collideTrigger.isThrown(*this))
+    {
+        setDead(true);
+            Sequences::add(false,[start=GetTime(),pos=getPos()](int frames){
+                       const Anime* anime = Globals::Game.Sprites.getAnime("death.png");
+                       DrawAnime3D(anime->spritesheet,start,anime->info,{pos.x,pos.y,500,500},Globals::Game.getCurrentZ(),0,YELLOW);
+                       return isAnimeDone(anime->info,frames);
+                       });
+    }
+    else
+    {
+        Object::update(t);
     }
 }
 

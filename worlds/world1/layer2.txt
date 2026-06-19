@@ -1,4 +1,0 @@
-sprites/layers/world0/level3.png
-2000.000000,3600.000000
-sign	I'm ngl, I kind of ran out of time for this one.	4201.878906,4727.000000	
-

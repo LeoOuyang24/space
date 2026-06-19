@@ -5,6 +5,9 @@
 * TODO: Make ESCAPE open a pause menu
 * TODO: Make ALT-TAB work
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
+* TODO: Make SphereTerrain actaully render something
+* TODO: Fix bouncing on terrain bug
+  * Possibly related: Fix being able to walk off terrain
 
 ## Messing Around, Finalizing Levels
 * `LaserBeamer` now saves its starting location, preventing them from wandering every time we save

@@ -119,8 +119,14 @@ void setValue(const SplitString& params, std::unique_ptr<T>& ptr, size_t index)
 template<typename Obj>
 struct Factory
 {
+    //When creating a Factory<Obj>, create this field if you do not wish for the object to be serialized
+    //The value and type of this field is irrelevant, it just has to exist with this name
+    static constexpr EMPTY_TYPE DontSerialize = {};
+
+    static constexpr std::string_view ObjectName = "";
     struct Base
     {
+
         static Obj deserialize(const SplitString& params)
         {
             return Obj();
@@ -163,13 +169,13 @@ struct FactoryBase
 
     //if an Object is defined with itself as part of the Object template parameters, its "serialize" function will automatically call this.
     //so for example if Key = public Object<Collider,Renderer,Key>, Key::serialize will be Factory<Key>::serialize
-    static std::string serialize(Obj& object,std::string objName = Factory<Obj>::ObjectName)
+    static std::string serialize(Obj& object,std::string_view objName = Factory<Obj>::ObjectName)
     {
         std::string cereal = "";
         //concatenate each serialized version of each field
         ((cereal += (toString(Accessors(object)) + "\t")),...);
 
-        return objName + "\t" + cereal;
+        return std::string(objName) + std::string("\t") + cereal;
     }
 };
 
@@ -185,7 +191,7 @@ public:
     template<typename Obj>
     static void registerName()
     {
-        funcs[Factory<Obj>::ObjectName] = [](const SplitString& params){
+        funcs[std::string(Factory<Obj>::ObjectName)] = [](const SplitString& params){
             return new Obj(Factory<Obj>::Base::deserialize(params));
         };
     }

@@ -38,6 +38,9 @@ void ClassDeserializer::init()
     registerName<Battery>("battery");
 
     registerName<Disintegrate>();
+
+    registerName<BigGear>();
+    registerName<BigGearReceiver>();
 }
 
 std::shared_ptr<PhysicsBody> ClassDeserializer::construct(std::string_view cereal)
