@@ -100,6 +100,7 @@ bool CheckCollision(const Shape& shape1, const Shape& shape2)
                 }
             case ShapeType::RECT:
                 {
+                    //return CheckCollisionCircles(shape1.orient.pos,shape1.collider.dimens.x,shape2.orient.pos,shape2.collider.dimens.y);
                     return CheckCollisionRecsRotated(shape1.orient.getRect(shape1.collider.dimens),
                                               shape2.orient.getRect(shape2.collider.dimens),
                                                 shape1.orient.rotation,

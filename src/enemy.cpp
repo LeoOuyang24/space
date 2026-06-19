@@ -58,11 +58,11 @@ void LaserBeamEnemy::update(Terrain& t)
 
 Shape LaserBeamEnemy::getShape() const
 {
-    Vector2 endPos = Globals::Game.getCurrentTerrain()->lineBlockIntersect(orient.pos,
+    Vector2 endPos = orient.pos + Vector2(cos(getOrient().rotation),sin(getOrient().rotation))*beamLength;/*Globals::Game.getCurrentTerrain()->lineBlockIntersect(orient.pos,
                                                       orient.pos + Vector2(cos(orient.rotation),sin(orient.rotation))*beamLength,
-                                                      true);
+                                                      true);*/
 
-    Shape shape = {RECT,{(endPos + orient.pos)*0.5,orient.layer,orient.rotation},ShapeCollider(Vector2(Vector2Distance(endPos,getPos()),10))};
+    Shape shape = {RECT,{(endPos + orient.pos)*0.5,orient.layer,orient.rotation},ShapeCollider(Vector2(beamLength,10))};
     return shape;
 }
 

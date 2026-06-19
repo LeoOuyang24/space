@@ -131,7 +131,7 @@ void Globals::update()
                 Sequences::runPhysics();
                 double afterPhysics = GetTime();
 
-                std::cout << afterUpdate - time << " " << afterPhysics - afterUpdate << "\n";
+                //std::cout << afterUpdate - time << " " << afterPhysics - afterUpdate << "\n";
             
                 accum -= tick/speed;
                 frames ++;
