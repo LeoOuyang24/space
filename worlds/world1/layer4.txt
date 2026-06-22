@@ -1,4 +1,7 @@
 sprites/layers/world1/center.png
 3010.000000,3200.000000
-sign	...And that's it!|Really spent way too much time on this one, and it's not even finished.|This big sphere will have its time in the sun some day...	4587.217285,6671.000000	
 
+sign	...And that's it!|Really spent way too much time on this one, and it's not even finished.|This big sphere will have its time in the sun some day...	4587.079102,6671.000000	
+sign	In case you're curious, there are 37 total gears to collect in this world.	5000,6671
+portal	2460.000000,5645.000000	-4	4300,6671	null	100
+camera_move_region	4780.456543,6666	300.000000	300.000000	00.000000,-500.000000,-500.000000	

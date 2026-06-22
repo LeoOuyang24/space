@@ -189,7 +189,11 @@ void LargePushBot::update(Terrain& t)
 
 void LargePushBot::onCollide(PhysicsBody& other)
 {
-    PushBot::onCollide(other);
+    //don't push the player
+    if (&other != Globals::Game.getPlayer())
+    {
+        PushBot::onCollide(other);
+    }
 
     if (other.getKeyVal() > 0)
     {
