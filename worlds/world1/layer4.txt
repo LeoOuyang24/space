@@ -1,2 +1,4 @@
 sprites/layers/world1/center.png
 3010.000000,3200.000000
+sign	...And that's it!|Really spent way too much time on this one, and it's not even finished.|This big sphere will have its time in the sun some day...	4587.217285,6671.000000	
+

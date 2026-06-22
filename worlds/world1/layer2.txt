@@ -1,4 +1,4 @@
-sprites/layers/world1/layer1.png
+sprites/layers/world1/layer2.png
 3010.000000,3200.000000
 terrain_spawner	2617.900879,959.342407	
 push_bot	3472.135742,4024.100586	1	
