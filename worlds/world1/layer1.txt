@@ -1,31 +1,39 @@
-sprites/layers/world1/layer1.png
-3010.000000,3200.000000
-circle_terrain	2452.000000,4800.000000	130	SOLID	LINE|240|100|90																		
-circle_terrain	2852.000000,4800.000000	130	SOLID	LINE|240|100|90																		
-circle_terrain	3252.000000,4800.000000	130	SOLID	LINE|240|100|90																		
-laser_beamer	2630.266602,4477.902832	360.000000	500.000000	0.000000	CONSTANT	null	
-barrel_spawner	3604.831055,4733.954590	
-circle_terrain	2650.000000,5700.000000	70	SOLID	LINE|900|550|0															
-laser_beamer	2539.165771,5173.273926	360.000000	550.000000	180.000000	CONSTANT	null	
-sign	Warning! Uxcavation Ahuad!	1868.000000,5693.605957	
-large_push_bot	3546.682617,5706.000000	1	
-glow_stone	4068.473633,5629.136719	
-terrain_spawner	3469.852051,1883.850342	
-camera_move_region	3900.206543,4716.000000	500.000000	500.000000	200.000000,0.000000,0.000000	
-barrel_receiver	4389.032715,4692.218262	1	null	trigger1	
-barrel_receiver	4367.392578,4407.791016	1	null	trigger1	
-terrain_spawner	2617.900879,959.342407	
-terrain_spawner	3165.703857,1242.134399	
-terrain_spawner	3700.199219,700.517090	
-push_bot	3043.145508,4111.373535	1	
-push_bot	3157.526367,4221.137695	1	
-push_bot	3360.886230,4245.107422	1	
-push_bot	1817.688110,4512.432129	1	
-push_bot	1934.832642,4078.785156	1	
-push_bot	1713.323120,4355.334473	1	
-push_bot	2055.423828,4666.722168	1	
-laser_beamer	1535.366821,4119.037109	0.000000	500.000000	0.000000	SINE	LINE|600|600|90			
-camera_move_region	2631.444336,1066.078979	100.000000	300.000000	300.000000,0.000000,0.000000	
-camera_move_region	3190.456543,1199.418701	300.000000	500.000000	500.000000,0.000000,-300.000000	
-telescope	5000.000000,1200.000000	-300.000000	1	2504.549561,757.728699	
+sprites/layers/world1/layer0.png
+2460.000000,5645.000000
+gear	4170.076660,6151.796387	
 
+gear	3369.555664,6418.698242	
+gear	3125.947754,6061.918945	
+camera_move_region	3130.599609,4315.509766	200.000000	200.000000	100.000000,-400.000000,0.000000	
+barrel_receiver	4222.475586,6560.982422	1	spawn_bonus_portal	
+gear	5591.000000,4648.444336	
+camera_move_region	5081.478516,3410.733398	200.000000	200.000000	400.000000,0.000000,0.000000	
+sign	ALL TRASH MEST BU DISPOSUD	5636.050781,3789.221924	
+laser_beamer	4129.706055,5957.621094	90.000000	500.000000	90.000000	SINE	null	
+terrain_spawner	4993.104004,4198.012207	
+terrain_spawner	5091.337891,3458.514893	
+barrel_receiver	6771.488770,3098.384766	1	null	
+sign	Drat! They're exactly that heavy!	3291.376221,5728.025879	
+laser_beamer	3583.261475,6062.287598	360.000000	500.000000	90.000000	CONSTANT	null	
+terrain_spawner	3101.334961,4272.864258	
+camera_move_region	4613.071289,3408.514893	200.000000	200.000000	400.000000,0.000000,0.000000	
+barrel_receiver	4195.863281,5722.025879	1	spawn_basic_portal	
+camera_move_region	5869.000000,3768.000000	510.000000	1000.000000	400.000000,0.000000,-300.000000	
+gear	5493.222168,4413.777832	
+gear	5155.444336,4767.555664	
+barrel_spawner	2678.471191,5615.033203	
+gear	5064.068848,4003.878418	
+terrain_spawner	3574.486816,3620.009766	
+sign	It may not look like much now, but the artificially green aesthetic and pretentious ball dispensers give it away...|This was once a futuristic golf field!|Now how exactly did people from the future used to play golf?|Let me try middle clicking...	2914.087646,4432.480469	
+gear	3590.082275,6195.538086	
+camera_move_region	3533.820557,3594.138672	200.000000	200.000000	400.000000,0.000000,0.000000	
+barrel_receiver	6798.680176,3843.403809	1	null	
+terrain_spawner	4621.082520,3466.559326	
+gear	4725.637695,6076.649414	
+gear	5025.666992,5116.000000	
+camera_move_region	5013.104004,4298.012207	370.000000	350.000000	300.000000,300.000000,-100.000000	
+sign	These barrels sure seem heavy...|I hope they aren't heavy enough to interfere with my boosting and sprint jumping capabilities!	2829.931396,5688.369629	
+barrel_spawner	5858.042480,3785.385986	
+portal	3300.000000,3234.000000	0	5675.341797,8391.287109	null	100	
+sign	In my travels, I've come to take great interest in cold metals.|There is a strange inverse correlation between a metal's current temperatures, and the temperature it once held.|So the coldest metals, were at one point the hottest and hardest working!|And this one here...|I could practically preserve food on!	5028.921875,6062.549316	
+portal	4485.000000,5848.000000	0	5825.819824,3348.719238	null	100	

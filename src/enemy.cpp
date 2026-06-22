@@ -213,12 +213,14 @@ void LargePushBot::onCollide(PhysicsBody& other)
     }
 }
 
+
 void GlowStone::onCollide(PhysicsBody& other)
 {
     if (Vector2LengthSqr(forces.getForce(Forces::ENEMY)) > 0)
     {
         setDead(true);
-        Globals::Game.addObject(*(new Portal(getPos(),orient.layer,{2433,1020},0)),orient.layer);
+        //Globals::Game.addObject(*(new Portal(getPos(),orient.layer,{2433,1020},0)),orient.layer);
+        Globals::Game.addObject(*(new BigGear()),{getPos(),orient.layer});
         Sequences::add(false,[start=GetTime(),pos=getPos()](int frames){
                    const Anime* anime = Globals::Game.Sprites.getAnime("death.png");
                    DrawAnime3D(anime->spritesheet,start,anime->info,{pos.x,pos.y,500,500},Globals::Game.getCurrentZ(),0,GRAY);

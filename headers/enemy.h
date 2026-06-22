@@ -292,7 +292,7 @@ struct GlowStone : public Object<CircleCollider,TextureRenderer,GlowStone>
 {
     GlowStone()
     {
-        collider.radius = 300;
+        collider.radius = 200;
         renderer.sprite = Globals::Game.Sprites.getSprite("glowstone.png");
     }
     void onCollide(PhysicsBody& other);

@@ -155,6 +155,8 @@ private:
     bool activated = false; //don't activate until first interaction
 };
 
+
+//generalist class that does something upon receiving another object
 template<typename T>
 requires IsObject<T>
 struct ObjReceiver : public Object<RectCollider,TextureRenderer,ObjReceiver<T>>
@@ -172,7 +174,7 @@ struct ObjReceiver : public Object<RectCollider,TextureRenderer,ObjReceiver<T>>
     }
     void onCollide(PhysicsBody& other)
     {
-        if (other.getName() == Factory<T>::ObjectName)
+        if (other.getName() == Factory<T>::ObjectName && !activated)
         {
             other.setDead(true);
             activated = true;
@@ -189,7 +191,10 @@ struct ObjReceiver : public Object<RectCollider,TextureRenderer,ObjReceiver<T>>
         Object<RectCollider,TextureRenderer,ObjReceiver<T>>::render();
         renderSlave.render();
     }
+protected:
+    make_setter(activated,bool);
 private:
+    //true if we want this to no longer receive
     bool activated = false;
 };
 
@@ -207,6 +212,12 @@ struct CompileString
     }
 };
 
+/**
+ * @brief generalist factory class for any specialization or descendant of ObjReceiver
+ * 
+ * @tparam T full type of the descendant or specialization
+ * @tparam ObjName compile-time string for the object name
+ */
 template<typename T,CompileString ObjName>
 struct ReceiverFactory
 {
@@ -245,6 +256,8 @@ struct Factory<BigGear>
 
 struct BigGearReceiver : public ObjReceiver<BigGear>
 {
+    using SerializerType = Factory<BigGearReceiver>;
+
     BigGearReceiver() : ObjReceiver<BigGear>(){};
     void onReceive();
 };

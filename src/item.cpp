@@ -152,12 +152,15 @@ void BigGear::update(Terrain& t)
 {
     if (t.blockExists(getShape()) && collideTrigger.isThrown(*this))
     {
-        setDead(true);
-            Sequences::add(false,[start=GetTime(),pos=getPos()](int frames){
-                       const Anime* anime = Globals::Game.Sprites.getAnime("death.png");
-                       DrawAnime3D(anime->spritesheet,start,anime->info,{pos.x,pos.y,500,500},Globals::Game.getCurrentZ(),0,YELLOW);
-                       return isAnimeDone(anime->info,frames);
-                       });
+        Sequences::add(false,[start=GetTime(),pos=getPos()](int frames){
+                    const Anime* anime = Globals::Game.Sprites.getAnime("death.png");
+                    DrawAnime3D(anime->spritesheet,start,anime->info,{pos.x,pos.y,500,500},Globals::Game.getCurrentZ(),0,YELLOW);
+                    return isAnimeDone(anime->info,frames);
+                    });
+
+        //reset if we hit terrain
+        setPos(getOrient().getStartingPos());
+        set_followGravity(false);
     }
     else
     {
@@ -168,6 +171,7 @@ void BigGear::update(Terrain& t)
 void BigGearReceiver::onReceive()
 {
     Globals::Game.addCollects(5);
+    set_activated(false); //this receiver can trigger unlimited times
 }
 
 bool operator==(const Key::KeyVal& left, const Key::KeyVal& right)
