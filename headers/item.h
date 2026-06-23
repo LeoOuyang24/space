@@ -69,7 +69,6 @@ struct Collectible : public Object<CircleCollider,TextureRenderer,Collectible,Co
     void onRestore();
 };
 
-
 struct Booster : public Object<CircleCollider,TextureRenderer,Booster>
 {
     Booster()

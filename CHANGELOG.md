@@ -12,15 +12,21 @@
 * Add Andrew's music
 
 ## 6/22/2026 Messing Around, Finalizing Levels
+* Added `Disintegrate` a `CircleTerrain` that disappears for a time when stepped on
+* Added `BigGear`, a larger, carryable gear that needs to be carried to a receiver
+* Added the `ObjReceiver`, an object that does something when receiving an object, basically a generalized `BarrelReceiver`
+  * Added `BigGearReceiver`
 * `LaserBeamer` now saves its starting location, preventing them from wandering every time we save
 * Made some slightly better docs for `accessSetter`
 * `GravityStream` and `GravitySwitch` have been reworked (again)
   * `GravitySwitch` is no longer used
   * `GravityStream` is now a constant stream of force that moves a player in a specific direction. 
+* Added the `HOLE` block type, which has 20% more gravity. Currently unused
 * Added `onDeserialize`, a function to be called specifically when an object is added in the editor 
 * Removed some of the barrel tossing puzzles. They honestly feel lame af.
 * Added a convenience portal to layer 4
 * Finished levels for demo
+
 
 ## 5/26/2026 World Map UI Updates
 * World Map now has a gradient ellipse for each level
