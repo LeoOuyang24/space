@@ -84,7 +84,13 @@ struct Factory<LaserBeamEnemy>
 {
     static constexpr std::string ObjectName = "laser_beamer";
     using Base = FactoryBase<LaserBeamEnemy,
-                                access<LaserBeamEnemy,&LaserBeamEnemy::orient,&Orient::pos>,
+                                //when setting the starting position, also set our actual position to match
+                                accessSetter<LaserBeamEnemy,[](LaserBeamEnemy& beamer, const Vector2& pos)
+                                {
+                                    beamer.setPos(pos);
+                                    return pos;
+                                }
+                                ,&LaserBeamEnemy::orient,&Orient::startingPos>,
                                 access<LaserBeamEnemy,&LaserBeamEnemy::arc>,
                                 access<LaserBeamEnemy,&LaserBeamEnemy::beamLength>,
                                 access<LaserBeamEnemy,&LaserBeamEnemy::startingRot>,
@@ -107,12 +113,12 @@ struct MovingTerrain : public Object<Collider,ShapeRenderer<Shape>,MovingTerrain
         //tangible = false;
     }
 
-    void onAdd()
+    virtual void onAdd()
     {
         this->setPos(starting);
         Globals::Game.terrain.getTerrain(this->getOrient().layer)->addPlanet(*this,type);
     }
-    void collideWith(PhysicsBody& other)
+    virtual void collideWith(PhysicsBody& other)
     {
         if (other.get_followGravity())
         {
@@ -165,14 +171,64 @@ struct Factory<RectTerrain>
                     access<RectTerrain,&RectTerrain::calcNewPos>>;
 };
 
+//a circular piece of terrain that disintegrates
+struct Disintegrate : public CircleTerrain
+{
+    Disintegrate() : CircleTerrain()
+    {
+        
+    }
+    void render();
+    void collideWith(PhysicsBody& other);
+    bool isTangible();
+private:
+    float start = 0;
+    static constexpr float TOTAL_DURATION = 10; //seconds until the object reforms
+    static constexpr float DISINTEGRATE_TIME = 3; //seconds before object disintegrates
+
+    /**
+     * @brief Returns a number from 0-1 representing how disintegrated we are. 1 is perfectly solid. 0 is completely gone. Numbers in between are still solid but in the process of disintegrating.
+     * 
+     * @return float 
+     */
+    float getDisintegratedState(); 
+
+    /**
+     * @brief We must override serialize since we are inheriting from an Object
+     * 
+     * @return std::string 
+     */
+    std::string serialize();
+};
+
+template<>
+struct Factory<Disintegrate>
+{
+    static constexpr char ObjectName[] = "disintegrate";
+
+    using Base = FactoryBase<Disintegrate,
+                    access<Disintegrate,&Disintegrate::starting>,
+                    access<Disintegrate,&Disintegrate::collider,&CircleCollider::radius>,
+                    access<Disintegrate,&Disintegrate::type>,
+                    access<Disintegrate,&Disintegrate::calcNewPos>>;
+};
+
 struct GravityStream : public Object<RectCollider,ShapeRenderer<RECT>,GravityStream>
 {
     Vector2 gravDir = {};
+    
     GravityStream()
+    {
+         followGravity = false;
+    }
+    GravityStream(const Vector2& gravDir_) :  gravDir(gravDir_)
     {
         followGravity = false;
     }
+    //when spawned by editor, stretch as far as possible until we hit terrain
+    void onDeserialize();
     void collideWith(PhysicsBody& other);
+    void render();
 };
 
 template<>
@@ -181,10 +237,11 @@ struct Factory<GravityStream>
      static constexpr char ObjectName[] = "gravity_stream";
 
     using Base = FactoryBase<GravityStream,
+                    access<GravityStream,&GravityStream::gravDir>,
+                    access<GravityStream,&GravityStream::orient,&Orient::pos>,
                     access<GravityStream,&GravityStream::collider,&RectCollider::width>,
                     access<GravityStream,&GravityStream::collider,&RectCollider::height>,
-                    accessSetter<GravityStream,[](GravityStream& obj, const Vector2& pos){ return pos + Vector2(obj.collider.width,obj.collider.height)*0.5;},&GravityStream::orient,&Orient::pos>,
-                    access<GravityStream,&GravityStream::gravDir>>;   
+                    access<GravityStream,&GravityStream::orient,&Orient::rotation>>;   
 };
 
 struct PushBot : public Object<RectCollider,TextureRenderer,PushBot>
@@ -235,7 +292,7 @@ struct GlowStone : public Object<CircleCollider,TextureRenderer,GlowStone>
 {
     GlowStone()
     {
-        collider.radius = 300;
+        collider.radius = 200;
         renderer.sprite = Globals::Game.Sprites.getSprite("glowstone.png");
     }
     void onCollide(PhysicsBody& other);

@@ -74,9 +74,86 @@ void LaserBeamEnemy::collideWith(PhysicsBody& other)
     }
 }
 
+void Disintegrate::collideWith(PhysicsBody& other)
+{
+    CircleTerrain::collideWith(other);
+    if (start == 0 || getDisintegratedState() == 1)
+    {
+        start = GetTime();
+    }
+}
+
+bool Disintegrate::isTangible()
+{
+    return getDisintegratedState() > 0;
+}
+
+void Disintegrate::render()
+{
+    tint.a = getDisintegratedState()*255;
+    CircleTerrain::render();
+}
+
+float Disintegrate::getDisintegratedState()
+{
+    if (start != 0)
+    {
+        float duration = GetTime() - start;
+        if (duration >= TOTAL_DURATION) //we have reconstituted
+        {
+            return 1; 
+        }
+        else if (duration > DISINTEGRATE_TIME) //we have disintegrated and not reconstituted
+        {
+            return 0;
+        }
+        else //in the proces of disintegrating
+        {
+            return 1 - duration/DISINTEGRATE_TIME; 
+        }
+    }
+    return 1; //havent' even begun disintegrating yet
+}
+
+std::string Disintegrate::serialize()
+{
+    return Factory<Disintegrate>::Base::serialize(*this);
+}
+
+/*Shape GravityStream::getShape() const
+{
+    return {ShapeType::RECT,getOrient(),Vector2{std::max(abs(gravDir.x)*10,100.0f),std::max(abs(gravDir.y)*10,100.0f)}};
+}*/
+
+void GravityStream::onDeserialize()
+{
+    Vector2 pos = getPos();
+    Vector2 endpoint = Globals::Game.terrain.getTerrain(orient.layer)->lineBlockIntersect(pos,pos + gravDir*(Terrain::MAX_TERRAIN_SIZE),false);
+    endpoint.x = Clamp(endpoint.x,0,Terrain::MAX_TERRAIN_SIZE);
+    endpoint.y = Clamp(endpoint.y,0,Terrain::MAX_TERRAIN_SIZE);
+    
+    collider.width = Vector2Distance(endpoint,pos);
+    collider.height = 200;
+
+    setOrient({(pos + endpoint)*0.5,orient.layer,atan2(endpoint.y - pos.y, endpoint.x - pos.x)});
+}
+
 void GravityStream::collideWith(PhysicsBody& other)
 {
-    other.getForces().addForce(gravDir,Forces::GRAVITY);
+    if (other.get_followGravity())
+    {
+        Shape shape = other.getShape();
+        other.getForces().addForce(gravDir,Forces::ENEMY);
+
+    }
+}
+
+void GravityStream::render()
+{
+    int horizComponent = gravDir.x ? gravDir.x/abs(gravDir.x) : 0; //1 if gravDir.x > 0, 0 if gravDir.x == 0, -1 if gravDir.x < 0
+    int vertComponent = gravDir.y ? gravDir.y/abs(gravDir.y) : 0; //1 if gravDir.y > 0, 0 if gravDir.y == 0, -1 if gravDir.y < 0
+    tint = Color{static_cast<unsigned char>(horizComponent*255/2.0f + 255/2.0f),static_cast<unsigned char>(vertComponent*255/2.0f + 255/2.0f),0,255};
+    Object::render();
 }
 
 void PushBot::update(Terrain& t)
@@ -112,7 +189,11 @@ void LargePushBot::update(Terrain& t)
 
 void LargePushBot::onCollide(PhysicsBody& other)
 {
-    PushBot::onCollide(other);
+    //don't push the player
+    if (&other != Globals::Game.getPlayer())
+    {
+        PushBot::onCollide(other);
+    }
 
     if (other.getKeyVal() > 0)
     {
@@ -136,12 +217,14 @@ void LargePushBot::onCollide(PhysicsBody& other)
     }
 }
 
+
 void GlowStone::onCollide(PhysicsBody& other)
 {
     if (Vector2LengthSqr(forces.getForce(Forces::ENEMY)) > 0)
     {
         setDead(true);
-        Globals::Game.addObject(*(new Portal(getPos(),orient.layer,{2433,1020},0)),orient.layer);
+        //Globals::Game.addObject(*(new Portal(getPos(),orient.layer,{2433,1020},0)),orient.layer);
+        Globals::Game.addObject(*(new BigGear()),{getPos(),orient.layer});
         Sequences::add(false,[start=GetTime(),pos=getPos()](int frames){
                    const Anime* anime = Globals::Game.Sprites.getAnime("death.png");
                    DrawAnime3D(anime->spritesheet,start,anime->info,{pos.x,pos.y,500,500},Globals::Game.getCurrentZ(),0,GRAY);

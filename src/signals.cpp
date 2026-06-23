@@ -3,6 +3,7 @@
 #include "../headers/portal.h"
 
 //spawn an object relative to "caller"
+//You should probably use Globals::Game.addObject to spawn objects outside of this file. This function exists primarily as a signal callback.
 template<typename T>
 T* spawn(void* caller, const Vector2& disp)
 {
@@ -33,33 +34,43 @@ SignalSet world1()
 {
     SignalSet sigs;
 
-    sigs["spawn_basic_portal"] = [](void* thing){
+    //progress to layer 1
+    sigs["spawn_basic_portal"] = CounterWrapper{1,[](void* thing){
 
         Portal* p = spawn<Portal>(thing,{0,-100});
             p->cond.reset(nullptr);
             p->destPos = {1833,3015};
             p->layerDisp = 1;
-    };
+    }};
 
-    sigs["spawn_bonus_portal"] = [](void* thing){
+    //progress to golf course bonus level
+    sigs["spawn_bonus_portal"] = CounterWrapper{1,[](void* thing){
 
         Portal* p = spawn<Portal>(thing,{0,100});
             p->destPos = {3000,4599};            
 
-    };
-
-    sigs["trigger1"] = CounterWrapper{2,[](void* thing){
-        Portal* p = new Portal();
-            p->setPos({3704,4733});
-            p->cond.reset();
-            p->destPos = {2433,1020};
-        Globals::Game.addObject(*p,static_cast<PhysicsBody*>(thing)->getOrient().layer);
     }};
 
     sigs["finish_golf_course"] = [](void* thing){
 
 
 
+    };
+
+    sigs["layer2_to_3"] = [](void* thing){
+
+        Portal* p = spawn<Portal>(thing,{-500,0});
+            p->cond.reset();
+            p->destPos = {3900,7440};   
+            p->layerDisp = 2;
+
+    };
+
+    sigs["layer2_golf_course"] = [](void* thing){
+
+        Portal* p = spawn<Portal>(thing,{0,-100});
+            p->cond.reset();
+            p->destPos = {2400,1008};
     };
 
 

@@ -20,6 +20,7 @@ enum BlockType
     LAVA,
     ANTI,
     WATER,
+    HOLE,
     BLOCK_TYPES
 };
 

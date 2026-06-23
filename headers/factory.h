@@ -49,8 +49,12 @@ auto& access(Obj& thing)
     return access<decltype(thing.*Member),Members...>(thing.*Member);
 }
 
-//used to define a custom setter function for a particular field
-//use this the same way you'd use access, but replace access with accessSetter<obj,setFunc,accessors...> (defined below)
+/**
+ * @brief A wrapper class that basically just wraps the = operator around a specific functionality. Read about accessSetter below for the real meat and potatoes
+ * @tparam Obj the object type
+ * @tparam FieldType the type of the field (usually set automatically)
+ * @tparam Func (Obj& obj,const FieldType& value) => void, usually sets a field in "obj" with the provided "value"
+ */
 template<typename Obj, typename FieldType, auto Func>
 struct Setter
 {
@@ -66,6 +70,15 @@ struct Setter
     }
 };
 
+/**
+ * @brief Used to provide a specific behavior when setting a field in an object
+ * Use as you would "access" but with a function as the 2nd parameter
+ * @tparam Obj, this is the object type you are trying to deserialize
+ * @tparam Func (Obj& obj,const FieldType& value) => FieldType, given an object and a value, sets the field in the object to the corresponding value when deserializing, possibly doing some other things in the process
+ * @tparam Members, the access path for the field to set, same as "acces"
+ * @param thing when actually called, this will be the object that is having its field set. Don't worry about this when creating Factorys
+ * @return auto Returns a wrapper object that will basically call the provided function when setting (deserializing) the provided field path
+ */
 template<typename Obj, auto Func, auto... Members>
 auto accessSetter(Obj& thing)
 {
@@ -106,8 +119,14 @@ void setValue(const SplitString& params, std::unique_ptr<T>& ptr, size_t index)
 template<typename Obj>
 struct Factory
 {
+    //When creating a Factory<Obj>, create this field if you do not wish for the object to be serialized
+    //The value and type of this field is irrelevant, it just has to exist with this name
+    static constexpr EMPTY_TYPE DontSerialize = {};
+
+    static constexpr std::string_view ObjectName = "";
     struct Base
     {
+
         static Obj deserialize(const SplitString& params)
         {
             return Obj();
@@ -150,13 +169,13 @@ struct FactoryBase
 
     //if an Object is defined with itself as part of the Object template parameters, its "serialize" function will automatically call this.
     //so for example if Key = public Object<Collider,Renderer,Key>, Key::serialize will be Factory<Key>::serialize
-    static std::string serialize(Obj& object,std::string objName = Factory<Obj>::ObjectName)
+    static std::string serialize(Obj& object,std::string_view objName = Factory<Obj>::ObjectName)
     {
         std::string cereal = "";
         //concatenate each serialized version of each field
         ((cereal += (toString(Accessors(object)) + "\t")),...);
 
-        return objName + "\t" + cereal;
+        return std::string(objName) + std::string("\t") + cereal;
     }
 };
 
@@ -172,7 +191,7 @@ public:
     template<typename Obj>
     static void registerName()
     {
-        funcs[Factory<Obj>::ObjectName] = [](const SplitString& params){
+        funcs[std::string(Factory<Obj>::ObjectName)] = [](const SplitString& params){
             return new Obj(Factory<Obj>::Base::deserialize(params));
         };
     }

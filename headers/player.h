@@ -61,7 +61,7 @@ struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
     static constexpr float PLAYER_MAX_AIR_FREEFALL_SPEED = PLAYER_MAX_SPEED; //max air speed when freefalling
 
     static constexpr float PLAYER_GROUND_ACCEL = 0.2; //added to player force every frame
-    static constexpr float PLAYER_AIR_ACCEL = 0.05; //unlike the above acceleration, this is MULTIPLED every frame
+    static constexpr float PLAYER_AIR_ACCEL = 0.2; 
 
     static constexpr float AIR_FRICTION = 0.98; //number to multiply to speed every frame. Bigger number = less friction. THIS ALSO AFFECTS BOOSTING
     static constexpr float GROUND_FRICTION = 0.85;
@@ -79,11 +79,8 @@ struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
     State state = WALKING;
     PlayerState resetState;
 
-    double freeFallTime = 0;
-
     bool boosted = false;
     std::weak_ptr<PhysicsBody> holding;
-
 
     std::unordered_set<Key::KeyVal> keys;
     bool isTangible();
@@ -108,10 +105,18 @@ struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
     make_getter(aimAngle,float);
     make_getter(dying,int);
     make_getter(power,float);
+    make_getter(wasOnGround,bool);
+
+    make_setter(wasOnGround,bool);
+
+    float getFreeFallDuration() //returns the amount of time we've been off the ground
+    {
+        return freeFallTime == -1 ? 0 :GetTime() - freeFallTime;
+    }
 private:
 
     float speed = 0;
-
+    float freeFallTime = -1; //time at which we got off the ground
     float aimAngle = 0; //aim for charging
     float power = 0; //charging power
     int dying = 0; //press and hold to die

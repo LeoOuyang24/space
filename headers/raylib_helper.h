@@ -27,6 +27,17 @@ void DrawLine3D(Vector3 startPos,Vector3 endPos, Color color, int width);
 void DrawArrow3D(Vector3 startPos, Vector3 endPos, Color color, int width); //draws a 3d line but the endpoint has an arrowhead
 void DrawRectangleLines3D(Rectangle rec, float z, float rotation, Color color, int width);
 
+/**
+ * @brief Draws an ellipse gradient as  2d texture in 3d. Requires EllipseGradientShader to be ready
+ * 
+ * @param pos center of the ellipse
+ * @param horizRadius 
+ * @param vertRadius 
+ * @param center 
+ * @param edge 
+ */
+void DrawEllipseGradient(const Vector3& pos, int horizRadius, int vertRadius, const Color& center, const Color& edge);
+
 struct AnimeInfo
 {
     float speed = 0; //frame per render tick. For example, a value of 1 would move forward one frame per main loop run
@@ -52,16 +63,6 @@ void DrawSprite3D(const Texture2D& sprite, const Rectangle& pos, float rotation 
 void DrawAnime(const Texture2D& sprite, double start, const AnimeInfo& info, const Rectangle& pos, float rotation = 0, Color tint = WHITE );
 void DrawAnime3D(const Texture2D& sprite, double start, const AnimeInfo& info, const Rectangle& pos, float z, float rotation = 0, Color tint = WHITE );
 
-/**
- * @brief Draws an ellipse gradient as  2d texture in 3d. Requires EllipseGradientShader to be ready
- * 
- * @param pos center of the ellipse
- * @param horizRadius 
- * @param vertRadius 
- * @param center 
- * @param edge 
- */
-void DrawEllipseGradient(const Vector3& pos, int horizRadius, int vertRadius, const Color& center, const Color& edge);
 
 //no idea where to put this LUL
 //moves camera to look at "pos"

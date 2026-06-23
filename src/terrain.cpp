@@ -115,6 +115,10 @@ void GlobalTerrain::loadTerrain(LayerType layer, const Image& img)
             {
                 type = WATER;
             }
+            else if (color == BLACK)
+            {
+                type = HOLE;
+            }
             if (color.a > 0)
             {
                 terr->addBlock(point,{color,type},false);
@@ -153,6 +157,7 @@ void GlobalTerrain::update(LayerType layer)
             PhysicsBody* obj = it->lock().get();
             if (isValidObject(obj,layer)) //if object is non-null and in this layer and not dead, update it!
             {
+                Vector2 oldPos = obj->getPos();
                 obj->update(*getTerrain(layer));
                 if (obj->isTangible())
                 {

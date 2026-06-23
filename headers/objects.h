@@ -59,6 +59,7 @@ struct PhysicsBody
     virtual void render() = 0;
     virtual void update(Terrain&) = 0;
     virtual Vector2 getPos() const = 0;
+    virtual constexpr std::string_view getName() const = 0;
     Orient getOrient() const;
     void setOrient(const Orient& orient);
     virtual void setLayer(LayerType layer);
@@ -69,6 +70,10 @@ struct PhysicsBody
 
     }
     virtual void onRestore() //called when an object is restored
+    {
+
+    }
+    virtual void onDeserialize() // a special function that is called when an object has been deserialized in EDITOR mode. Called AFTER being added to the world and after onAdd
     {
 
     }
@@ -117,8 +122,6 @@ protected:
     float gravRadius = 130;
 };
 
-
-
 //renders a suggested button press over an object
 void suggestButtonPress(const Shape& shape,std::string_view str);
 
@@ -159,6 +162,11 @@ struct Object : public PhysicsBody
 
     }
 
+    virtual constexpr std::string_view getName() const
+    {
+        return Factory<Descendant>::ObjectName;
+    }
+
     bool isOnGround(Terrain& t)
     {
         return collider.isOnGround(*this,t);
@@ -194,10 +202,11 @@ struct Object : public PhysicsBody
         }
     }
 
-    //calls the corresponding Factory<>::Base::serialize
-    std::string serialize()
+    //calls the corresponding Factory<>::Base::serialize,
+    //or return a blank string, if there is no Factory<>::Base::serialize or if we have explicitly said to not serialize
+    virtual std::string serialize()
     {
-        if constexpr(!std::is_same<Descendant,EMPTY_TYPE>::value)
+        if constexpr(!std::is_same<Descendant,EMPTY_TYPE>::value && (!has_DontSerialize<Factory<Descendant>>))
         {
             return Factory<Descendant>::Base::serialize(*static_cast<Descendant*>(this));
         }

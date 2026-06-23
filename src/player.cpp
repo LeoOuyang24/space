@@ -70,7 +70,7 @@ void PlayerRenderer::render(const Shape& shape,const Color& color)
             break;
         }
     case Player::State::WALKING:
-        if ( owner.freeFallTime != 0 && GetTime() - owner.freeFallTime > 5)
+        if ( owner.getFreeFallDuration()> 5)
         {
             suggestButtonPress(owner.getShape(),"Z");
         }
@@ -108,12 +108,13 @@ void Player::update(Terrain& terrain)
         //Object::applyForces(terrain);
 
 
-        handleControls();
         Object::applyForces(terrain);
+        handleControls();
         forces.addFriction(AIR_FRICTION,Forces::BOOSTING); //boosting gets slightly more friction
         if ( !freeFall) //jump force should always be perpendicular to direction we are facing UNLESS we are long jumping
         {
            // forces.setForce(orient.getNormal()*-1*Vector2Length(forces.getForce(Forces::JUMP)),Forces::JUMP);
+           //freeFallTime = -1;
         }
         if (onGround)
         {
@@ -123,12 +124,15 @@ void Player::update(Terrain& terrain)
             Object::stayOnGround(terrain);
 
             boosted = false;
-            freeFallTime = 0;
+            freeFallTime = -1;
             saveResetState();
         }
         else
         {
-            freeFallTime = wasOnGround ? GetTime() : -1;
+            if (wasOnGround)
+            {
+                freeFallTime = GetTime();
+            }
             if (!freeFall)
             {
                 Vector2 grav = forces.getForce(Forces::GRAVITY);
@@ -192,7 +196,7 @@ void Player::handleControls()
         {
             if (leftRight)
             {
-                float accel = (onGround ? PLAYER_GROUND_ACCEL : downGrav ? PLAYER_AIR_ACCEL : std::min(PLAYER_AIR_ACCEL,0.2f*abs(speed)));
+                float accel = (onGround ? PLAYER_GROUND_ACCEL : downGrav ? PLAYER_AIR_ACCEL : std::min(PLAYER_AIR_ACCEL,0.2f*abs(Vector2Length(forces.getForce(Forces::GRAVITY)))));
                 float maxSpeed = !onGround ?
                                     Globals::Game.terrain.get_gravityMode() == GlobalTerrain::DOWN ?
                                         3 :
@@ -213,7 +217,8 @@ void Player::handleControls()
                 }
                 else
                 {
-                    speed += accel*(2*((orient.facing && IsKeyDown(KEY_D)) || (!orient.facing && IsKeyDown(KEY_A))) - 1);
+                    float ratio = std::max(0.1,1 - getFreeFallDuration()/3.0);
+                    speed += accel*(2*((orient.facing && IsKeyDown(KEY_D)) || (!orient.facing && IsKeyDown(KEY_A))) - 1)*ratio;
                 }
                 speed = Clamp(speed,-maxSpeed,maxSpeed);//prevent speed from exceeding maximum
 
@@ -260,7 +265,7 @@ void Player::handleControls()
                                                   Globals::Game.getCurrentZ()) - getPos());
                     boosted = true;
 
-                    forces.addForce(direction*7,Forces::BOOSTING);
+                    forces.addForce(direction*8,Forces::BOOSTING);
 
                     Sequences::add(false,[pos = orient.pos + orient.getNormal()*GetDimen(getShape()).y,rot=orient.rotation](int count){
                                    DrawSprite3D(Globals::Game.Sprites.getSprite("mid-air-boost.png"),
