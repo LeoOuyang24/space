@@ -29,7 +29,7 @@ void DrawLine3D(Vector3 startPos,Vector3 endPos, Color color, int width)
     Vector2 size = Vector2(Vector3Length(endPos - startPos),width);
     rlPushMatrix();
         rlTranslatef(centerPos.x, centerPos.y, centerPos.z);
-        rlRotatef(atan2(endPos.y - startPos.y,endPos.x - startPos.x)*RAD2DEG,0,0,0.5);
+        rlRotatef(atan2(endPos.y - startPos.y,endPos.x - startPos.x)*RAD2DEG,0,0,1);
         rlScalef(size.x, size.y, 1.0f);
 
         rlBegin(RL_TRIANGLES);
@@ -145,6 +145,38 @@ void DrawAnime3D(const Texture2D& sprite, double start, const AnimeInfo& info, c
                    tint);
 }
 
+void DrawBlankSprite(const Vector3& pos, const Vector2& dimen, float radians)
+{
+    Vector2 texcoords[4];
+        texcoords[0] = (Vector2){ 0, 1};
+        texcoords[1] = (Vector2){ 1, 1 };
+        texcoords[2] = (Vector2){ 1, 0 };
+        texcoords[3] = (Vector2){ 0, 0 };
+
+    Vector2 points[4] = {
+        {-1,-1},
+        {1,-1},
+        {1,1},
+        {-1,1}
+    };
+
+    rlPushMatrix();
+        rlTranslatef(pos.x,pos.y,pos.z);
+        rlRotatef(radians,0,0,1);
+        rlScalef(dimen.x,dimen.y, 1.0f);
+
+        rlBegin(RL_QUADS);
+
+            for (int i = 0; i < 4; i++)
+            {
+                rlTexCoord2f(texcoords[i].x, texcoords[i].y);
+                rlVertex3f(points[i].x, points[i].y, 0);
+            }
+
+        rlEnd();
+        rlSetTexture(0);
+    rlPopMatrix();
+}
 
 std::string fitText(Font font, std::string_view text, float fontSize, float fontSpacing, float maxWidth)
 {

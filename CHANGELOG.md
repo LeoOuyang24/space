@@ -8,8 +8,9 @@
 * TODO: Make SphereTerrain actaully render something
 * TODO: Fix bouncing on terrain bug
   * Possibly related: Fix being able to walk off terrain
-* Finally fix portals rendering improperly
+* Portals now render by passing raw texture coordinates, eliminating the need of a render texture.
 * Add Andrew's music
+* Make layers have predetermined depths as opposed to hard calculated depths
 
 ## 6/22/2026 Messing Around, Finalizing Levels
 * Added `Disintegrate` a `CircleTerrain` that disappears for a time when stepped on
@@ -26,7 +27,6 @@
 * Removed some of the barrel tossing puzzles. They honestly feel lame af.
 * Added a convenience portal to layer 4
 * Finished levels for demo
-
 
 ## 5/26/2026 World Map UI Updates
 * World Map now has a gradient ellipse for each level

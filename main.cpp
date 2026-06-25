@@ -116,7 +116,7 @@ int main(void)
     GlobalShaders::EllipseGradientShader = LoadShader(0,TextFormat("shaders/fragments/oval.h",GLSL_VERSION));
 
     SoundLibrary::loadBGM("music/world0_together.wav");
-    //SoundLibrary::loadBGM("music/world1/world1.wav");
+    SoundLibrary::loadBGM("music/world1.wav");
     SoundLibrary::toggleBGM(false);
 
     Globals::Game.setCurWorldThreaded(1);

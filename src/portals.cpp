@@ -1,6 +1,8 @@
 #include "../headers/portal.h"
 #include "../headers/sequencer.h"
 
+#include "rlgl.h"
+
 Shader Portal::PortalShader;
 
 bool TokenLocked::unlocked()
@@ -34,7 +36,6 @@ Portal::Portal() :  Object({Vector2(0,0),0},
                                      std::make_tuple()
                                      )
 {
-    texture = LoadRenderTexture(100,100);
     followGravity = false;
     cond.reset(new TokenLocked(5));
 
@@ -97,12 +98,8 @@ bool Portal::unlocked()
         Vector4 tint = unlocked() ? Vector4{1,1,0,0} : Vector4{0.5,0.5,0.5,0};
         SetShaderValue(PortalShader,GetShaderLocation(PortalShader,"time"),&time,SHADER_UNIFORM_FLOAT);
         SetShaderValue(PortalShader,GetShaderLocation(PortalShader,"tint"),&tint,SHADER_UNIFORM_VEC4);
-        DrawBillboard(Globals::Game.getCamera(),texture.texture,{
-                      orient.pos.x,orient.pos.y,
-                      Globals::Game.terrain.getZOfLayer(orient.layer)},
-                      collider.radius*3,WHITE);
-        //DrawBillboard(Globals::Game.camera,texture.texture,{dest.pos.x,dest.pos.y,Globals::Game.terrain.getZOfLayer(dest.layer)},collider.radius*3,WHITE);
 
+        DrawBlankSprite(toVector3(orient.pos),{collider.radius*2,collider.radius*2},0);
 
     EndShaderMode();
 
@@ -111,4 +108,3 @@ bool Portal::unlocked()
             cond->render(getShape());
         }
  }
-

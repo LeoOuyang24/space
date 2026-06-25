@@ -64,6 +64,15 @@ void DrawAnime(const Texture2D& sprite, double start, const AnimeInfo& info, con
 void DrawAnime3D(const Texture2D& sprite, double start, const AnimeInfo& info, const Rectangle& pos, float z, float rotation = 0, Color tint = WHITE );
 
 
+/**
+ * @brief Function that just passes rectangular texture coordinates to the pipeline
+ * Useful for if you want normalized texture coordinates from 0-1 in the shader.
+ * @param pos position (center) to draw at
+ * @param dimen width and height
+ * @param radians angle in degrees (just kidding, in radians)
+ */
+void DrawBlankSprite(const Vector3& pos, const Vector2& dimen, float radians);
+
 //no idea where to put this LUL
 //moves camera to look at "pos"
 void moveCamera(Camera3D& camera, const Vector2& pos);
