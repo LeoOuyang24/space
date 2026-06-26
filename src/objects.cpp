@@ -311,9 +311,7 @@ void PhysicsBody::adjustAngle(Terrain& terrain)
 
     if (trunc(abs(newAngle - orient.rotation),2) > .001)
     {
-
         orient.rotation = newAngle;
-        //setPos((botLeft + botRight)*0.5 - Vector2Rotate(Vector2(0,dimen.y/2),orient.rotation));
     }
 }
 

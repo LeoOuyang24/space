@@ -106,7 +106,8 @@ private:
     {
         Terrain terrain;
         //contains weak_ptrs that point to the shared_ptrs in ObjectLookup
-        std::set<std::weak_ptr<PhysicsBody>,std::owner_less<std::weak_ptr<PhysicsBody>>> objects;
+        //std::set<std::weak_ptr<PhysicsBody>,std::owner_less<std::weak_ptr<PhysicsBody>>> objects;
+        std::vector<std::weak_ptr<PhysicsBody>> objects;
         LayerInfo info;
     };
 
@@ -121,6 +122,7 @@ struct World
     SignalSet signals;
     std::vector<std::string> layers;
     std::string bg_path = "";
+    std::string bgm = "";
     Texture2D bg; //worlds own their backgrounds; these sprites are not accessible in Globals::Game.Sprites (just doesn't seem necessary)
 };
 
@@ -138,9 +140,9 @@ struct LevelLoader
         std::vector<std::shared_ptr<PhysicsBody>> objs;//loaded objects to be added to the level
     };  
     /**
-     * @brief Begins loading a world at given path
+     * @brief Load a world configuration
      * 
-     * @param worldPath 
+     * @param world the world configuration to load
      */
     void loadWorld(const World& world);
     /**
@@ -173,6 +175,11 @@ struct LevelLoader
      */
     void monitor();
 
+    /**
+     * @brief Returns a float from 0-1 indicating progress in loading preLoads
+     * 
+     * @return float 
+     */
     float getProgress();
 private:
     /**
@@ -180,6 +187,12 @@ private:
      * 
      */
     void clear(); 
+    /**
+     * @brief Populate a preload given a layer's information
+     * 
+     * @param preload the preload that we will be filling with info
+     * @param layerFile the file to read from
+     */
     void loadPreLayer(PreLayer& preload, std::string layerFile);
 
     std::vector<std::jthread> threads;

@@ -91,8 +91,6 @@ bool Portal::unlocked()
 
  void Portal::render()
  {
-    DrawCircle3D({orient.pos.x,orient.pos.y,Globals::Game.terrain.getZOfLayer(orient.layer)},collider.radius,{0,0,0},0,RED);
-
     BeginShaderMode(PortalShader);
         float time = GetTime();
         Vector4 tint = unlocked() ? Vector4{1,1,0,0} : Vector4{0.5,0.5,0.5,0};

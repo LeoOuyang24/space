@@ -224,7 +224,9 @@ struct ReceiverFactory
     using Base = FactoryBase<T,
                             access<T,&T::orient,&Orient::pos>,
                             access<T,&T::keyVal>,
-                            access<T,&T::signal>>;
+                            access<T,&T::signal>,
+                            accessSetter<T,[](T& t, float degrees){ return degrees*DEG2RAD;},&T::orient,&Orient::rotation>
+                            >;
 };
 
 using BarrelReceiver = ObjReceiver<Barrel>;

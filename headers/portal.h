@@ -32,7 +32,6 @@ struct TokenLocked : public PortalCondition
 
 };
 
-
 struct Portal : public Object<CircleCollider,ShapeRenderer<CIRCLE>,Portal>
 {
     std::unique_ptr<PortalCondition> cond;

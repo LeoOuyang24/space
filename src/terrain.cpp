@@ -57,7 +57,7 @@ void GlobalTerrain::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
 {
     if (ptr.get() && layer < layers.size())
     {
-        layers[layer].objects.insert(ptr);
+        //layers[layer].objects.insert(ptr);
     }
 }
 

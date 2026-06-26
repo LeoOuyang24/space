@@ -122,6 +122,7 @@ struct MovingTerrain : public Object<Collider,ShapeRenderer<Shape>,MovingTerrain
     {
         if (other.get_followGravity())
         {
+            std::cout << "adjusting " << GetTime() << "\n";
             other.setPos(other.getPos() + moved);
         }
     }

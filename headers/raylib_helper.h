@@ -63,7 +63,6 @@ void DrawSprite3D(const Texture2D& sprite, const Rectangle& pos, float rotation 
 void DrawAnime(const Texture2D& sprite, double start, const AnimeInfo& info, const Rectangle& pos, float rotation = 0, Color tint = WHITE );
 void DrawAnime3D(const Texture2D& sprite, double start, const AnimeInfo& info, const Rectangle& pos, float z, float rotation = 0, Color tint = WHITE );
 
-
 /**
  * @brief Function that just passes rectangular texture coordinates to the pipeline
  * Useful for if you want normalized texture coordinates from 0-1 in the shader.
