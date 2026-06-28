@@ -6,11 +6,12 @@
 * TODO: Make ALT-TAB work
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
 * TODO: Make SphereTerrain actaully render something
-* TODO: Fix bouncing on terrain bug
+* Fixed a bug where terrain could be bounced off based on when it was added to storage
+  * Objects in layers are now stored via a vector. This means that they are always added in the same order from the order they were spawned in
   * Possibly related: Fix being able to walk off terrain
 * Portals now render by passing raw texture coordinates, eliminating the need of a render texture.
-* Add Andrew's music
-* Make layers have predetermined depths as opposed to hard calculated depths
+TODO: Add Andrew's music
+TODO: Make layers have predetermined depths as opposed to hard calculated depths
 
 ## 6/22/2026 Messing Around, Finalizing Levels
 * Added `Disintegrate` a `CircleTerrain` that disappears for a time when stepped on

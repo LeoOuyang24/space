@@ -219,7 +219,6 @@ struct Terrain
     //"z" is z coordinate to render at (absolute)
     void render(int i = 0, int z = 0);
 
-
     struct EntityPlanet
     {
         std::weak_ptr<PhysicsBody> ptr;

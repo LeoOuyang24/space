@@ -57,7 +57,22 @@ void GlobalTerrain::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
 {
     if (ptr.get() && layer < layers.size())
     {
-        //layers[layer].objects.insert(ptr);
+        //check to make sure we aren't adding a duplicate to a layer
+        //we COULD just use an std::set for this but in production, it is actually quite rare for this to be called outside of loading a level and when the player clicks a GenericSpawner
+        //in which case I think the cache efficiency of std::vector is better since that matters every frame
+        auto it = std::find_if(layers[layer].objects.begin(),layers[layer].objects.end(),[&ptr](const std::weak_ptr<PhysicsBody>& other){return ptr.get() == other.lock().get();});
+        if (it != layers[layer].objects.end())
+        {
+            return;
+        }
+        if (ptr->isPlanet) //it's important that terrain always move first because it affects the physics of all other objects
+        {
+            layers[layer].objects.insert(layers[layer].objects.begin(),ptr);
+        }
+        else
+        {
+            layers[layer].objects.push_back(ptr);
+        }
     }
 }
 
@@ -159,18 +174,6 @@ void GlobalTerrain::update(LayerType layer)
             {
                 Vector2 oldPos = obj->getPos();
                 obj->update(*getTerrain(layer));
-                if (obj->isTangible())
-                {
-                    for (auto jt = objects.begin(); jt != it; ++jt)
-                    {
-                        PhysicsBody* obj2 = jt->lock().get();
-                        if (isValidObject(obj2,layer) && obj2->isTangible() && CheckCollision(obj->getShape(),obj2->getShape()))
-                        {
-                            obj->onCollide(*obj2);
-                            obj2->onCollide(*obj);
-                        }
-                    }
-                }
                 ++it;
             }
             else if (obj == Globals::Game.getPlayer() && obj && obj->getDead()) //player gets reset as opposed to removed
@@ -181,6 +184,23 @@ void GlobalTerrain::update(LayerType layer)
             {
                 it = objects.erase(it);
                 Globals::Game.objects.eraseObject(*obj);
+            }
+        }
+        //after doing all updates, do collisions
+        for (auto it = objects.begin(); it != objects.end(); ++it)
+        {
+            PhysicsBody* obj = it->lock().get();
+            if (obj->isTangible())
+            {
+                for (auto jt = objects.begin(); jt != it; ++jt)
+                {
+                    PhysicsBody* obj2 = jt->lock().get();
+                    if (isValidObject(obj2,layer) && obj2->isTangible() && CheckCollision(obj->getShape(),obj2->getShape()))
+                    {
+                        obj->onCollide(*obj2);
+                        obj2->onCollide(*obj);
+                    }
+                }
             }
         }
     }

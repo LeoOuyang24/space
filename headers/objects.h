@@ -55,6 +55,9 @@ struct PhysicsBody
     size_t keyVal = 0; //a value that is sometimes used for object-object interactions
     Vector2 terrainAngle = {};
     Forces forces;
+    //true for objects that are moving terrain
+    bool isPlanet = false;
+
     virtual Shape getShape() const = 0;
     virtual void render() = 0;
     virtual void update(Terrain&) = 0;
@@ -120,6 +123,7 @@ protected:
     bool tangible = true;
     bool freeFall = false; //freefall is true if we have not yet experienced gravity and stays true until we land
     float gravRadius = 130;
+
 };
 
 //renders a suggested button press over an object

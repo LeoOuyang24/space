@@ -324,6 +324,17 @@ void PhysicsBody::stayOnGround(Terrain& terrain)
     
     Vector2 newPos = bruh - Vector2Normalize(norm)*(GetDimen(getShape()).y/2  - 1);
 
+    Debug::addDeferRender([shape=this->getShape(),pos = bruh](){
+
+        DrawCircle3D(toVector3(pos),1,{},0,PURPLE);
+
+        for (size_t i = 0; i < getShapePoints(shape.type); i ++)
+        {
+            DrawLine3D(toVector3(getIthShapePoint(shape,i)),toVector3(getIthShapePoint(shape,i+1)),PURPLE);
+        }
+
+    });
+
     setPos(newPos);
 
 }

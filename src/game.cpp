@@ -207,7 +207,7 @@ void Globals::setCollects(size_t val)
 
 void Globals::setLayer(LayerType layer)
 {
-    if (terrain.getTerrain(layer))
+    if (terrain.getTerrain(layer) && layer != currentLayer)
     {
         currentLayer = layer;
         if (player.get())
@@ -313,10 +313,7 @@ Texture2D Globals::getBG()
 void Globals::addObject(PhysicsBody& body, Orient o)
 {
     body.setOrient(o);
-    body.orient.setStartingPos(body.getPos());
-    objects.addObject(body);
-    terrain.addObject(objects.getObject(&body),o.layer);
-    body.onAdd();
+    addObject(std::shared_ptr<PhysicsBody>(&body));
 }
 
 void Globals::addObject(PhysicsBody& body, LayerType layer)
@@ -333,6 +330,7 @@ void Globals::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
         ptr->orient.setStartingPos(ptr->getPos());
         objects.addObject(ptr);
         terrain.addObject(ptr,layer);
+        
         ptr->onAdd();
     }
 
@@ -344,7 +342,6 @@ void Globals::addObject(std::shared_ptr<PhysicsBody> ptr)
     {
         addObject(ptr,ptr->getOrient().layer);
     }
-
 }
 
 PhysicsBody* Globals::getPlayer()

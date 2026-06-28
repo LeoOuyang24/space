@@ -107,9 +107,10 @@ struct MovingTerrain : public Object<Collider,ShapeRenderer<Shape>,MovingTerrain
     MoveFunc calcNewPos;
     Vector2 starting = {3000,3000};
     BlockType type = SOLID;
-    MovingTerrain()
+    MovingTerrain() 
     {
         this->followGravity = false;
+        this->isPlanet = true;
         //tangible = false;
     }
 
@@ -122,7 +123,6 @@ struct MovingTerrain : public Object<Collider,ShapeRenderer<Shape>,MovingTerrain
     {
         if (other.get_followGravity())
         {
-            std::cout << "adjusting " << GetTime() << "\n";
             other.setPos(other.getPos() + moved);
         }
     }
