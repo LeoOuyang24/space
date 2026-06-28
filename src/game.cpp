@@ -207,7 +207,7 @@ void Globals::setCollects(size_t val)
 
 void Globals::setLayer(LayerType layer)
 {
-    if (terrain.getTerrain(layer) && layer != currentLayer)
+    if (terrain.getTerrain(layer))
     {
         currentLayer = layer;
         if (player.get())
