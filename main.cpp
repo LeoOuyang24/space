@@ -108,7 +108,6 @@ int main(void)
 
     Globals::Game.Camera.moveCamera(Vector3{Terrain::MAX_TERRAIN_SIZE*0.5,Terrain::MAX_TERRAIN_SIZE*0.5,Globals::BACKGROUND_Z*0.9});
 
-
     Terrain::TerrainOutline = LoadShader(0,TextFormat("shaders/fragments/terrain_outline.h",GLSL_VERSION));
     SetShaderValue(Terrain::TerrainOutline,GetShaderLocation(Terrain::TerrainOutline,"pixelSizes"),&Terrain::PIXEL_SIZE,SHADER_UNIFORM_VEC2);
     SetShaderValue(Terrain::TerrainOutline,GetShaderLocation(Terrain::TerrainOutline,"outline_thickness"),&Block::BLOCK_DIMEN,SHADER_UNIFORM_VEC2);
@@ -119,7 +118,7 @@ int main(void)
     SoundLibrary::loadBGM("music/world1.wav");
     SoundLibrary::toggleBGM(false);
 
-    Globals::Game.setCurWorldThreaded(1);
+    Globals::Game.setCurWorldThreaded(0);
 
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {

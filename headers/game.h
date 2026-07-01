@@ -64,7 +64,7 @@ struct Globals
     void update();
     void render();
 
-    void setLayer(LayerType layer); //set layer, move the player, and the camera
+    void setLayer(LayerType layer); //set layer and move the player
 
     size_t getCollects();
     void addCollects(int val = 1);

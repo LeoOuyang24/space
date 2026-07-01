@@ -54,14 +54,15 @@ bool Portal::unlocked()
     return !cond.get() || cond->unlocked();
 }
 
- void Portal::interactWith(PhysicsBody& player)
+ void Portal::interactWith(PhysicsBody& obj)
  {
     if (unlocked())
     {
-        static_cast<Player*>(&player)->setState(Player::State::PORTALLING);
+        Player* player = static_cast<Player*>(&obj);
+        player->setState(Player::State::PORTALLING);
        // RunThis r = RunThis::Func([](int){return true;});
         //player.orient.pos = {dest.pos.x,dest.pos.y};
-        Sequences::add(true,
+        /*Sequences::add(true,
                        [&player,pos=this->orient.pos](int x){
                         player.setPos(pos);
                        return x >= 30; //wait 30 frames (~0.5 second)
@@ -84,7 +85,19 @@ bool Portal::unlocked()
                             Globals::Game.setLayer(orient.layer + layerDisp);
                             return true;
                         }
-                       );
+                       );*/
+
+        player->setState(Player::State::PORTALLING);
+        //Globals::Game.Camera.setCameraFollow(Globals::Game.Camera.getCamera().position);
+
+        Globals::Game.Camera.lookAt(Vector3{destPos.x,destPos.y,Globals::Game.terrain.getZOfLayer(orient.layer + layerDisp)},240)->push_back(RunThis([player,destPos=this->destPos,destLayer=orient.layer + layerDisp](int){
+            //Globals::Game.Camera.setCameraFollow(true);
+            Globals::Game.setLayer(destLayer);
+            player->setState(Player::State::WALKING);
+            player->setPos(destPos);
+            return true;
+
+        }));
     }
  }
 

@@ -19,7 +19,6 @@
 
 struct Forces
 {
-
     enum ForceSource : uint8_t
     {
         GRAVITY = 0,
@@ -47,7 +46,6 @@ struct Forces
         return (source >= forces.size()) ? Vector2{0,0} : forces[source];
     }
 };
-
 
 struct PhysicsBody
 {
@@ -185,6 +183,7 @@ struct Object : public PhysicsBody
             {
                 if (IsKeyPressed(KEY_E))
                 {
+                    //the reason we can't just cast "other" to Player is because Player is incomplete at this point
                     static_cast<Descendant*>(this)->interactWith(other);
                 }
                 else

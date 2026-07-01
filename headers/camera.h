@@ -16,15 +16,15 @@ struct GameCamera
      * @param val value to set to
      * @param transition how many frames you want the transition to be (0 for no transition)
      */
-    void setCameraFollow(bool val,int transition = 0); //toggle camera follow on/off
+    SequencePtr setCameraFollow(bool val,int transition = 0); //toggle camera follow on/off
     /**
      * @brief set "cameraFollow" to false and set the new point to look at
      * 
      * @param point point to look at
      * @param transition how many frames you want the transition to be (0 for no transition)
      */
-    void setCameraFollow(const Vector3& point, int transition = 0); //turn camera follow off, and have it follow the provided point, "transition" == true if we want a transiiton
-    void setCameraFollow(const Vector2& point, int transition = 0); 
+    SequencePtr setCameraFollow(const Vector3& point, int transition = 0); //turn camera follow off, and have it follow the provided point, "transition" == true if we want a transiiton
+    SequencePtr setCameraFollow(const Vector2& point, int transition = 0); 
     /**
      * @brief Returns cameraFollow
      * 
@@ -39,9 +39,9 @@ struct GameCamera
      * @param pos position to move to
      * @param transition how many frames you want the transition to be (0 for no transition)
      */
-    void moveCamera(const Vector3& pos, int transition = 0);
-    void moveCamera(const Vector2& pos, int transition = 0);
-    void moveCamera(float z, int transition = 0); //set position to z
+    SequencePtr moveCamera(const Vector3& pos, int transition = 0);
+    SequencePtr moveCamera(const Vector2& pos, int transition = 0);
+    SequencePtr moveCamera(float z, int transition = 0); //set position to z
 
     /**
      * @brief sets the camera's TARGET to the provided position
@@ -49,8 +49,8 @@ struct GameCamera
      * @param pos, new target position
      * @param transition how many frames you want the transition to be (0 for no transition)
      */
-    void lookAt(const Vector3& pos, int transition = 0);
-    void lookAt(float z, int transition = 0); //set target to z
+    SequencePtr lookAt(const Vector3& pos, int transition = 0);
+    SequencePtr lookAt(float z, int transition = 0); //set target to z
 
     /**
      * @brief Starts queuing camera changes. All camera state changes from here on out will be queued and played in a Sequence. "queuing" is immediately set to true. This is the only function that sets "queuing" to true
@@ -91,7 +91,7 @@ private:
      * @return const Camera3D& 
      */
     template<typename T>
-    void queueUp(T func)
+    SequencePtr queueUp(T func)
     {
         seq->push_back(RunThis([func,this](int){
             lock = false;
@@ -99,6 +99,8 @@ private:
             lock = true;
             return true;
         }));
+
+        return seq;
     }
     Vector2 bounds = {}; //point between 0,0 and "bounds" that the camera can not leave
     float maxCameraDisp = 0; //maximum distance from the background a camera can have

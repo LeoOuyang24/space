@@ -12,6 +12,7 @@
 * Portals now render by passing raw texture coordinates, eliminating the need of a render texture.
 TODO: Add Andrew's music
 TODO: Make layers have predetermined depths as opposed to hard calculated depths
+TODO: Fix Portal Transitions
 
 ## 6/22/2026 Messing Around, Finalizing Levels
 * Added `Disintegrate` a `CircleTerrain` that disappears for a time when stepped on
