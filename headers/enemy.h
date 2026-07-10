@@ -319,6 +319,17 @@ struct CameraMoveRegion : public Object<RectCollider,NoRenderer,CameraMoveRegion
     void collideWith(PhysicsBody& other);
     void update(Terrain& t);
 private:
+    //keep track of our camera transition animation
+    //its important we can cancel it if the player leaves the area before the camera is finished panning
+    static std::shared_ptr<Sequencer> transition;
+
+    /**
+     * @brief Do a camera transition
+     * 
+     * @param seq a camera transition to do. Doesn't super matter that it's an r value, but I guess it might be faster?
+     */
+    void doTransition(Sequencer&& seq);
+
     bool activated = false;
     bool wasActivated = false;
 };

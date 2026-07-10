@@ -16,15 +16,15 @@ struct GameCamera
      * @param val value to set to
      * @param transition how many frames you want the transition to be (0 for no transition)
      */
-    SequencePtr setCameraFollow(bool val,int transition = 0); //toggle camera follow on/off
+    Sequencer setCameraFollow(bool val,int transition = 0); //toggle camera follow on/off
     /**
      * @brief set "cameraFollow" to false and set the new point to look at
      * 
      * @param point point to look at
      * @param transition how many frames you want the transition to be (0 for no transition)
      */
-    SequencePtr setCameraFollow(const Vector3& point, int transition = 0); //turn camera follow off, and have it follow the provided point, "transition" == true if we want a transiiton
-    SequencePtr setCameraFollow(const Vector2& point, int transition = 0); 
+    Sequencer setCameraFollow(const Vector3& point, int transition = 0); //turn camera follow off, and have it follow the provided point, "transition" == true if we want a transiiton
+    Sequencer setCameraFollow(const Vector2& point, int transition = 0); 
     /**
      * @brief Returns cameraFollow
      * 
@@ -39,9 +39,9 @@ struct GameCamera
      * @param pos position to move to
      * @param transition how many frames you want the transition to be (0 for no transition)
      */
-    SequencePtr moveCamera(const Vector3& pos, int transition = 0);
-    SequencePtr moveCamera(const Vector2& pos, int transition = 0);
-    SequencePtr moveCamera(float z, int transition = 0); //set position to z
+    Sequencer moveCamera(const Vector3& pos, int transition = 0);
+    Sequencer moveCamera(const Vector2& pos, int transition = 0);
+    Sequencer moveCamera(float z, int transition = 0); //set position to z
 
     /**
      * @brief sets the camera's TARGET to the provided position
@@ -49,32 +49,10 @@ struct GameCamera
      * @param pos, new target position
      * @param transition how many frames you want the transition to be (0 for no transition)
      */
-    SequencePtr lookAt(const Vector3& pos, int transition = 0);
-    SequencePtr lookAt(float z, int transition = 0); //set target to z
-
-    /**
-     * @brief Starts queuing camera changes. All camera state changes from here on out will be queued and played in a Sequence. "queuing" is immediately set to true. This is the only function that sets "queuing" to true
-     * 
-     */
-    void startQueue();
-    /**
-     * @brief End queuing camera changes. All camera state changes from here on out will be IGNORED until the queued functions finish. "lock" is immediately set to true, "queuing" is immediately set to false. At the very end of the queued actions, lock = "false".
-     * 
-     */
-    void stopQueue();
-
-    /**
-     * @brief Clear all queued up camera moves. Unlocks as well
-     * 
-     */
-    void clear();
-
-    /**
-     * @brief returns true if camera no longer has any queued up movements (seq is empty)
-     * 
-     */
-     bool isDone();
-
+    Sequencer lookAt(std::function<Vector3()> func, int transition);
+    Sequencer lookAt(const Vector3& pos, int transition = 0);
+    Sequencer lookAt(const Vector2& pos, int transition);
+    Sequencer lookAt(float z, int transition = 0); //set target to z
 
     /**
      * @brief Get the Camera object
@@ -82,34 +60,15 @@ struct GameCamera
      * @return const Camera3D& 
      */
     const Camera3D& getCamera();
-    SequencePtr seq; //the sequence to add camera transitions to
 
 private:
-    /**
-     * @brief Queues up a function call
-     * 
-     * @return const Camera3D& 
-     */
-    template<typename T>
-    SequencePtr queueUp(T func)
-    {
-        seq->push_back(RunThis([func,this](int){
-            lock = false;
-            func();
-            lock = true;
-            return true;
-        }));
-
-        return seq;
-    }
     Vector2 bounds = {}; //point between 0,0 and "bounds" that the camera can not leave
     float maxCameraDisp = 0; //maximum distance from the background a camera can have
 
     Camera3D camera;
     bool cameraFollow = false;
+    //point to LOOK AT when camera follow is false.
     Vector3 cameraFollowPoint = {};
-    bool lock = false; //true if all camera state modifications will be ignored
-    bool queueing = false; //true if we are queueing actions
 };
 
 #endif // CAMERA_H

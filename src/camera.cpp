@@ -18,65 +18,52 @@ void GameCamera::init(const Vector2& bounds_, float maxCameraDisp_)
 
     bounds = bounds_;
     maxCameraDisp = maxCameraDisp_;
-
-    seq.reset(new Sequencer());
-    Sequences::add(seq,false);
 }
 
 void GameCamera::update()
 {
-    if (cameraFollow && Globals::Game.getPlayer() && !Debug::isDebugOn() && seq->size() == 0)
+    if (cameraFollow && Globals::Game.getPlayer() && !Debug::isDebugOn())
     {
         lookAt(toVector3(Globals::Game.getPlayer()->getPos()),0);
     }
 }
 
-SequencePtr GameCamera::setCameraFollow(bool val, int transition )
+Sequencer GameCamera::setCameraFollow(bool val, int transition )
 {
-    if (queueing)
-    {
-        return queueUp(std::bind(static_cast<SequencePtr(GameCamera::*)(bool,int)>(&setCameraFollow),this,val,transition));
-    }
-    else if (!lock)
+    //if no transition, we can just set the value and be done
+    if (transition == 0)
     {
         cameraFollow = val;
-
-        if (val)
-        {
-            if (transition)
-            {
-                seq->push_front(RunThis([transition,this,startPos=camera.position](int times){
-                    Vector3 endPos = toVector3(Globals::Game.getPlayer()->getPos());
-                    Vector3 pos = lerp(startPos,{endPos.x,endPos.y,endPos.z - Globals::CAMERA_Z_DISP},sin(static_cast<float>(times)/transition*M_PI/2));
-                    camera.position = pos;
-                    camera.target = pos;
-                    camera.target.z = pos.z + Globals::CAMERA_Z_DISP;
-                    return times >= transition || Debug::isDebugOn(); 
-                    }));
-            }
-        }
-        else
-        {
-            return moveCamera(cameraFollowPoint,transition);
-        }
+        return Sequencer();
     }
-    return seq;
 
-}
+    Sequencer seq;
 
-SequencePtr GameCamera::setCameraFollow(const Vector3& pos, int transition )
-{
-    if (!lock)
+    //if going from false to true, we only want to set the value AFTER transition is done
+    //the reason is because GameCamera::update will set our position every frame based on the value
+    //of "cameraFollow". So we have to be careful for when we set the variable
+    if (val) 
     {
-        cameraFollowPoint = pos; //allowed to happen outside of queue, since it doesn't really change anything until we actually run things
-        return setCameraFollow(false,transition);
+        seq = lookAt([](){return toVector3(Globals::Game.getPlayer()->getPos());},transition)
+            .add([this](int){ this->cameraFollow = true; return true;});
+    }
+    else //else if going from true to false, we can set the value immediately then do the transition.
+    {
+        cameraFollow = val;
+        seq = lookAt(cameraFollowPoint,transition);
     }
     return seq;
 }
 
-SequencePtr GameCamera::setCameraFollow(const Vector2& point, int transition)
+Sequencer GameCamera::setCameraFollow(const Vector3& pos, int transition )
 {
-    return setCameraFollow({point.x,point.y,camera.position.z},transition);
+    cameraFollowPoint = pos; 
+    return setCameraFollow(false,transition);
+}
+
+Sequencer GameCamera::setCameraFollow(const Vector2& point, int transition)
+{
+    return setCameraFollow({point.x,point.y,camera.target.z},transition);
 }
 
 bool GameCamera::getCameraFollow()
@@ -84,96 +71,63 @@ bool GameCamera::getCameraFollow()
     return cameraFollow;
 }
 
-SequencePtr GameCamera::moveCamera(const Vector3& pos, int transition )
+Sequencer GameCamera::moveCamera(const Vector3& pos, int transition )
 {
-    if (queueing)
-    {
-        return queueUp(std::bind(static_cast<SequencePtr(GameCamera::*)(const Vector3&,int)>(&moveCamera),this,pos,transition));
-    }
-    else if (!lock)
-    {
-        float disp = maxCameraDisp*tan(camera.fovy/2*DEG2RAD); //distance from the edge of the screen
+    float disp = maxCameraDisp*tan(camera.fovy/2*DEG2RAD); //distance from the edge of the screen
 
-        //clamps camera to level area
-        Vector2 clampedPos = {
-            Clamp(pos.x,disp,bounds.x - disp),
-            Clamp(pos.y,disp,bounds.y - disp)
-        };
+    //clamps camera to level area
+    Vector2 clampedPos = {
+        Clamp(pos.x,disp,bounds.x - disp),
+        Clamp(pos.y,disp,bounds.y - disp)
+    };
 
-        if (transition > 0 && seq) //incrementally assign
-        {
-            seq->push_front(RunThis([disp,transition,this,startPos=camera.position,endPos=Vector3(clampedPos.x,clampedPos.y,pos.z)](int times){
-                Vector3 pos = lerp(startPos,endPos,sin(static_cast<float>(times)/transition*M_PI/2));
-                camera.position = pos;
-                camera.target = pos;
-                camera.target.z = pos.z + Globals::CAMERA_Z_DISP;
-                return times >= transition || Debug::isDebugOn(); 
-            }));
-        }
-        else
-        {
-            assignVector(camera.position,clampedPos);
-            assignVector(camera.target,clampedPos);
-            camera.position.z = pos.z ;
-            camera.target.z = pos.z + Globals::CAMERA_Z_DISP;
-        }
-    }
-    return seq;
+    return lookAt({clampedPos.x,clampedPos.y,pos.z + maxCameraDisp},transition);
 }
 
-SequencePtr GameCamera::moveCamera(const Vector2& pos, int transition )
+Sequencer GameCamera::moveCamera(const Vector2& pos, int transition )
 {
     return moveCamera({pos.x,pos.y,camera.position.z},transition);
 }
 
-SequencePtr GameCamera::moveCamera(float z, int transition )
+Sequencer GameCamera::moveCamera(float z, int transition )
 {
     return moveCamera(Vector3(camera.position.x,camera.position.y,z), transition);
 }
 
-SequencePtr GameCamera::lookAt(float z, int transition )
+Sequencer GameCamera::lookAt(std::function<Vector3()> func, int transition)
 {
-    return moveCamera(z - Globals::CAMERA_Z_DISP, transition);
-}
-
-SequencePtr GameCamera::lookAt(const Vector3& pos, int transition )
-{
-    return moveCamera({pos.x,pos.y,pos.z - Globals::CAMERA_Z_DISP},transition);
-}
-
-void GameCamera::startQueue()
-{
-    if (!lock)
+    if (transition > 0) //incrementally assign
     {
-        queueing = true;
+        return Sequencer(InitFunc<[](){return Globals::Game.Camera.getCamera().target;}>([func,transition,this](const Vector3& cameraPos, int times){
+            Vector3 endPos = func();
+            Vector3 pos = lerp(cameraPos,endPos,sin(static_cast<float>(times)/transition*M_PI/2));
+            camera.target = pos;
+            camera.position = camera.target - Vector3(0,0,maxCameraDisp);
+            return times >= transition || Debug::isDebugOn(); 
+        }));
     }
-}
-
-void GameCamera::stopQueue()
-{
-    if (!lock)
+    else
     {
-        lock = true;
-        queueing = false;
-        if (seq.get())
-        {
-            seq->push_back(RunThis([this](int){ lock = false; return true;}));
-        }
-    }
+        Vector3 endPos = func();
+        camera.target = endPos;
+        camera.position = camera.target - Vector3(0,0,maxCameraDisp);
+        return Sequencer();
+    }  
 }
 
-void GameCamera::clear()
+Sequencer GameCamera::lookAt(float z, int transition )
 {
-    if (seq)
-    {
-        lock = false;
-        seq->clear();
-    }
+    return lookAt({camera.target.x,camera.target.y,z},transition);
 }
 
-bool GameCamera::isDone()
+Sequencer GameCamera::lookAt(const Vector2& pos, int transition)
 {
-    return seq->size() == 0;
+    return lookAt({pos.x,pos.y,camera.target.z},transition);
+}
+
+Sequencer GameCamera::lookAt(const Vector3& pos, int transition )
+{
+    return lookAt([pos](){return pos;},transition);
 }
 
 const Camera3D& GameCamera::getCamera()

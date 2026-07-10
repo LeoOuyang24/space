@@ -65,6 +65,7 @@ struct PhysicsBody
     void setOrient(const Orient& orient);
     virtual void setLayer(LayerType layer);
     virtual void setPos(const Vector2& pos);
+    void setPos(const Vector3& pos); //sets the z position as well, overriding layer in orient
     Forces& getForces();
     virtual void onCollide(PhysicsBody& other)
     {
@@ -188,7 +189,7 @@ struct Object : public PhysicsBody
                 }
                 else
                 {
-                    Sequences::add({[this](int){suggestButtonPress(getShape(),"E");return true;}},false);
+                    Sequences::add(false,[this](int){suggestButtonPress(getShape(),"E");return true;});
                 }
             }
         }

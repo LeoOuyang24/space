@@ -166,10 +166,10 @@ void LifePod::onCollide(PhysicsBody& other)
         Player* player = static_cast<Player*>(&other);
         if (player->getHolding() && player->getHolding()->getKeyVal() == keyVal)
         {
-            Sequences::add({[shape=getShape()](int){
+            Sequences::add(false,[shape=getShape()](int){
                 suggestButtonPress(shape,"E");
                 return true;
-            }},false);
+            });
             if (IsKeyPressed(KEY_E))
             {
                 interactWith(other);
@@ -177,10 +177,10 @@ void LifePod::onCollide(PhysicsBody& other)
         }
         else
         {
-            Sequences::add({[pos=getPos()](int){
+            Sequences::add(false,[pos=getPos()](int){
                 DrawSprite3D(Globals::Game.Sprites.getSprite("no_battery.png"),{pos.x,pos.y,100,100});
                 return true;
-            }},false);
+            });
         }
     }
 }

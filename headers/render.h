@@ -20,13 +20,13 @@ struct ShapeRenderer
         switch (shape.type)
         {
         case CIRCLE:
-            DrawCircle3D({shape.orient.pos.x,shape.orient.pos.y,
-                         Globals::Game.terrain.getZOfLayer(shape.orient.layer)},shape.collider.radius,{0,0,0},0,color);
+            DrawCircle3D({  shape.orient.pos.x,shape.orient.pos.y,shape.orient.getZ()},
+                            shape.collider.radius,{0,0,0},0,color);
             break;
         case RECT:
             Vector2 width = Vector2(cos(shape.orient.rotation),sin(shape.orient.rotation))*shape.collider.dimens.x/2;
-            DrawLine3D( toVector3(shape.orient.pos - width,Globals::Game.terrain.getZOfLayer(shape.orient.layer)),
-                        toVector3(shape.orient.pos + width,Globals::Game.terrain.getZOfLayer(shape.orient.layer)),
+            DrawLine3D( toVector3(shape.orient.pos - width,shape.orient.getZ()),
+                        toVector3(shape.orient.pos + width,shape.orient.getZ()),
                         color,
                         shape.collider.dimens.y);
 

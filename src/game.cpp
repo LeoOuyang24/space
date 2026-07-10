@@ -23,13 +23,11 @@ void StateLoader::setState(GameState newState, bool strict)
             Globals::Game.interface.setMenu(NONE);
             Globals::Game.setLayer(0);
             SoundLibrary::toggleBGM(true);
-            Globals::Game.Camera.startQueue();
-                Globals::Game.Camera.setCameraFollow(false,0);
-                Globals::Game.Camera.setCameraFollow(toVector2(Globals::Game.Camera.getCamera().position));
-                Globals::Game.Camera.lookAt(Globals::Game.terrain.getZOfLayer(0),300);
-                Globals::Game.Camera.setCameraFollow(true,100);
-                //Globals::Game.Camera.lookAt(toVector3(Globals::Game.getPlayer()->getPos()),100);
-            Globals::Game.Camera.stopQueue();
+
+            Globals::Game.Camera.setCameraFollow(toVector2(Globals::Game.Camera.getCamera().position));
+            Sequences::add(false,Globals::Game.Camera.lookAt(Globals::Game.terrain.getZOfLayer(0),300))
+                        ->add(Globals::Game.Camera.setCameraFollow(true,100));
+
             state = newState;
 
         }
@@ -42,14 +40,13 @@ void StateLoader::setState(GameState newState, bool strict)
         {
             Globals::Game.Camera.setCameraFollow(false);
 
-            Globals::Game.Camera.moveCamera(-Globals::BACKGROUND_Z*2,60);
-            auto sequence = Sequences::waitFor(std::bind(Globals::Game.Camera.isDone,&Globals::Game.Camera),false);
-            sequence->push_back(RunThis([this,newState](int){
+            Sequences::add(false,Globals::Game.Camera.moveCamera(-Globals::BACKGROUND_Z*2,60))
+                ->add([this,newState](int){
                 Globals::Game.interface.setMenu(Menus::WORLD_MAP); 
                 Globals::Game.Camera.setCameraFollow(true);
                 state = newState;
                 return true;
-            }));
+            });
         }
         else
         {
@@ -215,8 +212,6 @@ void Globals::setLayer(LayerType layer)
             player->setLayer(layer);
             terrain.addObject(player,layer);
         }
-        
-        //Camera.lookAt(getCurrentZ(),100);
 
     }
     else

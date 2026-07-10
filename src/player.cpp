@@ -52,7 +52,6 @@ void PlayerRenderer::render(const Shape& shape,const Color& color)
 {
 
     Shape shape2 = shape;
-
     switch (owner.state)
     {
     case Player::State::CHARGING:
@@ -66,7 +65,7 @@ void PlayerRenderer::render(const Shape& shape,const Color& color)
         }
     case Player::State::PORTALLING:
         {
-            DrawSphere(toVector3(shape2.orient.pos),GetDimen(shape2).x/2.0,YELLOW);
+            DrawSphere(shape2.orient.getPos3(),GetDimen(shape2).x/2.0,YELLOW);
             break;
         }
     case Player::State::WALKING:
@@ -369,7 +368,7 @@ void Player::resetPlayer()
                             return frames > a->info.horizFrames*a->info.vertFrames/a->info.speed;
                        }
                         return frames >= 60;
-                       },[this](int frames){
+                       })->add([this](int frames){
 
                         forces.addFriction(0);
                         std::for_each(resetState.restoreThese.begin(),resetState.restoreThese.end(),[](const RestoreObject& restore){

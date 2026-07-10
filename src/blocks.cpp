@@ -454,14 +454,15 @@ void Terrain::addPlanet(PhysicsBody& planet, BlockType type)
 
 void Terrain::render(int i, int z)
 {
+    //how much to change shading by based on camera position
+    //anything closer than CAMERA_Z_DISP is rendered with normal shading
+    float factor = pow(0.5,std::max(0.0f,(z - Globals::Game.Camera.getCamera().target.z)/Globals::CAMERA_Z_DISP)); 
 
-   //Vector3 white = Vector3{255,255,255}*std::max(0.0f,std::min(1.0f,(1 - static_cast<float>(z - Globals::Game.camera.position.z - Globals::Game.CAMERA_Z_DISP)/Globals::MAX_Z)));
-
-   Vector3 white = Vector3(255,255,255)*pow(.5,i);
+   Vector3 white = Vector3(255,255,255)*factor;
 
    Color balls = {white.x,white.y,white.z,255}; //can't do math with raylib colors breaking_bad_crawl_space.gif
 
-    float shade = pow(.5,i);
+    float shade = factor;
     SetShaderValue(TerrainOutline,GetShaderLocation(TerrainOutline,"shade"),&shade,SHADER_UNIFORM_FLOAT);
 
    BeginShaderMode(TerrainOutline);

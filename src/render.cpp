@@ -37,7 +37,7 @@ void TextureRenderer::render(const Shape& shape, const Color& color)
     int flip = (shape.orient.facing)*2 - 1;
 
     DrawBillboardPro(Globals::Game.getCamera(),sprite,Rectangle(0,0,sprite.width*flip,sprite.height),
-                     Vector3(shape.orient.pos.x,shape.orient.pos.y,Globals::Game.terrain.getZOfLayer(shape.orient.layer)),Vector3(0,-1,0),dimen,
+                     Vector3(shape.orient.pos.x,shape.orient.pos.y,shape.orient.getZ()),Vector3(0,-1,0),dimen,
                      dimen*0.5,shape.orient.rotation*RAD2DEG*-1,color);
     if (Debug::isDebugOn())
     {

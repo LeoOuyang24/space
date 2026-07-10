@@ -8,6 +8,12 @@ void PhysicsBody::setPos(const Vector2& pos)
     orient.pos = pos;
 }
 
+void PhysicsBody::setPos(const Vector3& pos)
+{
+    orient.pos = {pos.x,pos.y};
+    orient.setZ(pos.z);
+}
+
 Forces& PhysicsBody::getForces()
 {
     return forces;

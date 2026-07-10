@@ -60,44 +60,23 @@ bool Portal::unlocked()
     {
         Player* player = static_cast<Player*>(&obj);
         player->setState(Player::State::PORTALLING);
-       // RunThis r = RunThis::Func([](int){return true;});
-        //player.orient.pos = {dest.pos.x,dest.pos.y};
-        /*Sequences::add(true,
-                       [&player,pos=this->orient.pos](int x){
-                        player.setPos(pos);
-                       return x >= 30; //wait 30 frames (~0.5 second)
-
-                       },
-                       [dest=this->destPos,start = player.getPos(),this](int x){
-                        Player* player = static_cast<Player*>(Globals::Game.getPlayer());
-                        player->setPos(start + (dest - start)*.01f*x);
-
-                       Globals::Game.Camera.lookAt(Lerp(
-                                                 Globals::Game.terrain.getZOfLayer(player->getOrient().layer),
-                                                 Globals::Game.terrain.getZOfLayer(orient.layer + layerDisp),
-                                                 x/100.0));
-
-                        return Vector2Equals(player->getPos(),dest) || x >= 100; //fail safe, this can only run 100 times
-                       },
-                        [this](int)
-                        {
-                            static_cast<Player*>(Globals::Game.getPlayer())->setState(Player::State::WALKING);
-                            Globals::Game.setLayer(orient.layer + layerDisp);
-                            return true;
-                        }
-                       );*/
 
         player->setState(Player::State::PORTALLING);
-        //Globals::Game.Camera.setCameraFollow(Globals::Game.Camera.getCamera().position);
 
-        Globals::Game.Camera.lookAt(Vector3{destPos.x,destPos.y,Globals::Game.terrain.getZOfLayer(orient.layer + layerDisp)},240)->push_back(RunThis([player,destPos=this->destPos,destLayer=orient.layer + layerDisp](int){
-            //Globals::Game.Camera.setCameraFollow(true);
-            Globals::Game.setLayer(destLayer);
-            player->setState(Player::State::WALKING);
-            player->setPos(destPos);
-            return true;
-
-        }));
+        Sequences::add(false,[pos = getPos(), player,startPos = player->getPos(),duration=30.0f](int x){
+                    player->setPos(lerp(startPos,pos,sin(std::min(x,(int)duration/2)/duration*M_PI))); //in 15 seconds, move the player to the center
+                    return x >= duration; //wait 30 seconds
+                     })
+            ->add(Globals::Game.Camera.setCameraFollow(Vector3{destPos.x,destPos.y,Globals::Game.terrain.getZOfLayer(orient.layer + layerDisp)},120))
+            .parallel([player](int){player->setPos(Globals::Game.getCamera().target); return true;})
+                .add([player,destPos=this->destPos,destLayer=orient.layer + layerDisp](int){
+                    Globals::Game.Camera.setCameraFollow(true);
+                    Globals::Game.setLayer(destLayer);
+                    player->setState(Player::State::WALKING);
+                    player->setPos(destPos);
+                    player->orient.setZ();
+                    return true;
+                });
     }
  }
 

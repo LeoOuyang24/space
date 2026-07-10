@@ -10,9 +10,27 @@
   * Objects in layers are now stored via a vector. This means that they are always added in the same order from the order they were spawned in
   * Possibly related: Fix being able to walk off terrain
 * Portals now render by passing raw texture coordinates, eliminating the need of a render texture.
+* Portals now correctly show the transition between terrains.
+* There is now an implementation to render objects between layers
+  * `Orient::getZ` has been added as a source of truth for an object's z coordinate
+  * I have not bothered to fully use it everywhere, I'll do it as it comes up
+  * In order to solve the z sorting issue, the current layer will not render until all objects (really just the player) with a z higher than the layer is rendered. This causes a minor overhead as we have to iterate through all objects twice.
+* Reworked Sequencers completely:
+  * `Sequencer` is now a struct that is basically a linked list
+    * The Nodes are `SequenceNode`, formerly `RunThis`, which are now private in `Sequencer`. 
+      * They are still basically glorified wrappers to functions EXCEPT they contain a smart pointer to the next node.
+    * `Sequencer` has a smart pointer to the start node and a weak pointer to the end node.
+    * Users only ever mess with `Sequencer`; `Sequencer` is meant to be concatenated with itself to build long sequences.
+    * `Sequencer` has `add` and `parallel` methods, which both return the calling `Sequencer`, allowing for long chains building sequences.
+      * `add` appends to the `Sequencer`
+      * `parallel` adds a function to the end node, or appends if the `Sequencer` is empty
+    * When a function is done, the `Sequencer`'s head is set equal to the next node in the sequence. If there are no other shared pointers pointing to the previous node, it is deleted via `shared_ptr` dark arts. 
+      * Due to how this works, when the last node is popped, the whole sequence becomes empty.
+  * The global `Sequences` has been changed to mostly mirror these changes
 TODO: Add Andrew's music
 TODO: Make layers have predetermined depths as opposed to hard calculated depths
 TODO: Fix Portal Transitions
+
 
 ## 6/22/2026 Messing Around, Finalizing Levels
 * Added `Disintegrate` a `CircleTerrain` that disappears for a time when stepped on
