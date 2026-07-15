@@ -5,10 +5,10 @@
 * TODO: Make ESCAPE open a pause menu
 * TODO: Make ALT-TAB work
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
-* TODO: Make SphereTerrain actaully render something
+* Made SphereTerrain actaully render something
 * Fixed a bug where terrain could be bounced off based on when it was added to storage
   * Objects in layers are now stored via a vector. This means that they are always added in the same order from the order they were spawned in
-  * Possibly related: Fix being able to walk off terrain
+  * Possibly related TODO: Fix being able to walk off terrain
 * Portals now render by passing raw texture coordinates, eliminating the need of a render texture.
 * Portals now correctly show the transition between terrains.
 * There is now an implementation to render objects between layers
@@ -29,11 +29,12 @@
   * The global `Sequences` has been changed to mostly mirror these changes
 TODO: Add Andrew's music
 TODO: Make layers have predetermined depths as opposed to hard calculated depths
-TODO: Fix Portal Transitions
+* Added another secret to layer 1 (couldn't help it)
+  * Added `ArrowSign`
 
 
 ## 6/22/2026 Messing Around, Finalizing Levels
-* Added `Disintegrate` a `CircleTerrain` that disappears for a time when stepped on
+* Added `Disintegrate` a `CircleTerrain` that disappears for a time when stepped on. Currently unused
 * Added `BigGear`, a larger, carryable gear that needs to be carried to a receiver
 * Added the `ObjReceiver`, an object that does something when receiving an object, basically a generalized `BarrelReceiver`
   * Added `BigGearReceiver`

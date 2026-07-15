@@ -15,6 +15,7 @@ void ClassDeserializer::init()
     registerName<Portal>();
     registerName<Collectible>();
     registerName<Sign>();
+    registerName<ArrowSign>();
     registerName<Rover>();
     registerName<BigSign>();
     registerName<LaserBeamEnemy>();
@@ -22,7 +23,6 @@ void ClassDeserializer::init()
     registerName<BarrelReceiver>();
     registerName<BarrelSpawner>();
     registerName<CircleTerrain>();
-    registerName<RectTerrain>();
     registerName<TerrainPod>("terrain_pod");
     registerName<GenericSpawner<TerrainPod>>();
     registerName<PushBot>();

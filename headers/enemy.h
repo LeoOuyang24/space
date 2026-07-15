@@ -4,6 +4,7 @@
 #include "objects.h"
 #include "factory.h"
 #include "render.h"
+#include "shape.h"
 #include "conversions.h"
 
 struct GrapplePoint : public Object<CircleCollider,TextureRenderer,GrapplePoint>
@@ -98,11 +99,12 @@ struct Factory<LaserBeamEnemy>
                                 access<LaserBeamEnemy,&LaserBeamEnemy::movement>
                                 >;
 };
+
 //moving terrain
 //the entity itself doesn't matter, rather it exists purely so it works with the rest of the entity frameworks
 //construct, Debug mode, etc.
 template<typename Collider,ShapeType Shape>
-struct MovingTerrain : public Object<Collider,ShapeRenderer<Shape>,MovingTerrain<Collider,Shape>>
+struct MovingTerrain : public Object<Collider,TextureRenderer,MovingTerrain<Collider,Shape>>
 {
     MoveFunc calcNewPos;
     Vector2 starting = {3000,3000};
@@ -111,6 +113,9 @@ struct MovingTerrain : public Object<Collider,ShapeRenderer<Shape>,MovingTerrain
     {
         this->followGravity = false;
         this->isPlanet = true;
+
+        this->tint = (type == SOLID) ? GRAY : RED;
+        this->renderer.setSprite(Globals::Game.Sprites.getSprite("laser_beamer_off.png"));
         //tangible = false;
     }
 
@@ -155,21 +160,6 @@ struct Factory<CircleTerrain>
                     access<CircleTerrain,&CircleTerrain::collider,&CircleCollider::radius>,
                     access<CircleTerrain,&CircleTerrain::type>,
                     access<CircleTerrain,&CircleTerrain::calcNewPos>>;
-};
-
-using RectTerrain = MovingTerrain<RectCollider,RECT>;
-
-template<>
-struct Factory<RectTerrain>
-{
-    static constexpr char ObjectName[] = "rect_terrain";
-
-    using Base = FactoryBase<RectTerrain,
-                    access<RectTerrain,&RectTerrain::starting>,
-                    access<RectTerrain,&RectTerrain::collider,&RectCollider::width>,
-                    access<RectTerrain,&RectTerrain::collider,&RectCollider::height>,
-                    access<RectTerrain,&RectTerrain::type>,
-                    access<RectTerrain,&RectTerrain::calcNewPos>>;
 };
 
 //a circular piece of terrain that disintegrates

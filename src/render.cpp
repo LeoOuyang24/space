@@ -36,6 +36,7 @@ void TextureRenderer::render(const Shape& shape, const Color& color)
     Vector2 dimen = GetDimen(shape);
     int flip = (shape.orient.facing)*2 - 1;
 
+    //can't use DrawSprite3D because it doesn't support flipping the sprite
     DrawBillboardPro(Globals::Game.getCamera(),sprite,Rectangle(0,0,sprite.width*flip,sprite.height),
                      Vector3(shape.orient.pos.x,shape.orient.pos.y,shape.orient.getZ()),Vector3(0,-1,0),dimen,
                      dimen*0.5,shape.orient.rotation*RAD2DEG*-1,color);
