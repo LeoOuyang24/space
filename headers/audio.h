@@ -19,6 +19,8 @@ public:
     static void loadSounds(std::string_view folderPath);
 
     static void loadBGM(std::string_view path);
+    //restart the music
+    static void resetBGM();
     static void toggleBGM(bool val);
     static void toggleBGM();
 

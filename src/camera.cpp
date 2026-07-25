@@ -73,15 +73,7 @@ bool GameCamera::getCameraFollow()
 
 Sequencer GameCamera::moveCamera(const Vector3& pos, int transition )
 {
-    float disp = maxCameraDisp*tan(camera.fovy/2*DEG2RAD); //distance from the edge of the screen
-
-    //clamps camera to level area
-    Vector2 clampedPos = {
-        Clamp(pos.x,disp,bounds.x - disp),
-        Clamp(pos.y,disp,bounds.y - disp)
-    };
-
-    return lookAt({clampedPos.x,clampedPos.y,pos.z + maxCameraDisp},transition);
+    return lookAt({pos.x,pos.y,pos.z + maxCameraDisp},transition);
 }
 
 Sequencer GameCamera::moveCamera(const Vector2& pos, int transition )
@@ -96,19 +88,37 @@ Sequencer GameCamera::moveCamera(float z, int transition )
 
 Sequencer GameCamera::lookAt(std::function<Vector3()> func, int transition)
 {
+
     if (transition > 0) //incrementally assign
     {
-        return Sequencer(InitFunc<[](){return Globals::Game.Camera.getCamera().target;}>([func,transition,this](const Vector3& cameraPos, int times){
+        return Sequencer(InitFunc([func,transition,this](const Vector3& cameraPos, int times){
             Vector3 endPos = func();
+            float disp = maxCameraDisp*tan(camera.fovy/2*DEG2RAD); //distance from the edge of the screen
+
+            //clamps camera to level area
+            endPos  = {
+                Clamp(endPos.x,disp,bounds.x - disp),
+                Clamp(endPos.y,disp,bounds.y - disp),
+                endPos.z
+            };
             Vector3 pos = lerp(cameraPos,endPos,sin(static_cast<float>(times)/transition*M_PI/2));
             camera.target = pos;
             camera.position = camera.target - Vector3(0,0,maxCameraDisp);
             return times >= transition || Debug::isDebugOn(); 
-        }));
+        },
+        [this](){return this->getCamera().target;}));
     }
     else
     {
         Vector3 endPos = func();
+        float disp = maxCameraDisp*tan(camera.fovy/2*DEG2RAD); //distance from the edge of the screen
+
+        //clamps camera to level area
+        endPos  = {
+            Clamp(endPos.x,disp,bounds.x - disp),
+            Clamp(endPos.y,disp,bounds.y - disp),
+            endPos.z
+        };
         camera.target = endPos;
         camera.position = camera.target - Vector3(0,0,maxCameraDisp);
         return Sequencer();

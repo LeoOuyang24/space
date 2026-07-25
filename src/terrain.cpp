@@ -71,7 +71,7 @@ void GlobalTerrain::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
         }
         else
         {
-            layers[layer].objects.push_back(ptr);
+            layers[layer].objects.emplace_back(ptr);
         }
     }
 }
@@ -98,13 +98,16 @@ void GlobalTerrain::loadTerrain(LayerType layer, const Image& img)
         return;
     }
     Terrain* terr = getTerrain(layer);
+    terr->cleanUp();
 
     Color* colors = LoadImageColors(img);
 
     Texture2D load = LoadTextureFromImage(img);
-    BeginTextureMode(terr->blocksTexture);
-        DrawTexturePro(load,{0,0,load.width,load.height*-1},{0,terr->blocksTexture.texture.height - load.height,load.width,load.height},{0,0},0,WHITE);
-    EndTextureMode();
+        BeginTextureMode(terr->blocksTexture);
+            BeginShaderMode(Terrain::TerrainOutline);
+                DrawTexturePro(load,{0,0,load.width,load.height*-1},{0,terr->blocksTexture.texture.height - load.height,load.width,load.height},{0,0},0,WHITE);
+            EndShaderMode();
+        EndTextureMode();
     UnloadTexture(load);
 
    for (int i = 0; i < std::min(img.width,Terrain::MAX_WIDTH); i += 1)
@@ -167,14 +170,13 @@ void GlobalTerrain::update(LayerType layer)
     if (layer < layers.size())
     {
         auto& objects = layers[layer].objects;
-        for (auto it = objects.begin(); it != objects.end();)
+        for (size_t i = 0; i < objects.size();)
         {
-            PhysicsBody* obj = it->lock().get();
+            PhysicsBody* obj = objects[i].lock().get();
             if (isValidObject(obj,layer)) //if object is non-null and in this layer and not dead, update it!
             {
-                Vector2 oldPos = obj->getPos();
                 obj->update(*getTerrain(layer));
-                ++it;
+                i++;
             }
             else if (obj == Globals::Game.getPlayer() && obj && obj->getDead()) //player gets reset as opposed to removed
             {
@@ -182,7 +184,7 @@ void GlobalTerrain::update(LayerType layer)
             }
             else //otherwise, remove it
             {
-                it = objects.erase(it);
+                objects.erase(objects.begin() + i);
                 Globals::Game.objects.eraseObject(*obj);
             }
         }
@@ -412,15 +414,15 @@ void LevelLoader::loadPreLayer(PreLayer& preloaded, std::string layerPath)
                 lineNum ++;
             }
         }
-        loaded.store(loaded.load() + 1);
         levelFile.close();
     }
+    loaded.store(loaded.load() + 1);
 
 }
 
 bool LevelLoader::getIsLoading()
 {
-    return loaded < preloads.size();
+    return loaded < static_cast<int>(preloads.size());
 }
 
 void LevelLoader::clear()

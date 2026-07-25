@@ -98,6 +98,7 @@ class WorldMap : public UIElement
         Vector2 center;
         CurrentWorld world = 0;
         Color color;
+        static bool clicked; //used to keep track if a world has been clicked, to prevent other worlds from being clicked while animation is playing
     };
     std::array<WorldNode,2> nodes;
 public:

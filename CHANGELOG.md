@@ -3,8 +3,11 @@
 ## UNRELEASED
 * TODO: Make right click more intuitive/obvious
 * TODO: Make ESCAPE open a pause menu
-* TODO: Make ALT-TAB work
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
+* TODO: Make layers have predetermined depths as opposed to hard calculated depths
+
+## 7/25/2026 GRAAH RELEASE #2!!!
+* Make ALT-TAB works now
 * Made SphereTerrain actaully render something
 * Fixed a bug where terrain could be bounced off based on when it was added to storage
   * Objects in layers are now stored via a vector. This means that they are always added in the same order from the order they were spawned in
@@ -27,11 +30,14 @@
     * When a function is done, the `Sequencer`'s head is set equal to the next node in the sequence. If there are no other shared pointers pointing to the previous node, it is deleted via `shared_ptr` dark arts. 
       * Due to how this works, when the last node is popped, the whole sequence becomes empty.
   * The global `Sequences` has been changed to mostly mirror these changes
-TODO: Add Andrew's music
-TODO: Make layers have predetermined depths as opposed to hard calculated depths
+* Removed the glowstone and replaced it with just a big gear, wasn't too happy with how it looked.
+* Added Andrew's music
 * Added another secret to layer 1 (couldn't help it)
   * Added `ArrowSign`
-
+* Fixed an optimization issue where world 1 was laggy af on full screen. This was due to applying the outlineshader and to every layer every frame.
+  * Instead, we now apply the shader once when the terrain image is loaded
+  * Sadly, this does mean debug-generated terrain has no outline
+* Fixed a bug where std::vector::iterators were being invalidated
 
 ## 6/22/2026 Messing Around, Finalizing Levels
 * Added `Disintegrate` a `CircleTerrain` that disappears for a time when stepped on. Currently unused

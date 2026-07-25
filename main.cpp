@@ -28,6 +28,7 @@
 
 #include <rlgl.h>
 #include <raymath.h>
+#include <glfw3.h>
 
 #define PLATFORM_DESKTOP
 
@@ -39,7 +40,7 @@
 
 void exportBackground()
 {
-    const Vector2 screenDimen = Globals::screenDimen;
+    const Vector2 screenDimen = ComputerEnv::getScreenDimen();
 
 
     Shader stars= LoadShader(0, TextFormat("shaders/fragments/stars.h", GLSL_VERSION));
@@ -83,15 +84,25 @@ void exportBackground()
 
 int main(void)
 {
-    // Initialization
-    //--------------------------------------------------------------------------------------
-    const Vector2 screenDimen = Globals::screenDimen;
-    SetConfigFlags( FLAG_VSYNC_HINT);
-    InitWindow(screenDimen.x, screenDimen.y, "raylib [core] example - basic window");
-    InitAudioDevice();
+
+    SetConfigFlags( FLAG_VSYNC_HINT | (FLAG_WINDOW_UNDECORATED*!Globals::DEBUG) );
+    InitWindow(10,10, "raylib [core] example - basic window");
+
+    const Vector2 screenDimen = ComputerEnv::getScreenDimen();
+
+    SetWindowSize(screenDimen.x,screenDimen.y);
 
     if constexpr (!Globals::DEBUG)
-        ToggleBorderlessWindowed();
+    {
+        //to make a fullscreen window, we remove decorators (already done before window initialization) and make sure its positioned properly on the monitor.
+        //otherwise, the taskbar may show
+        int current = GetCurrentMonitor();
+        Vector2 pos =  GetMonitorPosition(current);
+
+        SetWindowPosition(pos.x,pos.y);
+    }
+
+    InitAudioDevice();
 
     //SetConfigFlags(FLAG_MSAA_4X_HINT);
     rlDisableBackfaceCulling();
@@ -103,8 +114,8 @@ int main(void)
 
     Portal::PortalShader = LoadShader(0,TextFormat("shaders/fragments/portal.h",GLSL_VERSION));
 
-    Globals::Game.addWorld("worlds/world0");
-    Globals::Game.addWorld("worlds/world1");
+    Globals::Game.addWorld("worlds/world0/world0.txt");
+    Globals::Game.addWorld("worlds/world1/world1.txt");
 
     Globals::Game.Camera.moveCamera(Vector3{Terrain::MAX_TERRAIN_SIZE*0.5,Terrain::MAX_TERRAIN_SIZE*0.5,Globals::BACKGROUND_Z*0.9});
 

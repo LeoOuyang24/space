@@ -21,32 +21,30 @@ void StateLoader::setState(GameState newState, bool strict)
         else if (state == GameState::MAIN_MENU && newState == GameState::PLAYING)
         {
             Globals::Game.interface.setMenu(NONE);
-            Globals::Game.setLayer(0);
-            SoundLibrary::toggleBGM(true);
-
-            Globals::Game.Camera.setCameraFollow(toVector2(Globals::Game.Camera.getCamera().position));
-            Sequences::add(false,Globals::Game.Camera.lookAt(Globals::Game.terrain.getZOfLayer(0),300))
-                        ->add(Globals::Game.Camera.setCameraFollow(true,100));
+            //Globals::Game.setLayer(0);
+            //SoundLibrary::toggleBGM(true)
 
             state = newState;
+            worldTransition();
 
         }
         else if ( state == GameState::WORLD_MAP && newState == GameState::PLAYING)
         {
-            //unimplemented
             state = newState;
+            worldTransition();
         }
         else if (state == GameState::PLAYING && newState == GameState::WORLD_MAP )
         {
+
             Globals::Game.Camera.setCameraFollow(false);
 
             Sequences::add(false,Globals::Game.Camera.moveCamera(-Globals::BACKGROUND_Z*2,60))
-                ->add([this,newState](int){
-                Globals::Game.interface.setMenu(Menus::WORLD_MAP); 
-                Globals::Game.Camera.setCameraFollow(true);
-                state = newState;
-                return true;
-            });
+                        ->add([this,newState](int){
+                            Globals::Game.interface.setMenu(Menus::WORLD_MAP); 
+                            Globals::Game.Camera.setCameraFollow(true);
+                            state = newState; //only set the state later because we want to render the world zooming out
+                            return true;
+                     });
         }
         else
         {
@@ -65,8 +63,15 @@ GameState StateLoader::getState()
     return state;
 }
 
-Globals Globals::Game;
+void StateLoader::worldTransition()
+{
+    Globals::Game.Camera.moveCamera(Vector3{Terrain::MAX_TERRAIN_SIZE*0.5,Terrain::MAX_TERRAIN_SIZE*0.5,Globals::BACKGROUND_Z*0.9});
+    Globals::Game.Camera.setCameraFollow(toVector2(Globals::Game.Camera.getCamera().position));
+    Sequences::add(false,Globals::Game.Camera.lookAt(Globals::Game.terrain.getZOfLayer(0),300))
+                ->add(Globals::Game.Camera.setCameraFollow(true,100));
+}
 
+Globals Globals::Game;
 
 void Globals::init()
 {
@@ -110,7 +115,10 @@ void Globals::update()
     }
     else
     {
-    //SoundLibrary::update();
+        if (Globals::interface.getMenu() != Menus::MAIN_MENU)
+        {
+            SoundLibrary::update();
+        }
 
     float deltaTime = GetFrameTime();
      if ( IsKeyPressed(KEY_RIGHT_BRACKET) || !Debug::isPaused())
@@ -121,15 +129,9 @@ void Globals::update()
 
             while (accum >= tick/speed )
             {
-                //player.update(*getCurrentTerrain());
-                auto time = GetTime();
                 terrain.update(getCurrentLayer());
-                double afterUpdate = GetTime();
                 Sequences::runPhysics();
-                double afterPhysics = GetTime();
-
-                //std::cout << afterUpdate - time << " " << afterPhysics - afterUpdate << "\n";
-            
+                
                 accum -= tick/speed;
                 frames ++;
             }
@@ -181,6 +183,7 @@ void Globals::render()
     }
     else
     {
+        ClearBackground(WHITE);
         Rectangle rect = {0.1*GetScreenWidth(), 0.8*GetScreenHeight(), 0.7*GetScreenWidth(),0.1*GetScreenHeight()};
         DrawRectangle(rect.x,rect.y,rect.width,rect.height,WHITE);
         DrawRectangle(rect.x,rect.y,rect.width*levelLoader.getProgress(),rect.height,RED);
@@ -244,19 +247,39 @@ Terrain* Globals::getCurrentTerrain()
 void Globals::addWorld(std::string_view path)
 {
     World world;
-    for (const auto & entry : std::filesystem::directory_iterator(path))
-   {
-       std::string extension = entry.path().filename().extension().string();
-       if (extension == ".png")
-       {
-            world.bg_path = entry.path().string();
-            world.bg = LoadTexture(world.bg_path.c_str());
-       }
-       else if (extension == ".txt" && entry.path().filename().string().substr(0,5) == "layer")
-       {
-            world.layers.push_back(entry.path().string());
-       }
-   }
+    std::ifstream file;
+    file.open(path.data());
+        
+    if (file.is_open())
+    {
+        std::string line;
+        int lineNum = 0;
+
+        while(std::getline(file,line))
+        {
+            if (line != "") //skip blank lines
+            {
+                switch (lineNum)
+                {
+                case 0: //first line is world background
+                    {
+                        world.bg_path = line;
+                        world.bg = LoadTexture(world.bg_path.c_str());
+                        break;
+                    }
+                case 1: //2nd line is music path
+                    {
+                        world.bgm = line;
+                        break;
+                    }
+                default:
+                    world.layers.push_back(line);
+                    break;
+                }
+                lineNum ++;
+            }
+        }
+    }
 
     world.signals = getWorldsSet(1);//worlds.size() - 1);
     worlds.push_back(world);
@@ -268,6 +291,8 @@ void Globals::onWorldLoaded()
     if (terrain.getLayerCount() > 0 && Globals::Game.getPlayer())
     {
         setLayer(0);
+        SoundLibrary::loadBGM(worlds[curWorld].bgm);
+        SoundLibrary::resetBGM();
         terrain.setSignalSet(worlds[curWorld].signals);
         getPlayer()->setPos(terrain.getLayerInfo(0).playerPos);
         objects.addObject(player);
@@ -285,7 +310,6 @@ void Globals::setCurWorldThreaded(CurrentWorld cur)
 {
     if (curWorld != cur && cur < worlds.size())
     {
-        terrain.setSignalSet(worlds[cur].signals);
         startLoadWorld(worlds[cur]);
     }
     curWorld = cur;
@@ -325,7 +349,6 @@ void Globals::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
         ptr->orient.setStartingPos(ptr->getPos());
         objects.addObject(ptr);
         terrain.addObject(ptr,layer);
-        
         ptr->onAdd();
     }
 

@@ -42,14 +42,14 @@ void Button::update(const Rectangle& box)
 
 
 MainMenu::MainMenu() : play(
-                            Globals::screenDimen*0.2,
+                            ComputerEnv::getScreenDimen()*0.2,
                             [](){
                                 
                                 Globals::Game.setState(GameState::PLAYING);
 
                             },"START"),
                         quit(
-                             Globals::screenDimen*0.2,
+                             ComputerEnv::getScreenDimen()*0.2,
                              [](){exit(0);},"QUIT")
 {
 
@@ -63,6 +63,8 @@ void MainMenu::process(const Rectangle& rect)
     Rectangle quitRect = {0.5*rect.width,0.8*rect.height,quit.getMinDimens().x,quit.getMinDimens().y};
     quit.process(quitRect);
 }
+
+bool WorldMap::WorldNode::clicked = false;
 
 WorldMap::WorldNode::WorldNode(const Vector2& pos, CurrentWorld current) : center(pos), world(current)
 {
@@ -91,11 +93,21 @@ void WorldMap::WorldNode::render(const Rectangle& rect)
 
 void WorldMap::WorldNode::update(const Rectangle& rect)
 {
-    if (isClicked(rect))
+    if (isClicked(rect) && !clicked)
     {
-        Globals::Game.setCurWorldThreaded(world);
-        Globals::Game.setState(GameState::PLAYING);
-        Globals::Game.interface.setMenu(Menus::NONE);
+        clicked = true;
+        Sequences::add(false,parent->camera.lookAt(Vector2{rect.x,rect.y},60))
+                    ->add(parent->camera.moveCamera({rect.x,rect.y,WorldMap::NODE_Z},60))
+                    .add([world=this->world](int){
+                        Globals::Game.setState(GameState::PLAYING);
+                        Globals::Game.setCurWorldThreaded(world);
+                        Globals::Game.interface.setMenu(Menus::NONE);
+                        WorldMap::WorldNode::clicked = false;
+                        return true;
+
+                    });
+
+
     }
 }
 
@@ -179,7 +191,7 @@ void WorldMap::update(const Rectangle& rect)
         float move = GetMouseWheelMove()*10;
         //camera.position.z += move;
         //camera.target.z += move;
-        //camera.moveCamera(camera.getCamera().position + Vector3(0,0,move));
+        camera.moveCamera(camera.getCamera().position + Vector3(0,0,move));
     }
     Vector2 screenDimen = GetScreenDimen();
     if (GetMousePosition().x >= 0.9*screenDimen.x)
@@ -218,6 +230,7 @@ void WorldMap::process(const Rectangle& rect)
         {
             nodes[i].render({nodes[i].center.x,nodes[i].center.y,400,300});
         }
+        Sequences::runRenders();
     EndMode3D();
 
 }

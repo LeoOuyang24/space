@@ -84,17 +84,6 @@ void GravitySwitch::render()
     Vector2 pos = getPos();
     float z = Globals::Game.terrain.getZOfLayer(orient.layer);
 
-    float layers = Globals::Game.worlds[0].layers.size();
-    /*float ratio = 3*Globals::CAMERA_Z_DISP/(Globals::CAMERA_Z_DISP + (Globals::BACKGROUND_Z - Globals::START_Z)/layers);
-
-    DrawSprite3D(Globals::Game.Sprites.getSprite("left.png"),
-                {1608*3,1643.5*3,
-                    766*ratio,667*ratio},
-                0,WHITE
-
-            );*/
-
-
     DrawArrow3D(toVector3(pos - gravityDir*collider.width/2,z),
                 toVector3(pos + gravityDir*collider.width/2,z),
                 WHITE,3);

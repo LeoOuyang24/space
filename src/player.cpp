@@ -102,19 +102,11 @@ void Player::update(Terrain& terrain)
 {
     if (state != DEAD)
     {
-        //forces.setForce(orient.getFacingVector()*10,Forces::ENEMY);
-
-        //Object::applyForces(terrain);
-
 
         Object::applyForces(terrain);
         handleControls();
         forces.addFriction(AIR_FRICTION,Forces::BOOSTING); //boosting gets slightly more friction
-        if ( !freeFall) //jump force should always be perpendicular to direction we are facing UNLESS we are long jumping
-        {
-           // forces.setForce(orient.getNormal()*-1*Vector2Length(forces.getForce(Forces::JUMP)),Forces::JUMP);
-           //freeFallTime = -1;
-        }
+
         if (onGround)
         {
             forces.setForce({0,0},Forces::GRAVITY);
@@ -137,7 +129,7 @@ void Player::update(Terrain& terrain)
                 Vector2 grav = forces.getForce(Forces::GRAVITY);
                 if (Vector2LengthSqr(grav) != 0)
                 {
-                    orient.rotation = atan2(-terrainAngle.x,terrainAngle.y);
+                    //orient.rotation = atan2(-terrainAngle.x,terrainAngle.y);
                 }
             }
         }

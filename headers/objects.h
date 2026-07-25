@@ -258,6 +258,7 @@ protected:
             if (!wasOnGround) //just landed
             {
                 orient.rotation = collider.getLandingAngle(*this,terrain);
+                
                 freeFall = false;
             }
             else //otherwise adjust angle based on terrain angle

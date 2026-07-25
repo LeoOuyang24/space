@@ -142,7 +142,6 @@ void GravityStream::collideWith(PhysicsBody& other)
 {
     if (other.get_followGravity())
     {
-        Shape shape = other.getShape();
         other.getForces().addForce(gravDir,Forces::ENEMY);
 
     }
@@ -189,6 +188,7 @@ void LargePushBot::update(Terrain& t)
 
 void LargePushBot::onCollide(PhysicsBody& other)
 {
+    /*
     //don't push the player
     if (&other != Globals::Game.getPlayer())
     {
@@ -209,7 +209,7 @@ void LargePushBot::onCollide(PhysicsBody& other)
             Globals::Game.Camera.setCameraFollow(true,120);
             return true;
         });
-    }
+    }*/
 }
 
 

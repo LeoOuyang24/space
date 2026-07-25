@@ -171,30 +171,46 @@ public:
     static void runRenders();
 };
 
-template<auto... Initializers>
+//this class represents a function taht may be called in the middle of the sequence, where its internal variables have to be dynamically set.
+//a common use case is if you are lerping a camera position from point A to B, then B to C. After the A-B transition,  you need to update the camera start position for the 
+//transition from B-C. This function lets you do that by passing in a function that returns the new camera position after A-B before doing the B-C transition
+template<typename... T>
 struct InitFunc
 {
-    std::tuple<std::invoke_result_t<decltype(Initializers)>...> values;
+    //initialized values
+    std::tuple<std::invoke_result_t<T>...> values;
+    //the functions to initialize values
+    std::tuple<T...> initializers;  
     //the actual function we will call
-    //there is totally a way to do this without having to make it a member and instead having it be an auto template parameter
-    //However, the parameter pack nature of Initializers would mean this template parameter would have to be the first template parameter
-    //For readability, I really like having the function at the end since it uses the Initializer's return values
-    std::function<bool(std::invoke_result_t<decltype(Initializers)>...,int)> func;
+    std::function<bool(std::invoke_result_t<T>...,int)> func;
 
-    InitFunc(decltype(func) func_) : func(func_){}
+    InitFunc(decltype(func) func_,T... initializers_) :  initializers(std::make_tuple(initializers_...)), func(func_)
+    {
+        
+    }
 
     bool operator()(int times)
     {
+        //initialize our values the first time this is called.
         if(times == 0)
         {
             init();
         }
+        //assembled all our initialized values and pass to the function
         return std::apply(func,std::tuple_cat(values,std::make_tuple(times))); 
     }
 private:
+    /**
+     * @brief Initializes our values
+     * 
+     */
     void init()
     {
-        values = std::make_tuple(Initializers()...);
+        std::apply([this](T... funcs){
+
+            values = std::make_tuple(funcs()...);
+
+        },initializers);
     }
 };
 
