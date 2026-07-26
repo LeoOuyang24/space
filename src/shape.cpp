@@ -9,9 +9,19 @@ void Orient::setStartingPos(const Vector2& start)
     startingPos = start;
 }
 
-Vector2 Orient::getStartingPos()
+Vector2 Orient::getStartingPos() const 
 {
     return startingPos;
+}
+
+float Orient::getZ() const
+{
+    return z < 0 ? Globals::Game.terrain.getZOfLayer(layer) : z;
+}
+
+void Orient::setZ(float z_)
+{
+    z = z_;
 }
 
 bool CheckCollisionPointShape(const Vector2& pos, const Shape& shape1)

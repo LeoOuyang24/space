@@ -74,7 +74,7 @@ struct Setter
  * @brief Used to provide a specific behavior when setting a field in an object
  * Use as you would "access" but with a function as the 2nd parameter
  * @tparam Obj, this is the object type you are trying to deserialize
- * @tparam Func (Obj& obj,const FieldType& value) => FieldType, given an object and a value, sets the field in the object to the corresponding value when deserializing, possibly doing some other things in the process
+ * @tparam Func (Obj& obj,const FieldType& value) => FieldType, given an object and a value, sets the field in the object to the return value when deserializing, possibly doing some other things in the process
  * @tparam Members, the access path for the field to set, same as "acces"
  * @param thing when actually called, this will be the object that is having its field set. Don't worry about this when creating Factorys
  * @return auto Returns a wrapper object that will basically call the provided function when setting (deserializing) the provided field path

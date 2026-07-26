@@ -25,6 +25,23 @@ struct Factory<Sign>
                                 access<Sign,&Sign::orient,&Orient::pos>>;
 };
 
+struct ArrowSign : public Object<RectCollider,TextureRenderer,ArrowSign>
+{
+    ArrowSign()
+    {
+        collider.width = 64;
+        collider.height = 64;
+
+        renderer.setSprite(Globals::Game.Sprites.getSprite("left-arrow-sign.png"));
+    }
+};
+
+template<>
+struct Factory<ArrowSign>
+{
+    static constexpr char ObjectName[] = "arrow_sign";
+    using Base = FactoryBase<ArrowSign,access<ArrowSign,&ArrowSign::orient,&Orient::pos>>;   
+};
 
 struct Rover : public Object<RectCollider,AnimeRenderer,Rover>
 {

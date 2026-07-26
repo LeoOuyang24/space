@@ -37,17 +37,21 @@ struct StateLoader
      * @return GameState 
      */
     GameState getState();
-
+    /**
+     * @brief Sets up the camera for transitioning to a new world
+     * 
+     */
+    void worldTransition();
 private:
     GameState state = GameState::MAIN_MENU;
-
 };
 
 struct Globals
 {
     static Globals Game;
     static constexpr bool DEBUG = true; //set to true for debug mode
-    static constexpr Vector2 screenDimen = DEBUG ? Vector2{900,900} : Vector2{1920,1080};
+    static constexpr Vector2 DEBUG_SCREEN_DIMEN = Vector2{900,900}; 
+    static constexpr int FPS = 60;
 
     //the bigger the z, the further away from the screen
     static constexpr int MAX_Z = 2500; //furthest away something can be before going out of vision
@@ -64,7 +68,7 @@ struct Globals
     void update();
     void render();
 
-    void setLayer(LayerType layer); //set layer, move the player, and the camera
+    void setLayer(LayerType layer); //set layer and move the player
 
     size_t getCollects();
     void addCollects(int val = 1);
@@ -108,11 +112,25 @@ private:
 
 
     float accum = 0;
-    float tick = 1/60.0f;
+    float tick = 1.0/FPS;
     float speed = 1;
     int frames = 0;
 
     Globals();
+};
+
+//global struct that tracks computer information
+struct ComputerEnv
+{
+    static inline Vector2 getScreenDimen()
+    {   
+         if constexpr (Globals::DEBUG)
+        {
+            return Globals::DEBUG_SCREEN_DIMEN;
+        }
+        int current = GetCurrentMonitor();
+        return {GetMonitorWidth(current),GetMonitorHeight(current)};
+    }
 };
 
 #endif // GAME_H_INCLUDED

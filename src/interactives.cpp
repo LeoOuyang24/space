@@ -84,17 +84,6 @@ void GravitySwitch::render()
     Vector2 pos = getPos();
     float z = Globals::Game.terrain.getZOfLayer(orient.layer);
 
-    float layers = Globals::Game.worlds[0].layers.size();
-    /*float ratio = 3*Globals::CAMERA_Z_DISP/(Globals::CAMERA_Z_DISP + (Globals::BACKGROUND_Z - Globals::START_Z)/layers);
-
-    DrawSprite3D(Globals::Game.Sprites.getSprite("left.png"),
-                {1608*3,1643.5*3,
-                    766*ratio,667*ratio},
-                0,WHITE
-
-            );*/
-
-
     DrawArrow3D(toVector3(pos - gravityDir*collider.width/2,z),
                 toVector3(pos + gravityDir*collider.width/2,z),
                 WHITE,3);
@@ -166,10 +155,10 @@ void LifePod::onCollide(PhysicsBody& other)
         Player* player = static_cast<Player*>(&other);
         if (player->getHolding() && player->getHolding()->getKeyVal() == keyVal)
         {
-            Sequences::add({[shape=getShape()](int){
+            Sequences::add(false,[shape=getShape()](int){
                 suggestButtonPress(shape,"E");
                 return true;
-            }},false);
+            });
             if (IsKeyPressed(KEY_E))
             {
                 interactWith(other);
@@ -177,10 +166,10 @@ void LifePod::onCollide(PhysicsBody& other)
         }
         else
         {
-            Sequences::add({[pos=getPos()](int){
+            Sequences::add(false,[pos=getPos()](int){
                 DrawSprite3D(Globals::Game.Sprites.getSprite("no_battery.png"),{pos.x,pos.y,100,100});
                 return true;
-            }},false);
+            });
         }
     }
 }

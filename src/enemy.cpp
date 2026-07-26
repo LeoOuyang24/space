@@ -142,7 +142,6 @@ void GravityStream::collideWith(PhysicsBody& other)
 {
     if (other.get_followGravity())
     {
-        Shape shape = other.getShape();
         other.getForces().addForce(gravDir,Forces::ENEMY);
 
     }
@@ -189,6 +188,7 @@ void LargePushBot::update(Terrain& t)
 
 void LargePushBot::onCollide(PhysicsBody& other)
 {
+    /*
     //don't push the player
     if (&other != Globals::Game.getPlayer())
     {
@@ -198,23 +198,18 @@ void LargePushBot::onCollide(PhysicsBody& other)
     if (other.getKeyVal() > 0)
     {
         other.setDead(true);
-        Globals::Game.Camera.setCameraFollow(getPos() + Vector2(100,0),120);
-        Sequences::add(true,[](int){
-
-            return Globals::Game.Camera.isDone();
-
-        },
-        [this](int x ){
+        Globals::Game.Camera.setCameraFollow(getPos() + Vector2(100,0),120)
+            .add([this](int x ){
             if (Globals::Game.objects.getObject(this))
             { 
                 setPos(getPos() + Vector2(10*pow(0.9,1 - x/50.0f),0));
             } 
-        return x >= 100;},
-        [](int x){
+        return x >= 100;})
+            .add([](int x){
             Globals::Game.Camera.setCameraFollow(true,120);
             return true;
         });
-    }
+    }*/
 }
 
 
@@ -233,14 +228,15 @@ void GlowStone::onCollide(PhysicsBody& other)
     }
 }
 
+std::shared_ptr<Sequencer> CameraMoveRegion::transition;
+
 void CameraMoveRegion::collideWith(PhysicsBody& other)
 {
     if (&other == Globals::Game.getPlayer())
     {
         if (!wasActivated)
         {
-            Globals::Game.Camera.clear();
-            Globals::Game.Camera.setCameraFollow(toVector3(getPos()) - Vector3(0,0,Globals::CAMERA_Z_DISP) + cameraTarget,100); //okay for this to not be in queue so other camera moves can be queued up, including by leaving the region
+            doTransition(Globals::Game.Camera.setCameraFollow(toVector3(getPos()) + cameraTarget,100));
         }
         activated = true;
     }
@@ -251,9 +247,24 @@ void CameraMoveRegion::update(Terrain& t)
 {
     if (wasActivated && !activated)
     {
-        Globals::Game.Camera.clear();
-        Globals::Game.Camera.setCameraFollow(true,100);
+        doTransition(Globals::Game.Camera.setCameraFollow(true,100));
     }
     wasActivated = activated;
     activated = false;
+}
+
+void CameraMoveRegion::doTransition(Sequencer&& seq)
+{
+    //only way transition could be empty is if we are not currently transitioning
+    if (!transition || transition->empty())
+    {
+        //if not transitioning, re-add it to the global Sequences
+        transition = Sequences::add(false,std::move(seq));
+    }
+    else
+    {
+        //if we are mid-transition, clear it and update it to the new transition
+        transition->clear();
+        transition->add(seq);
+    }
 }

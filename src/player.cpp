@@ -52,7 +52,6 @@ void PlayerRenderer::render(const Shape& shape,const Color& color)
 {
 
     Shape shape2 = shape;
-
     switch (owner.state)
     {
     case Player::State::CHARGING:
@@ -66,7 +65,7 @@ void PlayerRenderer::render(const Shape& shape,const Color& color)
         }
     case Player::State::PORTALLING:
         {
-            DrawSphere(toVector3(shape2.orient.pos),GetDimen(shape2).x/2.0,YELLOW);
+            DrawSphere(shape2.orient.getPos3(),GetDimen(shape2).x/2.0,YELLOW);
             break;
         }
     case Player::State::WALKING:
@@ -103,19 +102,11 @@ void Player::update(Terrain& terrain)
 {
     if (state != DEAD)
     {
-        //forces.setForce(orient.getFacingVector()*10,Forces::ENEMY);
-
-        //Object::applyForces(terrain);
-
 
         Object::applyForces(terrain);
         handleControls();
         forces.addFriction(AIR_FRICTION,Forces::BOOSTING); //boosting gets slightly more friction
-        if ( !freeFall) //jump force should always be perpendicular to direction we are facing UNLESS we are long jumping
-        {
-           // forces.setForce(orient.getNormal()*-1*Vector2Length(forces.getForce(Forces::JUMP)),Forces::JUMP);
-           //freeFallTime = -1;
-        }
+
         if (onGround)
         {
             forces.setForce({0,0},Forces::GRAVITY);
@@ -138,7 +129,7 @@ void Player::update(Terrain& terrain)
                 Vector2 grav = forces.getForce(Forces::GRAVITY);
                 if (Vector2LengthSqr(grav) != 0)
                 {
-                    orient.rotation = atan2(-terrainAngle.x,terrainAngle.y);
+                    //orient.rotation = atan2(-terrainAngle.x,terrainAngle.y);
                 }
             }
         }
@@ -369,7 +360,7 @@ void Player::resetPlayer()
                             return frames > a->info.horizFrames*a->info.vertFrames/a->info.speed;
                        }
                         return frames >= 60;
-                       },[this](int frames){
+                       })->add([this](int frames){
 
                         forces.addFriction(0);
                         std::for_each(resetState.restoreThese.begin(),resetState.restoreThese.end(),[](const RestoreObject& restore){

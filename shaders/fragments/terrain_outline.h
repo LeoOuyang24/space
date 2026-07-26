@@ -25,9 +25,6 @@ void main()
         vec4 sum = vec4(0,0,0,0);
         for (int n = 0; n < 9; ++n) {
             vec4 h_sum = texelFetch(sprite,ivec2(fragTexCoord*size + vec2((n%3-1),(n/3-1))*outline_thickness),0);
-            //vec4 h_sum = texelFetch(sprite,ivec2(fragTexCoord*size + vec2((n%2*2 - 1)*int(n >= 2),(n%2*2 - 1)*int(n<2))*outline_thickness),0);
-
-            //sum += h_sum / 9.0;
             sum = mix(sum,h_sum,int(length(h_sum) > 0));
         } 
 

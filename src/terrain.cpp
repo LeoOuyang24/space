@@ -50,14 +50,29 @@ void ObjectLookup::clear()
 
 bool GlobalTerrain::isValidObject(PhysicsBody* obj, LayerType layer)
 {
-    return obj && obj->orient.layer == layer && !obj->isDead();
+    return obj && obj->getOrient().layer == layer && !obj->isDead();
 }
 
 void GlobalTerrain::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
 {
     if (ptr.get() && layer < layers.size())
     {
-        layers[layer].objects.insert(ptr);
+        //check to make sure we aren't adding a duplicate to a layer
+        //we COULD just use an std::set for this but in production, it is actually quite rare for this to be called outside of loading a level and when the player clicks a GenericSpawner
+        //in which case I think the cache efficiency of std::vector is better since that matters every frame
+        auto it = std::find_if(layers[layer].objects.begin(),layers[layer].objects.end(),[&ptr](const std::weak_ptr<PhysicsBody>& other){return ptr.get() == other.lock().get();});
+        if (it != layers[layer].objects.end())
+        {
+            return;
+        }
+        if (ptr->isPlanet) //it's important that terrain always move first because it affects the physics of all other objects
+        {
+            layers[layer].objects.insert(layers[layer].objects.begin(),ptr);
+        }
+        else
+        {
+            layers[layer].objects.emplace_back(ptr);
+        }
     }
 }
 
@@ -83,13 +98,16 @@ void GlobalTerrain::loadTerrain(LayerType layer, const Image& img)
         return;
     }
     Terrain* terr = getTerrain(layer);
+    terr->cleanUp();
 
     Color* colors = LoadImageColors(img);
 
     Texture2D load = LoadTextureFromImage(img);
-    BeginTextureMode(terr->blocksTexture);
-        DrawTexturePro(load,{0,0,load.width,load.height*-1},{0,terr->blocksTexture.texture.height - load.height,load.width,load.height},{0,0},0,WHITE);
-    EndTextureMode();
+        BeginTextureMode(terr->blocksTexture);
+            BeginShaderMode(Terrain::TerrainOutline);
+                DrawTexturePro(load,{0,0,load.width,load.height*-1},{0,terr->blocksTexture.texture.height - load.height,load.width,load.height},{0,0},0,WHITE);
+            EndShaderMode();
+        EndTextureMode();
     UnloadTexture(load);
 
    for (int i = 0; i < std::min(img.width,Terrain::MAX_WIDTH); i += 1)
@@ -152,26 +170,13 @@ void GlobalTerrain::update(LayerType layer)
     if (layer < layers.size())
     {
         auto& objects = layers[layer].objects;
-        for (auto it = objects.begin(); it != objects.end();)
+        for (size_t i = 0; i < objects.size();)
         {
-            PhysicsBody* obj = it->lock().get();
+            PhysicsBody* obj = objects[i].lock().get();
             if (isValidObject(obj,layer)) //if object is non-null and in this layer and not dead, update it!
             {
-                Vector2 oldPos = obj->getPos();
                 obj->update(*getTerrain(layer));
-                if (obj->isTangible())
-                {
-                    for (auto jt = objects.begin(); jt != it; ++jt)
-                    {
-                        PhysicsBody* obj2 = jt->lock().get();
-                        if (isValidObject(obj2,layer) && obj2->isTangible() && CheckCollision(obj->getShape(),obj2->getShape()))
-                        {
-                            obj->onCollide(*obj2);
-                            obj2->onCollide(*obj);
-                        }
-                    }
-                }
-                ++it;
+                i++;
             }
             else if (obj == Globals::Game.getPlayer() && obj && obj->getDead()) //player gets reset as opposed to removed
             {
@@ -179,8 +184,25 @@ void GlobalTerrain::update(LayerType layer)
             }
             else //otherwise, remove it
             {
-                it = objects.erase(it);
+                objects.erase(objects.begin() + i);
                 Globals::Game.objects.eraseObject(*obj);
+            }
+        }
+        //after doing all updates, do collisions
+        for (auto it = objects.begin(); it != objects.end(); ++it)
+        {
+            PhysicsBody* obj = it->lock().get();
+            if (obj->isTangible())
+            {
+                for (auto jt = objects.begin(); jt != it; ++jt)
+                {
+                    PhysicsBody* obj2 = jt->lock().get();
+                    if (isValidObject(obj2,layer) && obj2->isTangible() && CheckCollision(obj->getShape(),obj2->getShape()))
+                    {
+                        obj->onCollide(*obj2);
+                        obj2->onCollide(*obj);
+                    }
+                }
             }
         }
     }
@@ -198,18 +220,32 @@ void GlobalTerrain::render()
     //render layers from back all the way to front, not including layers past the camera
     for (int i = layers.size() - 1; i >= limit ;i--)
     {
-        layers[i].terrain.render(i - Globals::Game.getCurrentLayer(),getZOfLayer(i));
-
+        float z = Globals::Game.terrain.getZOfLayer(i);
+        if (i == limit)
+        {
+            //if there are any objects that are past the current layer (at this point, just the player when portalling),
+            //render them before objects
+            for (auto it = layers[limit].objects.begin(); it != layers[limit].objects.end(); ++it)
+            {
+                if (PhysicsBody* obj = it->lock().get())
+                if (obj->getOrient().getZ() > z)
+                {
+                    obj->render();
+                }
+            }
+        }
+        layers[i].terrain.render(i,z);
     }
-
-    //only render entities of the current layer
+    //render the rest of the objects
     for (auto it = layers[limit].objects.begin(); it != layers[limit].objects.end(); ++it)
     {
-        if (PhysicsBody* obj = it->lock().get()) [[likely]] //highly likely since update removes bad pointers and it always runs first
+        if (PhysicsBody* obj = it->lock().get()) //highly likely since update removes bad pointers and it always runs first
         {
             obj->render();
         }
     }
+
+
 
 }
 
@@ -378,15 +414,15 @@ void LevelLoader::loadPreLayer(PreLayer& preloaded, std::string layerPath)
                 lineNum ++;
             }
         }
-        loaded.store(loaded.load() + 1);
         levelFile.close();
     }
+    loaded.store(loaded.load() + 1);
 
 }
 
 bool LevelLoader::getIsLoading()
 {
-    return loaded < preloads.size();
+    return loaded < static_cast<int>(preloads.size());
 }
 
 void LevelLoader::clear()

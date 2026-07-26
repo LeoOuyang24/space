@@ -36,6 +36,7 @@ public:
     void init();
     void setMessage(Sign* message);
     void setMenu(Menus menu);
+    Menus getMenu();
     void process();
 };
 

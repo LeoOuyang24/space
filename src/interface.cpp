@@ -38,7 +38,7 @@ void Interface::processSign()
 
     DrawAnime(Globals::Game.Sprites.getSprite("right-click.png"),
               0,{60,2,1},
-              Rectangle(0.8*Globals::screenDimen.x,0.7*Globals::screenDimen.y,100,100));
+              Rectangle(0.8*ComputerEnv::getScreenDimen().x,0.7*ComputerEnv::getScreenDimen().y,100,100));
 }
 
 void Interface::init() 
@@ -46,7 +46,6 @@ void Interface::init()
 
     menus[0].reset(new MainMenu());
     menus[1].reset(new WorldMap());
-
 }
 
 void Interface::setMessage(Sign* message)
@@ -62,6 +61,11 @@ void Interface::setMessage(Sign* message)
 void Interface::setMenu(Menus newMenu)
 {
     currentMenu = newMenu;
+}
+
+Menus Interface::getMenu()
+{
+    return currentMenu;
 }
 
 void Interface::process()

@@ -32,14 +32,12 @@ struct TokenLocked : public PortalCondition
 
 };
 
-
 struct Portal : public Object<CircleCollider,ShapeRenderer<CIRCLE>,Portal>
 {
     std::unique_ptr<PortalCondition> cond;
     Vector2 destPos = {};
     int layerDisp = 0;
     static Shader PortalShader;
-    RenderTexture2D texture;
     Portal();
     Portal(const Vector2& pos, LayerType layer, const Vector2& destPos_, LayerType layerDisp_);
     bool unlocked();

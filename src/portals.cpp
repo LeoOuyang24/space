@@ -1,6 +1,8 @@
 #include "../headers/portal.h"
 #include "../headers/sequencer.h"
 
+#include "rlgl.h"
+
 Shader Portal::PortalShader;
 
 bool TokenLocked::unlocked()
@@ -34,7 +36,6 @@ Portal::Portal() :  Object({Vector2(0,0),0},
                                      std::make_tuple()
                                      )
 {
-    texture = LoadRenderTexture(100,100);
     followGravity = false;
     cond.reset(new TokenLocked(5));
 
@@ -53,56 +54,42 @@ bool Portal::unlocked()
     return !cond.get() || cond->unlocked();
 }
 
- void Portal::interactWith(PhysicsBody& player)
+ void Portal::interactWith(PhysicsBody& obj)
  {
     if (unlocked())
     {
-        static_cast<Player*>(&player)->setState(Player::State::PORTALLING);
-       // RunThis r = RunThis::Func([](int){return true;});
-        //player.orient.pos = {dest.pos.x,dest.pos.y};
-        Sequences::add(true,
-                       [&player,pos=this->orient.pos](int x){
-                        player.setPos(pos);
-                       return x >= 30; //wait 30 frames (~0.5 second)
+        Player* player = static_cast<Player*>(&obj);
+        player->setState(Player::State::PORTALLING);
 
-                       },
-                       [dest=this->destPos,start = player.getPos(),this](int x){
-                        Player* player = static_cast<Player*>(Globals::Game.getPlayer());
-                        player->setPos(start + (dest - start)*.01f*x);
+        player->setState(Player::State::PORTALLING);
 
-                       Globals::Game.Camera.lookAt(Lerp(
-                                                 Globals::Game.terrain.getZOfLayer(player->getOrient().layer),
-                                                 Globals::Game.terrain.getZOfLayer(orient.layer + layerDisp),
-                                                 x/100.0));
-
-                        return Vector2Equals(player->getPos(),dest) || x >= 100; //fail safe, this can only run 100 times
-                       },
-                        [this](int)
-                        {
-                            static_cast<Player*>(Globals::Game.getPlayer())->setState(Player::State::WALKING);
-                            Globals::Game.setLayer(orient.layer + layerDisp);
-                            return true;
-                        }
-                       );
+        Sequences::add(false,[pos = getPos(), player,startPos = player->getPos(),duration=30.0f](int x){
+                    player->setPos(lerp(startPos,pos,sin(std::min(x,(int)duration/2)/duration*M_PI))); //in 15 seconds, move the player to the center
+                    return x >= duration; //wait 30 seconds
+                     })
+            ->add(Globals::Game.Camera.setCameraFollow(Vector3{destPos.x,destPos.y,Globals::Game.terrain.getZOfLayer(orient.layer + layerDisp)},120))
+            .parallel([player](int){player->setPos(Globals::Game.getCamera().target); return true;})
+                .add([player,destPos=this->destPos,destLayer=orient.layer + layerDisp](int){
+                    Globals::Game.Camera.setCameraFollow(true);
+                    Globals::Game.setLayer(destLayer);
+                    player->setState(Player::State::WALKING);
+                    player->setPos(destPos);
+                    player->orient.setZ();
+                    return true;
+                });
     }
  }
 
 
  void Portal::render()
  {
-    DrawCircle3D({orient.pos.x,orient.pos.y,Globals::Game.terrain.getZOfLayer(orient.layer)},collider.radius,{0,0,0},0,RED);
-
     BeginShaderMode(PortalShader);
         float time = GetTime();
         Vector4 tint = unlocked() ? Vector4{1,1,0,0} : Vector4{0.5,0.5,0.5,0};
         SetShaderValue(PortalShader,GetShaderLocation(PortalShader,"time"),&time,SHADER_UNIFORM_FLOAT);
         SetShaderValue(PortalShader,GetShaderLocation(PortalShader,"tint"),&tint,SHADER_UNIFORM_VEC4);
-        DrawBillboard(Globals::Game.getCamera(),texture.texture,{
-                      orient.pos.x,orient.pos.y,
-                      Globals::Game.terrain.getZOfLayer(orient.layer)},
-                      collider.radius*3,WHITE);
-        //DrawBillboard(Globals::Game.camera,texture.texture,{dest.pos.x,dest.pos.y,Globals::Game.terrain.getZOfLayer(dest.layer)},collider.radius*3,WHITE);
 
+        DrawBlankSprite(toVector3(orient.pos),{collider.radius*2,collider.radius*2},0);
 
     EndShaderMode();
 
@@ -111,4 +98,3 @@ bool Portal::unlocked()
             cond->render(getShape());
         }
  }
-

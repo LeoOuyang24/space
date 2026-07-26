@@ -1,6 +1,7 @@
 #include <filesystem>
 
 #include "../headers/sprites.h"
+#include "../headers/portal.h"
 
 bool isAnimeDone(const AnimeInfo& info, size_t frames)
 {

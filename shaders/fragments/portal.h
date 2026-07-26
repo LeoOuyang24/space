@@ -1,10 +1,10 @@
 #version 330
 
-//generates a starry background
+//renders portals
+//probably an easier way to do this lol
 
 // Input vertex attributes (from vertex shader)
 in vec2 fragTexCoord;
-in vec4 fragColor;
 
 // Output fragment color
 out vec4 finalColor;

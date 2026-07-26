@@ -3,6 +3,7 @@
 
 //raylib functions that should exist but don't
 #include <iostream>
+#include "sequencer.h"
 
 #include "raylib.h"
 
@@ -63,6 +64,14 @@ void DrawSprite3D(const Texture2D& sprite, const Rectangle& pos, float rotation 
 void DrawAnime(const Texture2D& sprite, double start, const AnimeInfo& info, const Rectangle& pos, float rotation = 0, Color tint = WHITE );
 void DrawAnime3D(const Texture2D& sprite, double start, const AnimeInfo& info, const Rectangle& pos, float z, float rotation = 0, Color tint = WHITE );
 
+/**
+ * @brief Function that just passes rectangular texture coordinates to the pipeline
+ * Useful for if you want normalized texture coordinates from 0-1 in the shader.
+ * @param pos position (center) to draw at
+ * @param dimen width and height
+ * @param radians angle in degrees (just kidding, in radians)
+ */
+void DrawBlankSprite(const Vector3& pos, const Vector2& dimen, float radians);
 
 //no idea where to put this LUL
 //moves camera to look at "pos"
@@ -92,5 +101,8 @@ void DrawText2D(Font font, const char *text, Vector2 position, float fontSize,
 void DrawTextCodepoint3D(Font font, int codepoint, Vector3 position, float fontSize, bool backface, Color tint);
 //draw text in 3d, and return the left-most point at the very end. This return value can then be used to draw like a texture or something after the text
 Vector3 DrawText3D(Font font, const char *text, Vector3 position, float fontSize, float fontSpacing, float lineSpacing, bool backface, Color tint, TextAlign align = LEFT);
+
+//Returns a sequencer that draws a text fading upwards and away
+std::shared_ptr<Sequencer>& DrawText3DFade(Font font, const char *text, Vector3 position, float fontSize, float fontSpacing, float lineSpacing, bool backface, Color tint, TextAlign align = LEFT);
 
 #endif // RAYLIB_HELPER_H_INCLUDED

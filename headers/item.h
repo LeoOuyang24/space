@@ -133,15 +133,16 @@ struct GenericSpawner : public Object<RectCollider,TextureRenderer,GenericSpawne
     {
         if (!baby.lock().get() && activated)
         {
-            PhysicsBodyType* obj = new PhysicsBodyType();
+            //PhysicsBodyType* obj = new PhysicsBodyType();
+            std::shared_ptr<PhysicsBody> obj = std::shared_ptr<PhysicsBody>(new PhysicsBodyType());
             obj->setPos(this->orient.pos + Vector2(10,0));
-            Globals::Game.addObject(*obj,this->orient.layer);
-            this->baby = std::static_pointer_cast<PhysicsBodyType>(Globals::Game.objects.getObject(obj));
+            Globals::Game.addObject(obj,this->orient.layer);
+            this->baby = std::static_pointer_cast<PhysicsBodyType>(obj);
         }
         Object<RectCollider,TextureRenderer,GenericSpawner<PhysicsBodyType>>::update(terrain);
     }
     void interactWith(PhysicsBody& other)
-    {
+    {   
         activated = true;
         if (PhysicsBodyType* brah = baby.lock().get())
         {
@@ -224,7 +225,9 @@ struct ReceiverFactory
     using Base = FactoryBase<T,
                             access<T,&T::orient,&Orient::pos>,
                             access<T,&T::keyVal>,
-                            access<T,&T::signal>>;
+                            access<T,&T::signal>,
+                            accessSetter<T,[](T& t, float degrees){ return degrees*DEG2RAD;},&T::orient,&Orient::rotation>
+                            >;
 };
 
 using BarrelReceiver = ObjReceiver<Barrel>;

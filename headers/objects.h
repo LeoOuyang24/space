@@ -19,7 +19,6 @@
 
 struct Forces
 {
-
     enum ForceSource : uint8_t
     {
         GRAVITY = 0,
@@ -48,13 +47,15 @@ struct Forces
     }
 };
 
-
 struct PhysicsBody
 {
     Orient orient;
     size_t keyVal = 0; //a value that is sometimes used for object-object interactions
     Vector2 terrainAngle = {};
     Forces forces;
+    //true for objects that are moving terrain
+    bool isPlanet = false;
+
     virtual Shape getShape() const = 0;
     virtual void render() = 0;
     virtual void update(Terrain&) = 0;
@@ -64,6 +65,7 @@ struct PhysicsBody
     void setOrient(const Orient& orient);
     virtual void setLayer(LayerType layer);
     virtual void setPos(const Vector2& pos);
+    void setPos(const Vector3& pos); //sets the z position as well, overriding layer in orient
     Forces& getForces();
     virtual void onCollide(PhysicsBody& other)
     {
@@ -120,6 +122,7 @@ protected:
     bool tangible = true;
     bool freeFall = false; //freefall is true if we have not yet experienced gravity and stays true until we land
     float gravRadius = 130;
+
 };
 
 //renders a suggested button press over an object
@@ -181,11 +184,12 @@ struct Object : public PhysicsBody
             {
                 if (IsKeyPressed(KEY_E))
                 {
+                    //the reason we can't just cast "other" to Player is because Player is incomplete at this point
                     static_cast<Descendant*>(this)->interactWith(other);
                 }
                 else
                 {
-                    Sequences::add({[this](int){suggestButtonPress(getShape(),"E");return true;}},false);
+                    Sequences::add(false,[this](int){suggestButtonPress(getShape(),"E");return true;});
                 }
             }
         }
@@ -254,6 +258,7 @@ protected:
             if (!wasOnGround) //just landed
             {
                 orient.rotation = collider.getLandingAngle(*this,terrain);
+                
                 freeFall = false;
             }
             else //otherwise adjust angle based on terrain angle

@@ -24,6 +24,8 @@ struct Orient
     bool facing = true; //true if facing to the right
     Vector2 startingPos = {};
 
+    float z = -1; //rarely, an object is actually between layers. If this value is >= 0, it overrides "layer" and the object is considered to be at that z coordinate
+
     inline Vector2 getFacingVector() const
     {
         return Vector2Rotate(Vector2(facing*2 - 1,0),rotation);
@@ -37,9 +39,16 @@ struct Orient
         return {pos.x - dimens.x/2, pos.y - dimens.y/2, dimens.x, dimens.y};
     }
 
-    void setStartingPos(const Vector2& start); //ideally this should only be called when an object is first added into the world
-    Vector2 getStartingPos();
+    inline Vector3 getPos3() const
+    {
+        return {pos.x,pos.y,getZ()};
+    }
 
+    void setStartingPos(const Vector2& start); //ideally this should only be called when an object is first added into the world
+    Vector2 getStartingPos() const; 
+
+    float getZ() const;
+    void setZ(float x = -1);
 
 };
 

@@ -59,6 +59,14 @@ void SoundLibrary::loadBGM(std::string_view path)
     }
 }
 
+void SoundLibrary::resetBGM()
+{
+    if (IsMusicValid(bgm))
+    {
+        SeekMusicStream(bgm,0);
+    }
+}
+
 void SoundLibrary::toggleBGM(bool val)
 {
     if (!val)
@@ -79,5 +87,9 @@ void SoundLibrary::toggleBGM()
 
 void SoundLibrary::update()
 {
+    if (IsKeyPressed(KEY_M))
+    {
+        toggleBGM();
+    }
     UpdateMusicStream(bgm);
 }
