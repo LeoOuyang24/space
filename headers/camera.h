@@ -47,7 +47,7 @@ struct GameCamera
      * @brief sets the camera's TARGET to the provided position
      * 
      * @param pos, new target position
-     * @param transition how many frames you want the transition to be (0 for no transition)
+     * @param transition how many seconds you want the transition to be (0 for no transition)
      */
     Sequencer lookAt(std::function<Vector3()> func, int transition);
     Sequencer lookAt(const Vector3& pos, int transition = 0);

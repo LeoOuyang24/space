@@ -38,7 +38,7 @@ void StateLoader::setState(GameState newState, bool strict)
 
             Globals::Game.Camera.setCameraFollow(false);
 
-            Sequences::add(false,Globals::Game.Camera.moveCamera(-Globals::BACKGROUND_Z*2,60))
+            Sequences::add(false,Globals::Game.Camera.moveCamera(-Globals::BACKGROUND_Z*2,Globals::FPS))
                         ->add([this,newState](int){
                             Globals::Game.interface.setMenu(Menus::WORLD_MAP); 
                             Globals::Game.Camera.setCameraFollow(true);

@@ -155,9 +155,8 @@ struct Sequences
 
 public:
 
-    //isPhysics = true means we add to "physicsSequences", else "renderSequences"
     /**
-     * @brief Waits until the provided function returns true
+     * @brief Adds a sequence, returning it so you can string more adds to it
      * 
      * @param runThis function to wait on
      * @param isPhysics true if physics

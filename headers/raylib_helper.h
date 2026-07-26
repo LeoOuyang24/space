@@ -3,6 +3,7 @@
 
 //raylib functions that should exist but don't
 #include <iostream>
+#include "sequencer.h"
 
 #include "raylib.h"
 
@@ -100,5 +101,8 @@ void DrawText2D(Font font, const char *text, Vector2 position, float fontSize,
 void DrawTextCodepoint3D(Font font, int codepoint, Vector3 position, float fontSize, bool backface, Color tint);
 //draw text in 3d, and return the left-most point at the very end. This return value can then be used to draw like a texture or something after the text
 Vector3 DrawText3D(Font font, const char *text, Vector3 position, float fontSize, float fontSpacing, float lineSpacing, bool backface, Color tint, TextAlign align = LEFT);
+
+//Returns a sequencer that draws a text fading upwards and away
+std::shared_ptr<Sequencer>& DrawText3DFade(Font font, const char *text, Vector3 position, float fontSize, float fontSpacing, float lineSpacing, bool backface, Color tint, TextAlign align = LEFT);
 
 #endif // RAYLIB_HELPER_H_INCLUDED

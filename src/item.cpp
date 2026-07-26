@@ -171,6 +171,7 @@ void BigGear::update(Terrain& t)
 void BigGearReceiver::onReceive()
 {
     Globals::Game.addCollects(5);
+    DrawText3DFade(GetFontDefault(),"+5",toVector3(getPos()),100,0,0,false,YELLOW);
     set_activated(false); //this receiver can trigger unlimited times
 }
 

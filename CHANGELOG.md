@@ -38,6 +38,7 @@
   * Instead, we now apply the shader once when the terrain image is loaded
   * Sadly, this does mean debug-generated terrain has no outline
 * Fixed a bug where std::vector::iterators were being invalidated
+* Added a visual for big gear receiver
 
 ## 6/22/2026 Messing Around, Finalizing Levels
 * Added `Disintegrate` a `CircleTerrain` that disappears for a time when stepped on. Currently unused

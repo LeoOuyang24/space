@@ -344,3 +344,18 @@ Vector3 DrawText3D(Font font, const char *text, Vector3 position, float fontSize
     }
     return { startPos.x + textOffsetX, startPos.y  + textOffsetY, position.z };
 }
+
+std::shared_ptr<Sequencer>& DrawText3DFade(Font font, const char *text, Vector3 position, float fontSize, float fontSpacing, float lineSpacing, bool backface, Color tint, TextAlign align)
+{
+    return Sequences::add(false,[font,text,position,fontSize,fontSpacing,lineSpacing,backface,tint,align]
+                            (int x)
+                            {
+                                constexpr float totalTime = 60; //hardcoded amount of seconds the text shows up in
+                                
+                                Vector3 pos = lerp(position,position + Vector3(0,-100,0),sin(x/(totalTime)*M_PI/2));
+
+                                DrawText3D(font,text,pos,fontSize,fontSpacing,lineSpacing,backface,tint,align);
+
+                                return x >= totalTime;
+                            });
+}

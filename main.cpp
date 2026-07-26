@@ -107,7 +107,7 @@ int main(void)
     //SetConfigFlags(FLAG_MSAA_4X_HINT);
     rlDisableBackfaceCulling();
 
-    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
+    SetTargetFPS(Globals::FPS);               // Set our game to run at 60 frames-per-second
 
     ClassDeserializer::init();
     Globals::Game.init();

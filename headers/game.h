@@ -51,6 +51,7 @@ struct Globals
     static Globals Game;
     static constexpr bool DEBUG = true; //set to true for debug mode
     static constexpr Vector2 DEBUG_SCREEN_DIMEN = Vector2{900,900}; 
+    static constexpr int FPS = 60;
 
     //the bigger the z, the further away from the screen
     static constexpr int MAX_Z = 2500; //furthest away something can be before going out of vision
@@ -111,7 +112,7 @@ private:
 
 
     float accum = 0;
-    float tick = 1/60.0f;
+    float tick = 1.0/FPS;
     float speed = 1;
     int frames = 0;
 
