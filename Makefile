@@ -36,13 +36,13 @@ build/%.o: src/%.cpp
 
 #build and deploy a product!
 deploy: $(app)
-	mkdir deploy
+	mkdir -p deploy
+	rm -rf deploy/*
 	mv $(app) ./deploy
 	cp -r sprites ./deploy
 	cp -r music ./deploy
 	cp -r worlds ./deploy
 	cp -r shaders ./deploy
-	cp -r levels ./deploy
 	cp -r sounds ./deploy
 
 
