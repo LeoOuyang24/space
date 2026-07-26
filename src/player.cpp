@@ -216,7 +216,7 @@ void Player::handleControls()
             }
             if (IsKeyPressed(KEY_SPACE) && onGround)
             {
-                Vector2 jump = IsKeyDown(KEY_LEFT_CONTROL) ?
+                Vector2 jump = IsKeyDown(KEY_LEFT_CONTROL) && !holding.lock().get() ?
                                     orient.getNormal()*-5 + orient.getFacingVector()*6 :
                                     orient.getNormal()*-7;
                 forces.setForce(jump,Forces::JUMP);
