@@ -295,14 +295,12 @@ void Globals::onWorldLoaded()
         SoundLibrary::resetBGM();
         terrain.setSignalSet(worlds[curWorld].signals);
         getPlayer()->setPos(terrain.getLayerInfo(0).playerPos);
-        objects.addObject(player);
     }
 }
 
 void Globals::startLoadWorld(const World& world)
 {
     terrain.clear();
-    objects.clear();
     levelLoader.loadWorld(world);
 }
 

@@ -262,6 +262,7 @@ struct BigGearReceiver : public ObjReceiver<BigGear>
 
     BigGearReceiver() : ObjReceiver<BigGear>(){};
     void onReceive();
+    std::string serialize(); //override because we are inheriting from ObjReceiver
 };
 
 template<> struct Factory<BigGearReceiver> : ReceiverFactory<BigGearReceiver,"big_gear_receiver">{};

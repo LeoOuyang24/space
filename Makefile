@@ -3,7 +3,7 @@ objs := $(patsubst src/%.cpp,build/%.o,$(srcs))
 app  := main.exe
 deps := $(patsubst src/%.cpp,build/%.d,$(srcs)) + build/main.d
 
-CXXFLAGS := -std=c++20 -Wall -I ../raylib-5.5_win64_mingw-w64/include -I ../raylib/src/external/glfw/include/GLFW -MMD -MP -Wno-narrowing
+CXXFLAGS := -std=c++23 -Wall -I ../raylib-5.5_win64_mingw-w64/include -I ../raylib/src/external/glfw/include/GLFW -MMD -MP -Wno-narrowing
 LDFLAGS := -static -lraylib -lopengl32 -lwinmm -lgdi32 -lpthread -lraylib -lopengl32 -lwinmm -lgdi32 -lpthread
 LDLIBS := -L ..\raylib-5.5_win64_mingw-w64/lib
 BUILD ?= debug

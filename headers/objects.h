@@ -47,7 +47,7 @@ struct Forces
     }
 };
 
-struct PhysicsBody
+struct PhysicsBody : public std::enable_shared_from_this<PhysicsBody>
 {
     Orient orient;
     size_t keyVal = 0; //a value that is sometimes used for object-object interactions
@@ -205,7 +205,6 @@ struct Object : public PhysicsBody
             }
         }
     }
-
     //calls the corresponding Factory<>::Base::serialize,
     //or return a blank string, if there is no Factory<>::Base::serialize or if we have explicitly said to not serialize
     virtual std::string serialize()
@@ -217,7 +216,7 @@ struct Object : public PhysicsBody
         else
         {
             return EMPTY_SERIAL;
-        }
+        }   
     }
 
     Vector2 getPos() const
