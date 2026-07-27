@@ -1,10 +1,14 @@
 # Changelog
 
-## UNRELEASED
+## TODO
 * TODO: Make right click more intuitive/obvious
 * TODO: Make ESCAPE open a pause menu
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
 * TODO: Make layers have predetermined depths as opposed to hard calculated depths
+
+## UNRELEASED
+* [Issue 26](https://github.com/LeoOuyang24/space/issues/26): Made explicit serialize functions for both LargePushBot and BigGearReceiver
+  * Still don't have an easy workaround for child classes
 
 ## 7/25/2026 GRAAH RELEASE #2!!!
 * Make ALT-TAB works now

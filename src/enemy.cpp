@@ -212,6 +212,10 @@ void LargePushBot::onCollide(PhysicsBody& other)
     }*/
 }
 
+std::string LargePushBot::serialize()
+{
+    return Factory<LargePushBot>::Base::serialize(*this);
+}
 
 void GlowStone::onCollide(PhysicsBody& other)
 {

@@ -266,6 +266,7 @@ struct LargePushBot : public PushBot
     void activate(int pushAmount = 5); //set push to 5
     virtual void update(Terrain& t);
     void onCollide(PhysicsBody& other);
+    std::string serialize();
 private:
     int push = 0; // if greater than 0, move to the right and decrement 1
 };
