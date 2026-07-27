@@ -200,10 +200,9 @@ void LargePushBot::onCollide(PhysicsBody& other)
         other.setDead(true);
         Globals::Game.Camera.setCameraFollow(getPos() + Vector2(100,0),120)
             .add([this](int x ){
-            if (Globals::Game.objects.getObject(this))
-            { 
+            
                 setPos(getPos() + Vector2(10*pow(0.9,1 - x/50.0f),0));
-            } 
+            
         return x >= 100;})
             .add([](int x){
             Globals::Game.Camera.setCameraFollow(true,120);

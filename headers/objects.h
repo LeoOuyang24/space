@@ -47,7 +47,7 @@ struct Forces
     }
 };
 
-struct PhysicsBody
+struct PhysicsBody : public std::enable_shared_from_this<PhysicsBody>
 {
     Orient orient;
     size_t keyVal = 0; //a value that is sometimes used for object-object interactions

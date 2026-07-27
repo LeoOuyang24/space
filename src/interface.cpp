@@ -51,7 +51,7 @@ void Interface::init()
 void Interface::setMessage(Sign* message)
 {
     justSet = message;
-    sign = std::static_pointer_cast<Sign>(Globals::Game.objects.getObject(message));
+    sign = std::static_pointer_cast<Sign>(message->shared_from_this());
     if (!sign.lock().get())
     {
         messageIndex = 0;

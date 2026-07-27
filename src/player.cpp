@@ -338,7 +338,7 @@ void Player::saveResetState()
 
 void Player::addResetObject(PhysicsBody& body)
 {
-    resetState.restoreThese.push_back({Globals::Game.objects.getObject(&body),body.getOrient()});
+    resetState.restoreThese.push_back({body.shared_from_this(),body.getOrient()});
 }
 
 void Player::resetPlayer()
@@ -385,7 +385,7 @@ void Player::resetPlayer()
 
 void Player::setHolding(PhysicsBody& obj)
 {
-    std::shared_ptr<PhysicsBody> ptr = Globals::Game.objects.getObject(&obj);
+    std::shared_ptr<PhysicsBody> ptr = obj.shared_from_this();
     if (ptr.get())
     {
         holding = ptr;
@@ -402,7 +402,7 @@ void Player::setLayer(LayerType layer)
     PhysicsBody::setLayer(layer);
     if (PhysicsBody* holding = getHolding())
     {
-        Globals::Game.addObject(Globals::Game.objects.getObject(holding),layer);
+        Globals::Game.addObject(holding->shared_from_this(),layer);
         holding->setLayer(layer);
     }
 }
