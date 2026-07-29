@@ -5,8 +5,18 @@
 * TODO: Make ESCAPE open a pause menu
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
 * TODO: Make layers have predetermined depths as opposed to hard calculated depths
+* Make terrain not appear darker when camera is further away due to CameraMoveRegion
+* Improve communication where players are supposed to go
+* Add tutorial puzzle explaining creeping
+  * Add creeping to allow better aiming
+* Maybe change the controls to WASD
+* ~~Fix bug where you can continually hop on circular objects.~~
 
-## UNRELEASED
+## Post-Mia Release
+* Possibly? fixed bug where you can continuously hop on circle objects
+* Terrain is now much darker when in the background to differentiate between background and current level objects.
+
+## 7/26/2026 Minor Refactor
 * [Issue 26](https://github.com/LeoOuyang24/space/issues/26): Made explicit serialize functions for both LargePushBot and BigGearReceiver
   * Still don't have an easy workaround for child classes
 * [Issue 24](https://github.com/LeoOuyang24/space/issues/24): Replaced ObjectLookup lookup functionality with std::enable_shared_from_this

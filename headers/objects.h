@@ -53,8 +53,8 @@ struct PhysicsBody : public std::enable_shared_from_this<PhysicsBody>
     size_t keyVal = 0; //a value that is sometimes used for object-object interactions
     Vector2 terrainAngle = {};
     Forces forces;
-    //true for objects that are moving terrain
-    bool isPlanet = false;
+    //non-AIR for objects that are moving terrain
+    BlockType isPlanet = BlockType::AIR;
 
     virtual Shape getShape() const = 0;
     virtual void render() = 0;
@@ -120,8 +120,7 @@ protected:
     bool onGround = false;
     bool wasOnGround = false;
     bool tangible = true;
-    bool freeFall = false; //freefall is true if we have not yet experienced gravity and stays true until we land
-    float gravRadius = 130;
+    float gravRadius = 220;
 
 };
 
@@ -258,7 +257,7 @@ protected:
             {
                 orient.rotation = collider.getLandingAngle(*this,terrain);
                 
-                freeFall = false;
+               // freeFall = false;
             }
             else //otherwise adjust angle based on terrain angle
             {

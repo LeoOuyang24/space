@@ -51,9 +51,13 @@ void Interface::init()
 void Interface::setMessage(Sign* message)
 {
     justSet = message;
-    sign = std::static_pointer_cast<Sign>(message->shared_from_this());
-    if (!sign.lock().get())
+    if (message)
     {
+        sign = std::static_pointer_cast<Sign>(message->shared_from_this());
+    }
+    else
+    {
+        sign.reset();
         messageIndex = 0;
     }
 }

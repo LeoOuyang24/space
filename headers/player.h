@@ -73,7 +73,7 @@ struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
         WALKING = 0,
         CHARGING,
         PORTALLING,
-        DEAD
+        DEAD //currently in dead animation, PhysicsBody::dead is not necessarily true (though it usually would be)
     };
 
     State state = WALKING;
@@ -120,8 +120,7 @@ private:
     float aimAngle = 0; //aim for charging
     float power = 0; //charging power
     int dying = 0; //press and hold to die
-
-
+    bool freeFall = false; //freefall is true if we have not yet experienced gravity and stays true until we land
 };
 
 

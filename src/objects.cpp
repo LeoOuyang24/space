@@ -203,7 +203,7 @@ void PhysicsBody::applyForces(Terrain& terrain)
 
     wasOnGround = onGround;
     set_onGround(isOnGround(terrain));
-    freeFall = freeFall && !onGround;
+    //freeFall = freeFall && !onGround;
 
 }
 
@@ -216,7 +216,7 @@ void PhysicsBody::downGravity(Terrain& t)
 
 void PhysicsBody::planetGravity(Terrain& terrain)
 {
-    int searchRad = freeFall ? 220*2 : 220;
+    int searchRad = gravRadius;
 
     if (!onGround && followGravity)
     {
@@ -269,10 +269,6 @@ void PhysicsBody::planetGravity(Terrain& terrain)
         {
             Vector2 moveVec = forces.getForce(Forces::MOVE);
             terrainAngle += Vector2Normalize(grav);
-            if (!Vector2Equals(moveVec,{}) && !freeFall) //if there moving, subtract that component from gravity (prevents gravity from pulling player against intended motion)
-                {
-                 //   grav -= moveVec*Vector2DotProduct(grav,moveVec)/Vector2DotProduct(moveVec,moveVec)*.89f;
-                }
 
             Vector2 norm = Vector2Normalize(grav);
 
@@ -282,7 +278,7 @@ void PhysicsBody::planetGravity(Terrain& terrain)
         }
         else if (count == 0)
         {
-            freeFall = true;
+           // freeFall = true;
         }
     }
 }
