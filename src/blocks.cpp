@@ -449,7 +449,7 @@ Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFun
 
 void Terrain::addPlanet(PhysicsBody& planet, BlockType type)
 {
-    planets.push_back({Globals::Game.objects.getObject(&planet),type});
+    planets.push_back({planet.shared_from_this(),type});
 }
 
 void Terrain::render(int i, int z)

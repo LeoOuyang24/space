@@ -175,6 +175,11 @@ void BigGearReceiver::onReceive()
     set_activated(false); //this receiver can trigger unlimited times
 }
 
+std::string BigGearReceiver::serialize()
+{
+    return Factory<BigGearReceiver>::Base::serialize(*this);
+}
+
 bool operator==(const Key::KeyVal& left, const Key::KeyVal& right)
 {
     return left.r == right.r &&

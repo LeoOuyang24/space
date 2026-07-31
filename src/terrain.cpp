@@ -10,37 +10,21 @@
 
 void ObjectLookup::addObject(PhysicsBody& body)
 {
-    if (objects.find(&body) == objects.end())
-    {
-        objects[&body].reset(&body);
-    }
+    objects.insert(body.shared_from_this());
 }
 
 void ObjectLookup::addObject(std::shared_ptr<PhysicsBody> ptr)
 {
-    if (ptr.get() && objects.find(ptr.get()) == objects.end())
-    {
-        objects[ptr.get()] = ptr;
-    }
+    objects.insert(ptr);
 }
 
 void ObjectLookup::eraseObject(PhysicsBody& obj)
 {
-    auto it = objects.find(&obj);
+    auto it = objects.find(obj.shared_from_this());
     if (it != objects.end())
     {
         objects.erase(it);
     }
-}
-
-std::shared_ptr<PhysicsBody> ObjectLookup::getObject(PhysicsBody* body)
-{
-    auto it = objects.find(body);
-    if(it == objects.end())
-    {
-        return std::shared_ptr<PhysicsBody>();
-    }
-    return it->second;
 }
 
 void ObjectLookup::clear()
@@ -67,6 +51,7 @@ void GlobalTerrain::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
         }
         if (ptr->isPlanet) //it's important that terrain always move first because it affects the physics of all other objects
         {
+            //WARNING: This will probalby break if it happens while the terrain is updating
             layers[layer].objects.insert(layers[layer].objects.begin(),ptr);
         }
         else
@@ -185,18 +170,21 @@ void GlobalTerrain::update(LayerType layer)
             else //otherwise, remove it
             {
                 objects.erase(objects.begin() + i);
-                Globals::Game.objects.eraseObject(*obj);
+                if (obj)
+                {
+                    Globals::Game.objects.eraseObject(*obj);
+                }
             }
         }
         //after doing all updates, do collisions
-        for (auto it = objects.begin(); it != objects.end(); ++it)
+        for (size_t i = 0; i < objects.size(); ++i)
         {
-            PhysicsBody* obj = it->lock().get();
+            PhysicsBody* obj = objects[i].lock().get();
             if (obj->isTangible())
             {
-                for (auto jt = objects.begin(); jt != it; ++jt)
+                for (size_t j = 0; j < i; ++j)
                 {
-                    PhysicsBody* obj2 = jt->lock().get();
+                    PhysicsBody* obj2 = objects[j].lock().get();
                     if (isValidObject(obj2,layer) && obj2->isTangible() && CheckCollision(obj->getShape(),obj2->getShape()))
                     {
                         obj->onCollide(*obj2);
