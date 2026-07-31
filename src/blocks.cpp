@@ -96,6 +96,10 @@ void Terrain::addBlock(const Vector2& pos, const Block& block, bool draw)
     }
     Vector2 rounded = roundPos(pos);
     terrain.setVal(pointToIndex(rounded),block.type);
+
+    size_t estimated = pointToIndex(pos,Block::BLOCK_DIMEN*estimateFactor,MAX_WIDTH/estimateFactor);
+    terrainEstimate[estimated] = terrainEstimate[estimated] || (block.type != AIR);
+
     if (draw)
     {
         rounded *= PIXEL_RATIO;
@@ -103,22 +107,6 @@ void Terrain::addBlock(const Vector2& pos, const Block& block, bool draw)
         {
             BeginTextureMode(blocksTexture);
         }
-                /*for (int i = 0; i < 9; i ++)
-                {
-                    Vector2 neighbor = {rounded.x + PIXEL_SIZE*(i%3 - 1),rounded.y + PIXEL_SIZE*(i/3 - 1)};
-                    if (neighbor.x >= 0 && neighbor.y >= 0 &&
-                        neighbor.x < blocksTexture.texture.width && neighbor.y < blocksTexture.texture.height &&
-                        !blockExists(neighbor/PIXEL_RATIO))
-                        {
-                            //Vector2 pos = {neighbor.x,blocksTexture.texture.height - neighbor.y -  PIXEL_SIZE};
-
-                                DrawRectangle(pos.x,pos.y,
-                                                pixelSize,pixelSize,
-                                                Color(color.r*.5,color.g*.5,color.b*.5,255));
-
-
-                        }
-                }*/
                 DrawRectangle(rounded.x,blocksTexture.texture.height - rounded.y - PIXEL_SIZE,PIXEL_SIZE,PIXEL_SIZE,color);
         if (!isDrawing)
         {
@@ -414,6 +402,10 @@ Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFun
     bool past = false;
     //loop until we have gone past b or we hit a wall. ignoring planets, since we calculate it later
     int i = 0;
+    while (!checkTerrainEstimate(current))
+    {
+        current = pointBoxEdgeIntersect(current,dir,Block::BLOCK_DIMEN*estimateFactor);
+    }
     while (!checkBlocks(current,false,check) && !past)
     {
         current = pointBoxEdgeIntersect(current,dir,Block::BLOCK_DIMEN);

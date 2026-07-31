@@ -97,11 +97,17 @@ struct Terrain
     //typedef std::vector<Block> TerrainMap;
     //typedef std::vector<bool> TerrainMap;
     TerrainMap terrain{Block::BLOCK_DIMEN,MAX_WIDTH};
+    static constexpr float estimateFactor = 10.0f;
+    std::vector<bool> terrainEstimate = std::vector<bool>(MAX_TERRAIN_SIZE*MAX_TERRAIN_SIZE/estimateFactor/estimateFactor,false);
     RenderTexture blocksTexture;
     RenderTexture gravityTexture;
     Terrain();
     void cleanUp();
 
+    bool checkTerrainEstimate(const Vector2& pos)
+    {
+        return terrainEstimate[pointToIndex(pos,Block::BLOCK_DIMEN*estimateFactor,MAX_WIDTH/estimateFactor)];
+    }
 
     /**
      * @brief Adds a block at a given position with a given type
