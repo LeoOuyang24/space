@@ -6,11 +6,12 @@
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
 * TODO: Make layers have predetermined depths as opposed to hard calculated depths
 
-## UNRELEASED
+## HOTFIX 7/31/2026
 * [Issue 26](https://github.com/LeoOuyang24/space/issues/26): Made explicit serialize functions for both LargePushBot and BigGearReceiver
   * Still don't have an easy workaround for child classes
 * [Issue 24](https://github.com/LeoOuyang24/space/issues/24): Replaced ObjectLookup lookup functionality with std::enable_shared_from_this
   * Still kept ObjectLookup but as a unordered_set just to track global shared_ptrs.
+* Fixed a bug where spawning an object on collide would still invalidate iterators
 
 ## 7/25/2026 GRAAH RELEASE #2!!!
 * Make ALT-TAB works now
