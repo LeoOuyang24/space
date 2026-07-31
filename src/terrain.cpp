@@ -51,6 +51,7 @@ void GlobalTerrain::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
         }
         if (ptr->isPlanet) //it's important that terrain always move first because it affects the physics of all other objects
         {
+            //WARNING: This will probalby break if it happens while the terrain is updating
             layers[layer].objects.insert(layers[layer].objects.begin(),ptr);
         }
         else
@@ -176,14 +177,14 @@ void GlobalTerrain::update(LayerType layer)
             }
         }
         //after doing all updates, do collisions
-        for (auto it = objects.begin(); it != objects.end(); ++it)
+        for (size_t i = 0; i < objects.size(); ++i)
         {
-            PhysicsBody* obj = it->lock().get();
+            PhysicsBody* obj = objects[i].lock().get();
             if (obj->isTangible())
             {
-                for (auto jt = objects.begin(); jt != it; ++jt)
+                for (size_t j = 0; j < i; ++j)
                 {
-                    PhysicsBody* obj2 = jt->lock().get();
+                    PhysicsBody* obj2 = objects[j].lock().get();
                     if (isValidObject(obj2,layer) && obj2->isTangible() && CheckCollision(obj->getShape(),obj2->getShape()))
                     {
                         obj->onCollide(*obj2);
