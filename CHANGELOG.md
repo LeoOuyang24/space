@@ -10,7 +10,6 @@
 * Add tutorial puzzle explaining creeping
   * Add creeping to allow better aiming
 * Maybe change the controls to WASD
-* ~~Fix bug where you can continually hop on circular objects.~~
 
 ## 8/12/2026 Granular Map
 * Added granular terrain estimate that drastically improves perforamnce on terrain ray casting
@@ -19,11 +18,12 @@
 * Possibly? fixed bug where you can continuously hop on circle objects
 * Terrain is now much darker when in the background to differentiate between background and current level objects.
 
-## 7/26/2026 Minor Refactor
+## HOTFIX 7/31/2026
 * [Issue 26](https://github.com/LeoOuyang24/space/issues/26): Made explicit serialize functions for both LargePushBot and BigGearReceiver
   * Still don't have an easy workaround for child classes
 * [Issue 24](https://github.com/LeoOuyang24/space/issues/24): Replaced ObjectLookup lookup functionality with std::enable_shared_from_this
   * Still kept ObjectLookup but as a unordered_set just to track global shared_ptrs.
+* Fixed a bug where spawning an object on collide would still invalidate iterators
 
 ## 7/25/2026 GRAAH RELEASE #2!!!
 * Make ALT-TAB works now

@@ -49,7 +49,7 @@ private:
 struct Globals
 {
     static Globals Game;
-    static constexpr bool DEBUG = true; //set to true for debug mode
+    static constexpr bool DEBUG = false; //set to true for debug mode
     static constexpr Vector2 DEBUG_SCREEN_DIMEN = Vector2{900,900}; 
     static constexpr int FPS = 60;
 
