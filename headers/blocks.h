@@ -24,6 +24,8 @@ enum BlockType
     BLOCK_TYPES
 };
 
+
+
 struct Block
 {
     constexpr static int BLOCK_DIMEN=3;
@@ -36,8 +38,6 @@ struct TerrainMap
 {
     //how many bits correspond to one block
     constexpr static size_t PALETTE_SIZE = std::max(1.0,ceil(std::log2(static_cast<uint8_t>((BLOCK_TYPES)))));
-    const int blockDimen;
-    const int maxWidth;
 
     std::vector<bool> data;
 
@@ -75,11 +75,39 @@ struct TerrainMap
     }
 };
 
+
 //returns a position and the type at that position
 struct PossibleBlock
 {
     BlockType type = AIR;
     Vector2 pos;
+};
+
+
+//a data structure that represents a grid of blcoks, but more granular; Each large block stores the number of small blocks within it.
+//this allows us to slightly speed up raycasting colliding with terrain. If a large block stores 0, that means we can immediately skip to the end of it
+//the only reason we are using u8s instead of bools is because of the remove case: when we remove blocks, we have to reset down to 0. If it turns out
+//that this is irrelevant, we can only just store bools instead
+template<size_t BLOCK_DIMEN, size_t MAX_WIDTH>
+struct GranularMap : public std::vector<uint8_t>
+{
+    GranularMap();
+
+    static size_t pointToIndex(const Vector2& pos);
+
+    auto& operator[](const Vector2& pos);
+    auto operator[](const Vector2& pos) const;
+
+    /**
+     * @brief Returns true if the block at pos, has any possible non-air blocks. Also checks neighbors
+     * 
+     * @param pos 
+     * @return true 
+     * @return false 
+     */
+    bool check(const Vector2& pos) const;
+
+    using std::vector<uint8_t>::operator[];
 };
 
 struct PhysicsBody;
@@ -94,20 +122,16 @@ struct Terrain
 
     static Shader TerrainOutline;
 
-    //typedef std::vector<Block> TerrainMap;
-    //typedef std::vector<bool> TerrainMap;
-    TerrainMap terrain{Block::BLOCK_DIMEN,MAX_WIDTH};
-    static constexpr float estimateFactor = 10.0f;
-    std::vector<bool> terrainEstimate = std::vector<bool>(MAX_TERRAIN_SIZE*MAX_TERRAIN_SIZE/estimateFactor/estimateFactor,false);
+    TerrainMap terrain;
+
+    static constexpr float estimateFactor = 100.0f;
+    
+    GranularMap<static_cast<size_t>(Block::BLOCK_DIMEN*estimateFactor),static_cast<size_t>(MAX_WIDTH/estimateFactor)> terrainEstimate;
     RenderTexture blocksTexture;
     RenderTexture gravityTexture;
     Terrain();
     void cleanUp();
-
-    bool checkTerrainEstimate(const Vector2& pos)
-    {
-        return terrainEstimate[pointToIndex(pos,Block::BLOCK_DIMEN*estimateFactor,MAX_WIDTH/estimateFactor)];
-    }
+    bool checkTerrainEstimate(const Vector2& pos);
 
     /**
      * @brief Adds a block at a given position with a given type
@@ -134,9 +158,6 @@ struct Terrain
     //same as above, except we'll move "a" out of terrain first.
     Vector2 lineTerrainIntersect(const Vector2& a, const Vector2& b, bool isSolid = true);
 
-    size_t pointToIndex(const Vector2& vec,int blockDimen = Block::BLOCK_DIMEN, int maxWidth = MAX_WIDTH);
-    Vector2 indexToPoint(size_t index,int blockDimen = Block::BLOCK_DIMEN, int maxWidth = MAX_WIDTH);
-    Vector2 roundPos(const Vector2& vec, int blockDimen = Block::BLOCK_DIMEN);
     Vector2 nearestPos(const Vector2& vec);
     Rectangle getBlockRect(const Vector2& vec); //returns the rectangle of a block at that position
     Vector2 pointBoxEdgeIntersect(const Vector2& a, const Vector2& dir, int dimens); //returns point of intersection with block that "a" is in if we move in the "dir" direction
@@ -144,43 +165,7 @@ struct Terrain
     //"edge" = true if we only care points along the edge
     //if the function returns true, terminate early
     template<typename T>
-    void forEachPos(T func, const Vector2& pos, int radius, bool edge = false)
-    {
-        int units = radius/Block::BLOCK_DIMEN;
-        Vector2 center = roundPos(pos);
-        for (int x = 0; x <= units; x++ )
-        {
-            int height = sqrt(radius*radius - pow(x*Block::BLOCK_DIMEN,2))/Block::BLOCK_DIMEN;
-            //0 if we are processing all points
-            //otherwise, start at the edge
-            int start =  edge*sqrt(radius*radius - pow(std::min(units,x+1)*Block::BLOCK_DIMEN,2))/Block::BLOCK_DIMEN;
-            for (int y = start; y <= height; y++)
-            {
-                for (int i = 2*(x == 0); i < 4 - (x == 0 && y == 0); i += ((y == 0) + 1))
-                {
-                    //order is botRight quadrant, topRight, botLeft, topLeft
-                    //so for example if x = 1 and y = 1, we do center + (x,y), then center + (x,-y), center + (-x,y), center + (-x,-y);
-
-                    //if x == 0, only do the last two quadrants (botLeft, topLeft, basically only y matters)
-                    //if y == 0, only do the 1st and 3rd quadrants (botRight, botLeft, basically only x matters)
-                    //and if x and y == 0, only do one quadrant, (botLeft, arbitrary though), since that is the center
-                    Vector2 point = center + Vector2(x*(1 - i/2*2), y*(1 - i%2*2)) * Block::BLOCK_DIMEN;
-                    if constexpr (std::is_same<decltype(func(std::declval<const Vector2&>())),bool>::value)
-                    {
-                    // std::cout << "DONE\n";
-                        if (func(point))
-                        {
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        func(point);
-                    }
-                }
-            }
-        }
-    }
+    void forEachPos(T func, const Vector2& pos, int radius, bool edge = false);
 
     /**
      * @brief Given a position, returns whether that position is not AIR
@@ -268,6 +253,60 @@ private:
 
 };
 
+size_t pointToIndex(const Vector2& vec,int blockDimen = Block::BLOCK_DIMEN, int maxWidth = Terrain::MAX_WIDTH);
+Vector2 indexToPoint(size_t index,int blockDimen = Block::BLOCK_DIMEN, int maxWidth = Terrain::MAX_WIDTH);
+Vector2 roundPos(const Vector2& vec, int blockDimen = Block::BLOCK_DIMEN);
 
+template<typename T>
+void Terrain::forEachPos(T func, const Vector2& pos, int radius, bool edge)
+{
+    int units = radius/Block::BLOCK_DIMEN;
+    Vector2 center = roundPos(pos);
+    for (int x = 0; x <= units; x++ )
+    {
+        int height = sqrt(radius*radius - pow(x*Block::BLOCK_DIMEN,2))/Block::BLOCK_DIMEN;
+        //0 if we are processing all points
+        //otherwise, start at the edge
+        int start =  edge*sqrt(radius*radius - pow(std::min(units,x+1)*Block::BLOCK_DIMEN,2))/Block::BLOCK_DIMEN;
+        for (int y = start; y <= height; y++)
+        {
+            for (int i = 2*(x == 0); i < 4 - (x == 0 && y == 0); i += ((y == 0) + 1))
+            {
+                //order is botRight quadrant, topRight, botLeft, topLeft
+                //so for example if x = 1 and y = 1, we do center + (x,y), then center + (x,-y), center + (-x,y), center + (-x,-y);
+
+                //if x == 0, only do the last two quadrants (botLeft, topLeft, basically only y matters)
+                //if y == 0, only do the 1st and 3rd quadrants (botRight, botLeft, basically only x matters)
+                //and if x and y == 0, only do one quadrant, (botLeft, arbitrary though), since that is the center
+                Vector2 point = center + Vector2(x*(1 - i/2*2), y*(1 - i%2*2)) * Block::BLOCK_DIMEN;
+                if constexpr (std::is_same<decltype(func(std::declval<const Vector2&>())),bool>::value)
+                {
+                // std::cout << "DONE\n";
+                    if (func(point))
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    func(point);
+                }
+            }
+        }
+    }
+}
+
+
+template<size_t BLOCK_DIMEN, size_t MAX_WIDTH>
+auto& GranularMap<BLOCK_DIMEN,MAX_WIDTH>::operator[](const Vector2& pos)
+{
+    return std::vector<uint8_t>::operator[](pointToIndex(pos));
+}
+
+template<size_t BLOCK_DIMEN, size_t MAX_WIDTH>
+auto GranularMap<BLOCK_DIMEN,MAX_WIDTH>::operator[](const Vector2& pos) const
+{
+    return std::vector<uint8_t>::operator[](pointToIndex(pos));
+}
 
 #endif // BLOCKS_H_INCLUDED

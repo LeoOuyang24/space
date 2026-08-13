@@ -12,6 +12,9 @@
 * Maybe change the controls to WASD
 * ~~Fix bug where you can continually hop on circular objects.~~
 
+## 8/12/2026 Granular Map
+* Added granular terrain estimate that drastically improves perforamnce on terrain ray casting
+
 ## Post-Mia Release
 * Possibly? fixed bug where you can continuously hop on circle objects
 * Terrain is now much darker when in the background to differentiate between background and current level objects.
