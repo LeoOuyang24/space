@@ -231,12 +231,13 @@ void Cheats::handleInput()
             DrawLine3D(Vector3(mousePos.x,mousePos.y,z),Vector3(endpoint.x,endpoint.y,z),PURPLE,5);
 
             Vector2 onTerrain = Globals::Game.getCurrentTerrain()->lineTerrainIntersect(mousePos,endpoint,false);
-            DrawCircle3D(Vector3(onTerrain.x,onTerrain.y,z),3,{0,1,0},0,PURPLE);
+            //DrawCircle3D(Vector3(onTerrain.x,onTerrain.y,z),3,{0,1,0},0,PURPLE);
+            DrawSphere(toVector3(onTerrain),2,RED);
 
             LayerType layer = Globals::Game.getCurrentLayer();
             Globals::Game.terrain.getTerrain(layer)->forEachPos([layer](const Vector2& pos){
                                 Terrain* terr = Globals::Game.terrain.getTerrain(layer);
-                                Vector2 rounded = terr->roundPos(pos);
+                                Vector2 rounded = roundPos(pos);
                                 DrawCube({rounded.x + Block::BLOCK_DIMEN/2.0,rounded.y + Block::BLOCK_DIMEN/2.0,Globals::Game.getCurrentZ()},
                                          Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,0,
                                          terr->blockExists(rounded,false,false) ? RED : BLUE);

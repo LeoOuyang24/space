@@ -108,13 +108,11 @@ struct MovingTerrain : public Object<Collider,TextureRenderer,MovingTerrain<Coll
 {
     MoveFunc calcNewPos;
     Vector2 starting = {3000,3000};
-    BlockType type = SOLID;
     MovingTerrain() 
     {
         this->followGravity = false;
-        this->isPlanet = true;
 
-        this->tint = (type == SOLID) ? GRAY : RED;
+        this->tint = WHITE;
         this->renderer.setSprite(Globals::Game.Sprites.getSprite("laser_beamer_off.png"));
         //tangible = false;
     }
@@ -122,7 +120,6 @@ struct MovingTerrain : public Object<Collider,TextureRenderer,MovingTerrain<Coll
     virtual void onAdd()
     {
         this->setPos(starting);
-        Globals::Game.terrain.getTerrain(this->getOrient().layer)->addPlanet(*this,type);
     }
     virtual void collideWith(PhysicsBody& other)
     {
@@ -158,7 +155,7 @@ struct Factory<CircleTerrain>
     using Base = FactoryBase<CircleTerrain,
                     access<CircleTerrain,&CircleTerrain::starting>,
                     access<CircleTerrain,&CircleTerrain::collider,&CircleCollider::radius>,
-                    access<CircleTerrain,&CircleTerrain::type>,
+                    access<CircleTerrain,&CircleTerrain::isPlanet>,
                     access<CircleTerrain,&CircleTerrain::calcNewPos>>;
 };
 
@@ -200,7 +197,7 @@ struct Factory<Disintegrate>
     using Base = FactoryBase<Disintegrate,
                     access<Disintegrate,&Disintegrate::starting>,
                     access<Disintegrate,&Disintegrate::collider,&CircleCollider::radius>,
-                    access<Disintegrate,&Disintegrate::type>,
+                    access<Disintegrate,&Disintegrate::isPlanet>,
                     access<Disintegrate,&Disintegrate::calcNewPos>>;
 };
 
@@ -338,5 +335,24 @@ struct Factory<CameraMoveRegion>
 
 };
 
+struct GreatWeapon : public Object<CircleCollider,TextureRenderer,GreatWeapon>
+{
+    GreatWeapon()
+    {
+        collider.radius = 700;
+        renderer.setSprite(Globals::Game.Sprites.getSprite("weapon.png"));
+        isPlanet = BlockType::SOLID;
+        followGravity = false;
+    }
+};
+
+template<>
+struct Factory<GreatWeapon>
+{
+    static constexpr char ObjectName[] = "great_weapon";
+
+    using Base = FactoryBase<GreatWeapon,
+                    access<GreatWeapon,&GreatWeapon::orient,&Orient::pos>>;
+};
 
 #endif // ENEMY_H_INCLUDED

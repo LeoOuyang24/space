@@ -85,7 +85,7 @@ void exportBackground()
 int main(void)
 {
 
-    SetConfigFlags( FLAG_VSYNC_HINT | (FLAG_WINDOW_UNDECORATED*!Globals::DEBUG) );
+    SetConfigFlags( FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE | (FLAG_WINDOW_UNDECORATED*!Globals::DEBUG) );
     InitWindow(10,10, "raylib [core] example - basic window");
 
     const Vector2 screenDimen = ComputerEnv::getScreenDimen();

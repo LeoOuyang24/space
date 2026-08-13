@@ -102,9 +102,8 @@ void Player::update(Terrain& terrain)
 {
     if (state != DEAD)
     {
-
-        Object::applyForces(terrain);
         handleControls();
+        Object::applyForces(terrain);
         forces.addFriction(AIR_FRICTION,Forces::BOOSTING); //boosting gets slightly more friction
 
         if (onGround)
@@ -116,7 +115,6 @@ void Player::update(Terrain& terrain)
 
             boosted = false;
             freeFallTime = -1;
-            saveResetState();
         }
         else
         {
@@ -159,6 +157,10 @@ void Player::update(Terrain& terrain)
         if (terrain.isBlockType(orient.pos,LAVA) && state != PORTALLING)
         {
             setDead(true);
+        }
+        else if (onGround)
+        {
+            saveResetState();
         }
 
         if (PhysicsBody* ptr = getHolding())

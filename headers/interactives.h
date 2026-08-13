@@ -32,7 +32,8 @@ struct ArrowSign : public Object<RectCollider,TextureRenderer,ArrowSign>
         collider.width = 64;
         collider.height = 64;
 
-        renderer.setSprite(Globals::Game.Sprites.getSprite("left-arrow-sign.png"));
+        renderer.setSprite(Globals::Game.Sprites.getSprite("arrow-sign.png"));
+        orient.facing = true;
     }
 };
 
@@ -40,7 +41,9 @@ template<>
 struct Factory<ArrowSign>
 {
     static constexpr char ObjectName[] = "arrow_sign";
-    using Base = FactoryBase<ArrowSign,access<ArrowSign,&ArrowSign::orient,&Orient::pos>>;   
+    using Base = FactoryBase<ArrowSign,
+                                access<ArrowSign,&ArrowSign::orient,&Orient::pos>,
+                                access<ArrowSign,&ArrowSign::orient,&Orient::facing>>; //set to true to make sign face right
 };
 
 struct Rover : public Object<RectCollider,AnimeRenderer,Rover>

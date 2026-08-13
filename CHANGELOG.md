@@ -5,6 +5,18 @@
 * TODO: Make ESCAPE open a pause menu
 * TODO: reverse gravity is cool, planets need some kind of particle effect pushing away to very obviously show where the field is strong, its not intuitive like normal gravity
 * TODO: Make layers have predetermined depths as opposed to hard calculated depths
+* Make terrain not appear darker when camera is further away due to CameraMoveRegion
+* Improve communication where players are supposed to go
+* Add tutorial puzzle explaining creeping
+  * Add creeping to allow better aiming
+* Maybe change the controls to WASD
+
+## 8/12/2026 Granular Map
+* Added granular terrain estimate that drastically improves perforamnce on terrain ray casting
+
+## Post-Mia Release
+* Possibly? fixed bug where you can continuously hop on circle objects
+* Terrain is now much darker when in the background to differentiate between background and current level objects.
 
 ## HOTFIX 7/31/2026
 * [Issue 26](https://github.com/LeoOuyang24/space/issues/26): Made explicit serialize functions for both LargePushBot and BigGearReceiver

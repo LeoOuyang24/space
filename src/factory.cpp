@@ -41,6 +41,8 @@ void ClassDeserializer::init()
 
     registerName<BigGear>();
     registerName<BigGearReceiver>();
+
+    registerName<GreatWeapon>();
 }
 
 std::shared_ptr<PhysicsBody> ClassDeserializer::construct(std::string_view cereal)

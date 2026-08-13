@@ -12,15 +12,64 @@
 
 #include "rlgl.h"
 
-Shader Terrain::TerrainOutline;
-//Terrain::CheckFunc Terrain::blockExistsCheck = [](BlockType other){return other != AIR;}; 
-//Terrain::CheckFunc Terrain::isBlockTypeCheck = [](BlockType type){return [type](BlockType other){ return other == type;};}; 
+size_t pointToIndex(const Vector2& vec,int blockDimen, int maxWidth)
+{
+    //std::cout <<static_cast<int>(vec.y)/Block::BLOCK_DIMEN*MAX_WIDTH + static_cast<int>(vec.x)/Block::BLOCK_DIMEN << "\n";
+    return static_cast<int>(vec.y)/blockDimen*maxWidth + static_cast<int>(vec.x)/blockDimen;
+}
 
-Vector2 Terrain::roundPos(const Vector2& vec, int blockDimen)
+Vector2 indexToPoint(size_t index,int blockDimen, int maxWidth)
+{
+    return {index%maxWidth*blockDimen,index/maxWidth*blockDimen};
+}
+
+Vector2 roundPos(const Vector2& vec, int blockDimen)
 {
     return Vector2(floor(vec.x/blockDimen)*blockDimen,
                    (floor(vec.y/blockDimen) )*blockDimen);
 }
+
+template<size_t BLOCK_DIMEN, size_t MAX_WIDTH>
+GranularMap<BLOCK_DIMEN,MAX_WIDTH>::GranularMap() : std::vector<uint8_t>(pow(BLOCK_DIMEN*MAX_WIDTH,2),0)
+{
+
+}
+
+template<size_t BLOCK_DIMEN, size_t MAX_WIDTH>
+size_t GranularMap<BLOCK_DIMEN,MAX_WIDTH>::pointToIndex(const Vector2& pos)
+{
+    return ::pointToIndex(pos,BLOCK_DIMEN,MAX_WIDTH);
+}
+
+
+template<size_t BLOCK_DIMEN, size_t MAX_WIDTH>
+bool GranularMap<BLOCK_DIMEN,MAX_WIDTH>::check(const Vector2& pos) const
+{
+    size_t index = pointToIndex(pos);
+    if (index >= size())
+    {
+        return true;
+    }
+
+    bool answer = (*this)[index];
+    if (!answer)
+    {
+        if (static_cast<int>(pos.x) % BLOCK_DIMEN == 0 && index >= 1)
+        {
+            answer = answer || (*this)[index - 1];
+        }
+        if (static_cast<int>(pos.y) % BLOCK_DIMEN == 0 && index >= MAX_WIDTH)
+        {
+            answer = answer || (*this)[index - MAX_WIDTH];
+        }
+                
+    }
+    return answer;
+}
+
+Shader Terrain::TerrainOutline;
+//Terrain::CheckFunc Terrain::blockExistsCheck = [](BlockType other){return other != AIR;}; 
+//Terrain::CheckFunc Terrain::isBlockTypeCheck = [](BlockType type){return [type](BlockType other){ return other == type;};}; 
 
 Vector2 Terrain::nearestPos(const Vector2& vec)
 {
@@ -33,17 +82,9 @@ Vector2 Terrain::nearestPos(const Vector2& vec)
 
 Terrain::Terrain()
 {
+    terrain.resize(MAX_WIDTH*MAX_WIDTH);
     blocksTexture = LoadRenderTexture(MAX_TERRAIN_SIZE*PIXEL_RATIO,MAX_TERRAIN_SIZE*PIXEL_RATIO);
-    //blocksTexture = LoadRenderTexture(MAX_WIDTH,MAX_WIDTH);
-    //gravityTexture = LoadRenderTexture(MAX_TERRAIN_SIZE,MAX_TERRAIN_SIZE);
-    //terrain.data.reserve(MAX_WIDTH*MAX_WIDTH*TerrainMap::PALETTE_SIZE);
-//    upScaled.resize(upScaled.maxWidth*upScaled.maxWidth);
-    //gravityFields.resize(gravityFields.maxWidth*gravityFields.maxWidth);
-
     cleanUp();
-   /* BeginTextureMode(gravityTexture);
-        ClearBackground(BLANK);
-    EndTextureMode();*/
 } 
 
 void Terrain::cleanUp()
@@ -94,31 +135,22 @@ void Terrain::addBlock(const Vector2& pos, const Block& block, bool draw)
         color = block.color;
         break;
     }
-    Vector2 rounded = roundPos(pos);
-    terrain.setVal(pointToIndex(rounded),block.type);
+    //increment by 1 if this point was air and is now not air, or subtract by 1 if the point wasn't air and is now being removed
+    terrainEstimate[pos] += (terrain[index] == AIR && block.type != AIR) ?  1 : 
+                                (terrain[index] != AIR && block.type == AIR) ? -1 : 
+                                                                                0;
+
+
+    terrain.setVal(index,block.type);
+
     if (draw)
     {
+        Vector2 rounded = roundPos(pos);
         rounded *= PIXEL_RATIO;
         if (!isDrawing) //false if this is was called as part of another function, so don't start/stop drawing to texture because that is controlled by the outer function
         {
             BeginTextureMode(blocksTexture);
         }
-                /*for (int i = 0; i < 9; i ++)
-                {
-                    Vector2 neighbor = {rounded.x + PIXEL_SIZE*(i%3 - 1),rounded.y + PIXEL_SIZE*(i/3 - 1)};
-                    if (neighbor.x >= 0 && neighbor.y >= 0 &&
-                        neighbor.x < blocksTexture.texture.width && neighbor.y < blocksTexture.texture.height &&
-                        !blockExists(neighbor/PIXEL_RATIO))
-                        {
-                            //Vector2 pos = {neighbor.x,blocksTexture.texture.height - neighbor.y -  PIXEL_SIZE};
-
-                                DrawRectangle(pos.x,pos.y,
-                                                pixelSize,pixelSize,
-                                                Color(color.r*.5,color.g*.5,color.b*.5,255));
-
-
-                        }
-                }*/
                 DrawRectangle(rounded.x,blocksTexture.texture.height - rounded.y - PIXEL_SIZE,PIXEL_SIZE,PIXEL_SIZE,color);
         if (!isDrawing)
         {
@@ -157,7 +189,7 @@ Vector2 Terrain::pointBoxEdgeIntersect(const Vector2& a, const Vector2& dir,int 
     }
 
     //std::cout << dir.x << " " << dir.y << "\n";
-    Vector2 rounded = roundPos(a);
+    Vector2 rounded = roundPos(a,dimens);
 
     if (dir.y == 0) //if line is horizontal, figure out whether we intersect with the left or right edge
     {
@@ -210,16 +242,6 @@ Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, bool isS
     {
         return lineBlockIntersect(a,b,static_cast<CheckFunc>(blockExistsCheck));
     }
-}
-size_t Terrain::pointToIndex(const Vector2& vec,int blockDimen, int maxWidth)
-{
-    //std::cout <<static_cast<int>(vec.y)/Block::BLOCK_DIMEN*MAX_WIDTH + static_cast<int>(vec.x)/Block::BLOCK_DIMEN << "\n";
-    return static_cast<int>(vec.y)/blockDimen*maxWidth + static_cast<int>(vec.x)/blockDimen;
-}
-
-Vector2 Terrain::indexToPoint(size_t index,int blockDimen, int maxWidth)
-{
-    return {index%maxWidth*blockDimen,index/maxWidth*blockDimen};
 }
 
 void Terrain::generatePlanet(const Vector2& center, int radius, const Color& color )
@@ -414,6 +436,26 @@ Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFun
     bool past = false;
     //loop until we have gone past b or we hit a wall. ignoring planets, since we calculate it later
     int i = 0;
+    while (!terrainEstimate.check(current) && !past)
+    {
+        current = pointBoxEdgeIntersect(current,dir,Block::BLOCK_DIMEN*estimateFactor);
+        past = abs(current.y - a.y) > abs(b.y - a.y) || abs(current.x - a.x) > abs(b.x - a.x);
+        if (Debug::isDebugOn())
+        {
+            Debug::addDeferRender([current,this](){
+
+                DrawCircle3D(toVector3(current),2,{},0,WHITE);
+                Vector2 topLeft = indexToPoint(pointToIndex(current,Block::BLOCK_DIMEN*estimateFactor,MAX_WIDTH/estimateFactor),Block::BLOCK_DIMEN*estimateFactor,MAX_WIDTH/estimateFactor);
+                DrawCubeWires(toVector3(topLeft + Vector2(Block::BLOCK_DIMEN*estimateFactor/2,Block::BLOCK_DIMEN*estimateFactor/2)),
+                                Block::BLOCK_DIMEN*estimateFactor,
+                                Block::BLOCK_DIMEN*estimateFactor,
+                                0,
+                                RED);
+
+            });
+        }
+        
+    }
     while (!checkBlocks(current,false,check) && !past)
     {
         current = pointBoxEdgeIntersect(current,dir,Block::BLOCK_DIMEN);
@@ -456,26 +498,22 @@ void Terrain::render(int i, int z)
 {
     //how much to change shading by based on camera position
     //anything closer than CAMERA_Z_DISP is rendered with normal shading
-    float factor = pow(0.5,std::max(0.0f,(z - Globals::Game.Camera.getCamera().target.z)/Globals::CAMERA_Z_DISP)); 
+    float factor = pow(0.25,std::max(0.0f,(z - Globals::Game.Camera.getCamera().target.z)/Globals::CAMERA_Z_DISP)); 
 
    Vector3 white = Vector3(255,255,255)*factor;
 
    Color balls = {white.x,white.y,white.z,255}; //can't do math with raylib colors breaking_bad_crawl_space.gif
 
-    //SetShaderValue(TerrainOutline,GetShaderLocation(TerrainOutline,"shade"),&shade,SHADER_UNIFORM_FLOAT);
-
-   //BeginShaderMode(TerrainOutline);
+    /*for (auto& planet : planets)
+    {
+        planet.ptr.lock()->render();
+    }*/
 
    float ratio =  Block::BLOCK_DIMEN/PIXEL_SIZE;
    DrawBillboardPro(Globals::Game.Camera.getCamera(),blocksTexture.texture,Rectangle(0,0,blocksTexture.texture.width,blocksTexture.texture.height)
                     ,Vector3(blocksTexture.texture.width*ratio/2,blocksTexture.texture.height*ratio/2,z),Vector3(0,-1,0),
                     Vector2(blocksTexture.texture.width*ratio,blocksTexture.texture.height*ratio),Vector2(blocksTexture.texture.width/2,blocksTexture.texture.height/2)*ratio,
                     0,balls);
-    //EndShaderMode();
-   //BeginShaderMode(GravityFieldShader);
-    //DrawSprite3D(gravityTexture.texture,Rectangle(MAX_TERRAIN_SIZE/2,MAX_TERRAIN_SIZE/2,MAX_TERRAIN_SIZE,MAX_TERRAIN_SIZE));
-    //EndShaderMode();
-
 }
 
 void Terrain::drawBlocks()

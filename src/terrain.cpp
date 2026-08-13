@@ -49,10 +49,11 @@ void GlobalTerrain::addObject(std::shared_ptr<PhysicsBody> ptr, LayerType layer)
         {
             return;
         }
-        if (ptr->isPlanet) //it's important that terrain always move first because it affects the physics of all other objects
+        if (ptr->isPlanet != BlockType::AIR) //it's important that terrain always move first because it affects the physics of all other objects
         {
             //WARNING: This will probalby break if it happens while the terrain is updating
             layers[layer].objects.insert(layers[layer].objects.begin(),ptr);
+            layers[layer].terrain.addPlanet(*ptr,ptr->isPlanet);
         }
         else
         {
