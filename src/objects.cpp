@@ -115,20 +115,23 @@ Vector2 Forces::getTotalForce()
 
 void PhysicsBody::applyForces(Terrain& terrain)
 {
+    Vector2 grav = {};
     switch (Globals::Game.terrain.get_gravityMode())
     {
     case GlobalTerrain::GravityMode::PLANET:
-        planetGravity(terrain);
+        grav = planetGravity(terrain);
         break;
     case GlobalTerrain::GravityMode::DOWN:
-        downGravity(terrain);
+        grav = downGravity(terrain);
         break;
     case GlobalTerrain::GravityMode::POINT:
-        pointGravity(terrain);
+        grav = pointGravity(terrain);
         break;
     default:
         break;
     }
+
+    forces.addForce(grav,Forces::GRAVITY);
 
     if (orient.pos.x >= Terrain::MAX_TERRAIN_SIZE || orient.pos.x <= 0)
     {
@@ -143,78 +146,25 @@ void PhysicsBody::applyForces(Terrain& terrain)
     Vector2 total = forces.getTotalForce();
     setPos(getPos() + total);
 
-    /*if (Globals::Game.terrain.get_gravityMode() == GlobalTerrain::DOWN)
-    {
-        Vector2 dimen = GetDimen(getShape());
-        Vector2 left = orient.pos + Vector2(-dimen.x/2 - 1,2);
-        Vector2 right = orient.pos + Vector2(dimen.x/2 + 1,2);
-        Vector2 up = orient.pos + Vector2(0,-dimen.y/2 - Block::BLOCK_DIMEN);
-
-        Color lColor = WHITE;
-        Color rColor = WHITE;
-
-        Vector2 lpos = terrain.lineBlockIntersect(orient.pos,left);
-        Vector2 rpos = terrain.lineBlockIntersect(orient.pos,right);
-        Vector2 upos = terrain.lineBlockIntersect(orient.pos,up);
-
-        if (!Vector2Equals(left,lpos))
-        {
-            orient.pos.x = lpos.x + dimen.x/2 + Block::BLOCK_DIMEN;
-            lColor = BLUE;
-        }
-        if (!Vector2Equals(right,rpos))
-        {
-            orient.pos.x = rpos.x - dimen.x/2 - Block::BLOCK_DIMEN;
-            rColor = BLUE;
-        }
-        if (!Vector2Equals(up,upos))
-        {
-            orient.pos.y = upos.y + dimen.y/2 + Block::BLOCK_DIMEN;
-        }
-        Debug::addDeferRender([left,right,lColor,rColor,lpos,rpos](){
-
-            DrawCircle3D(toVector3(left),2,{},0,PURPLE);
-            DrawCircle3D(toVector3(right),2,{},0,PURPLE);
-
-            DrawSphere(toVector3(lpos),2,lColor);
-            DrawSphere(toVector3(rpos),2,rColor);
-
-        });
-    }*/
-
-    /*Vector2 horiz = {forces.getTotalForce().x,0};
-    Vector2 vert = {0,forces.getTotalForce().y};
-
-    Shape horizShape = getShape();
-    horizShape.orient.pos += horiz;
-    Shape vertShape = getShape();
-    vertShape.orient.pos += vert;
-
-    if (terrain.blockExists(getPos() + horiz  + Vector2(GetDimen(getShape()).x*(horiz.x < 0 ? -1 : 1),0)))
-    {
-        horiz = {};
-    }
-    if (terrain.blockExists(vertShape))
-    {
-     //   vert = {};
-    }*/
+    set_wasOnGround(onGround);
+    set_onGround(isOnGround(terrain));
 
     forces.addFriction(onGround ? 0.5 : .99);
 
-    wasOnGround = onGround;
-    set_onGround(isOnGround(terrain));
-    //freeFall = freeFall && !onGround;
+    //last time we were contacted by gravity, rn if we have gravity or if on ground
+    if (!(Vector2Equals(grav,{})) || (get_onGround()) )
+    {
+        lastGravityContact = Globals::getCurrentFrame();
+    }
 
 }
 
-void PhysicsBody::downGravity(Terrain& t)
+Vector2 PhysicsBody::downGravity(Terrain& t)
 {
-    //float mult = (onGround && abs(orient.rotation) < M_PI/4) ? abs(sin(orient.rotation)) : 1;
-    forces.addForce(Vector2(0,GlobalTerrain::GRAVITY_CONSTANT),Forces::GRAVITY);
-   //forces.setForce(Vector2(0,mult*5),Forces::GRAVITY);
+    return Vector2(0,GlobalTerrain::GRAVITY_CONSTANT);
 }
 
-void PhysicsBody::planetGravity(Terrain& terrain)
+Vector2 PhysicsBody::planetGravity(Terrain& terrain)
 {
     int searchRad = gravRadius;
 
@@ -273,22 +223,18 @@ void PhysicsBody::planetGravity(Terrain& terrain)
             Vector2 norm = Vector2Normalize(grav);
 
             //std::cout << Vector2Length(grav) << "\n";
-            forces.addForce(norm*GlobalTerrain::GRAVITY_CONSTANT,Forces::GRAVITY);
+            //forces.addForce(norm*GlobalTerrain::GRAVITY_CONSTANT,Forces::GRAVITY);
+            return norm*GlobalTerrain::GRAVITY_CONSTANT;
             //forces.addForce(grav*20,Forces::GRAVITY);
         }
-        else if (count == 0)
-        {
-           // freeFall = true;
-        }
     }
+    return {};
 }
 
-void PhysicsBody::pointGravity(Terrain&)
+Vector2 PhysicsBody::pointGravity(Terrain&)
 {
-    forces.addForce(
-                    Vector2Normalize(Vector2(Terrain::MAX_TERRAIN_SIZE,
-                                             Terrain::MAX_TERRAIN_SIZE)*0.5f - getPos())*GlobalTerrain::GRAVITY_CONSTANT,
-                    Forces::GRAVITY);
+    return Vector2Normalize(Vector2(Terrain::MAX_TERRAIN_SIZE,
+                                             Terrain::MAX_TERRAIN_SIZE)*0.5f - getPos())*GlobalTerrain::GRAVITY_CONSTANT;
 }
 
 void PhysicsBody::adjustAngle(Terrain& terrain)

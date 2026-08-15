@@ -96,6 +96,7 @@ bool Player::isTangible()
 Player::Player(const Vector2& pos_) : Object({pos_},std::make_tuple(std::ref(*this),PLAYER_DIMEN,PLAYER_DIMEN),std::make_tuple(std::ref(*this)))
 {
     renderer.setSprite(Globals::Game.Sprites.getSprite("guy.png"));
+    gravRadius = 1.5*BASE_GRAVITY_RADIUS;
 }
 
 void Player::update(Terrain& terrain)
@@ -104,7 +105,7 @@ void Player::update(Terrain& terrain)
     {
         handleControls();
         Object::applyForces(terrain);
-        forces.addFriction(AIR_FRICTION,Forces::BOOSTING); //boosting gets slightly more friction
+        forces.addFriction(AIR_FRICTION,Forces::BOOSTING); //reapply boosting friction because boosting gets slightly more friction
 
         if (onGround)
         {
@@ -114,28 +115,7 @@ void Player::update(Terrain& terrain)
             Object::stayOnGround(terrain);
 
             boosted = false;
-            freeFallTime = -1;
         }
-        else
-        {
-            if (wasOnGround)
-            {
-                freeFallTime = GetTime();
-            }
-            if (!freeFall)
-            {
-                Vector2 grav = forces.getForce(Forces::GRAVITY);
-                if (Vector2LengthSqr(grav) != 0)
-                {
-                    //orient.rotation = atan2(-terrainAngle.x,terrainAngle.y);
-                }
-            }
-        }
-        if (onGround || freeFall)
-        {
-            terrainAngle = {};
-        }
-            
 
         if (Globals::DEBUG)
         {
@@ -144,13 +124,13 @@ void Player::update(Terrain& terrain)
                 //Object::stayOnGround(terrain);
                 tint = WHITE;
             }
-            else if (!freeFall)
+            else if (getFreeFallDuration() > 0)
             {
-                tint = RED;
+                tint = BLUE;
             }
             else
             {
-                tint = BLUE;
+                tint = RED;
             }
         }
 
@@ -189,29 +169,26 @@ void Player::handleControls()
         {
             if (leftRight)
             {
-                float accel = (onGround ? PLAYER_GROUND_ACCEL : downGrav ? PLAYER_AIR_ACCEL : std::min(PLAYER_AIR_ACCEL,0.2f*abs(Vector2Length(forces.getForce(Forces::GRAVITY)))));
                 float maxSpeed = !onGround ?
                                     Globals::Game.terrain.get_gravityMode() == GlobalTerrain::DOWN ?
                                         3 :
-                                        freeFall ?
-                                            PLAYER_MAX_AIR_FREEFALL_SPEED :
-                                            PLAYER_MAX_AIR_SPEED :
+                                        PLAYER_MAX_AIR_SPEED :
                                     PLAYER_MAX_SPEED;
                 if (onGround) //update facing, but only on ground
                 {
                     //on ground, we can turn on a dime
                     orient.facing = IsKeyDown(KEY_D);
-                    speed = (abs(speed) + accel);
+                    speed = (abs(speed) + PLAYER_GROUND_ACCEL);
                 }
                 else if (downGrav)
                 {
                     orient.facing = IsKeyDown(KEY_D);
                     speed += PLAYER_GROUND_ACCEL*0.5;
                 }
-                else
+                else //but in the air, we have to reverse our momentum incrementally
                 {
-                    float ratio = std::max(0.1,1 - getFreeFallDuration()/3.0);
-                    speed += accel*(2*((orient.facing && IsKeyDown(KEY_D)) || (!orient.facing && IsKeyDown(KEY_A))) - 1)*ratio;
+                    float ratio = std::max(0.0f,1 - static_cast<float>(getFreeFallDuration())/PLAYER_AIR_ACCEL_TIME);
+                    speed += PLAYER_AIR_ACCEL*(2*((orient.facing && IsKeyDown(KEY_D)) || (!orient.facing && IsKeyDown(KEY_A))) - 1)*ratio;
                 }
                 speed = Clamp(speed,-maxSpeed,maxSpeed);//prevent speed from exceeding maximum
 
@@ -220,10 +197,11 @@ void Player::handleControls()
             {
                 Vector2 jump = IsKeyDown(KEY_LEFT_CONTROL) && !holding.lock().get() ?
                                     orient.getNormal()*-5 + orient.getFacingVector()*6 :
-                                    orient.getNormal()*-7;
+                                    orient.getNormal()*-8;
                 forces.setForce(jump,Forces::JUMP);
-                freeFall = IsKeyDown(KEY_LEFT_CONTROL);
-                set_onGround(false);
+
+                //set_wasOnGround(true);
+                //set_onGround(false);
             }
             if (PhysicsBody* body = holding.lock().get())
             {
@@ -249,7 +227,6 @@ void Player::handleControls()
             {
                 if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && !onGround && !boosted)
                 {
-                    freeFall = true;
                     forces.addFriction(0);
                     speed = 0;
 
@@ -300,12 +277,10 @@ void Player::handleControls()
     default:
         break;
     }
-    //setState((IsKeyDown(KEY_LEFT_SHIFT) && onGround) ? CHARGING : WALKING);
     if (((!leftRight) || !onGround || state == CHARGING))
     {
         speed = trunc(speed*(onGround ? GROUND_FRICTION : AIR_FRICTION),3); //apply friction, which is different than normal force friction applied to all objects
     }
-    //orient.pos += orient.getFacing()*speed;
 
     forces.setForce(orient.getFacingVector()*speed,Forces::MOVE);  
 

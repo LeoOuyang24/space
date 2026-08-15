@@ -12,7 +12,7 @@ CHECK_FOR(DontSerialize);
 
 //macro that makes my getter functions. life is too short brah
 #define make_getter(field,type) \
-type get_##field() { return field; }
+type get_##field() const { return field; }
 
 //same thing for setters
 #define make_setter(field,type) \

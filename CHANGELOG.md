@@ -11,6 +11,11 @@
   * Add creeping to allow better aiming
 * Maybe change the controls to WASD
 
+
+## UNRELEASED
+* Added a global frame counter (how did this not already exist?)
+* Made in-air decelleration frame time based
+
 ## 8/12/2026 Granular Map
 * Added granular terrain estimate that drastically improves perforamnce on terrain ray casting
 

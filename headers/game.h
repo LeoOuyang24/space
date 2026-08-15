@@ -46,10 +46,12 @@ private:
     GameState state = GameState::MAIN_MENU;
 };
 
+typedef size_t Frames;
+
 struct Globals
 {
     static Globals Game;
-    static constexpr bool DEBUG = false; //set to true for debug mode
+    static constexpr bool DEBUG = true; //set to true for debug mode
     static constexpr Vector2 DEBUG_SCREEN_DIMEN = Vector2{900,900}; 
     static constexpr int FPS = 60;
 
@@ -59,6 +61,8 @@ struct Globals
     static constexpr int BACKGROUND_Z = MAX_Z - SPACE_Z; //z coordinate of background
     static constexpr int START_Z = BACKGROUND_Z - SPACE_Z*50;
     static constexpr int CAMERA_Z_DISP = 500; //how far the camera is at all times from getCurrentZ(). Constant magic number    static constexpr int CAMERA_Z_DISP = 500; //how far the camera is at all times from getCurrentZ(). Constant magic number
+
+    static Frames getCurrentFrame();
 
     size_t collects = 0;
     LayerType currentLayer = 0; //layer player is at
@@ -114,7 +118,7 @@ private:
     float accum = 0;
     float tick = 1.0/FPS;
     float speed = 1;
-    int frames = 0;
+    static Frames frame;
 
     Globals();
 };

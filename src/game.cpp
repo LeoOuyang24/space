@@ -72,6 +72,12 @@ void StateLoader::worldTransition()
 }
 
 Globals Globals::Game;
+Frames Globals::frame = 0;
+
+Frames Globals::getCurrentFrame()
+{
+    return frame;
+}
 
 void Globals::init()
 {
@@ -133,9 +139,8 @@ void Globals::update()
                 Sequences::runPhysics();
                 
                 accum -= tick/speed;
-                frames ++;
+                frame ++;
             }
-            frames = 0;
 
             if (GetMouseWheelMove())
             {

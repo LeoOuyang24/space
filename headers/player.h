@@ -66,6 +66,8 @@ struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
     static constexpr float AIR_FRICTION = 0.98; //number to multiply to speed every frame. Bigger number = less friction. THIS ALSO AFFECTS BOOSTING
     static constexpr float GROUND_FRICTION = 0.85;
 
+    static constexpr Frames PLAYER_AIR_ACCEL_TIME = 3*Globals::FPS; //frames during which player is still allowed to move while in the air, default 3 seconds
+
     static constexpr float PLAYER_MAX_POWER = 100;
 
     enum State
@@ -105,22 +107,15 @@ struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
     make_getter(aimAngle,float);
     make_getter(dying,int);
     make_getter(power,float);
-    make_getter(wasOnGround,bool);
 
-    make_setter(wasOnGround,bool);
 
-    float getFreeFallDuration() //returns the amount of time we've been off the ground
-    {
-        return freeFallTime == -1 ? 0 :GetTime() - freeFallTime;
-    }
 private:
 
     float speed = 0;
-    float freeFallTime = -1; //time at which we got off the ground
+    float freeFallTime = -1; //time at which we were off the ground and were no longer affected by gravity
     float aimAngle = 0; //aim for charging
     float power = 0; //charging power
     int dying = 0; //press and hold to die
-    bool freeFall = false; //freefall is true if we have not yet experienced gravity and stays true until we land
 };
 
 
