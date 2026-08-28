@@ -151,7 +151,8 @@ void Globals::update()
                 //camera.target.z += move;
                 Camera.moveCamera(Camera.getCamera().position + Vector3(0,0,move));
             }
-            Camera.update();
+
+            Camera.update(); //TODO: This scales with computer speed rn
             if constexpr (Globals::DEBUG)
                 Debug::handleInput();
     }
@@ -171,6 +172,8 @@ void Globals::render()
                             Vector2(bg.width,bg.height),WHITE);
 
             terrain.render();
+            
+            Globals::Game.getCurrentTerrain()->terrain.field.debugRender();
 
             Sequences::runRenders();
             if constexpr (DEBUG)

@@ -52,9 +52,16 @@ void DrawArrow3D(Vector3 startPos,Vector3 endPos, Color color, int width)
     {
         DrawLine3D(startPos,endPos,color,width);
 
-        DrawLine3D(endPos + Vector3Normalize(Vector3RotateByAxisAngle(endPos - startPos,Vector3(0,0,1),5*M_PI/6))*100,endPos,color,width);
-        DrawLine3D(endPos + Vector3Normalize(Vector3RotateByAxisAngle(endPos - startPos,Vector3(0,0,1),-5*M_PI/6))*100,endPos,color,width);
+        float arrowHeadLength = std::min(100.0f,Vector3Distance(startPos,endPos)/2); //length of the heads of the arrow
+
+        DrawLine3D(endPos + Vector3Normalize(Vector3RotateByAxisAngle(endPos - startPos,Vector3(0,0,1),5*M_PI/6))*arrowHeadLength,endPos,color,width);
+        DrawLine3D(endPos + Vector3Normalize(Vector3RotateByAxisAngle(endPos - startPos,Vector3(0,0,1),-5*M_PI/6))*arrowHeadLength,endPos,color,width);
     }
+}
+
+void DrawArrow3D(const Vector2& direction, const Vector3& center, Color color, int width)
+{
+    DrawArrow3D({center.x - direction.x/2,center.y - direction.y,center.z},{center.x + direction.x/2,center.y + direction.y,center.z},color,width);
 }
 
 void DrawEllipseGradient(const Vector3& pos, int horizRadius, int vertRadius, const Color& centerColor, const Color& edgeColor)

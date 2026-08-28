@@ -290,6 +290,7 @@ void Debug::clearRenderDefers()
 
 void Debug::handleInput()
 {
+
     if (IsKeyPressed(KEY_BACKSLASH))
     {
        togglePaused();

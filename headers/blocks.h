@@ -12,6 +12,13 @@
 #include <raymath.h>
 #include "resources_math.h"
 #include "debug.h"
+#include "gravity.h"
+
+size_t pointToIndex(const Vector2& vec,int blockDimen, int maxWidth);
+
+Vector2 indexToPoint(size_t index,int blockDimen, int maxWidth);
+
+Vector2 roundPos(const Vector2& vec, int blockDimen);
 
 enum BlockType
 {
@@ -40,6 +47,7 @@ struct TerrainMap
     constexpr static size_t PALETTE_SIZE = std::max(1.0,ceil(std::log2(static_cast<uint8_t>((BLOCK_TYPES)))));
 
     std::vector<bool> data;
+    GravityField field = GravityField(220/GravityField::FIELD_WIDTH);
 
     void setVal(size_t index,BlockType val)
     {
@@ -47,6 +55,8 @@ struct TerrainMap
         {
             data[index*PALETTE_SIZE + i] = (val >> i ) % 2;
         }
+        field.addBlock(indexToPoint(index,Block::BLOCK_DIMEN,3000));
+
     }
     BlockType operator[] (size_t index) //index will be converted to a multiple of PALETTE SIZE. so index 3 = 3*PALETTE_SIZE for the 4th block
     {
