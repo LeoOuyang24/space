@@ -89,7 +89,7 @@ struct PossibleBlock
 //the only reason we are using u8s instead of bools is because of the remove case: when we remove blocks, we have to reset down to 0. If it turns out
 //that this is irrelevant, we can only just store bools instead
 template<size_t BLOCK_DIMEN, size_t MAX_WIDTH>
-struct GranularMap : public std::vector<uint8_t>
+struct GranularMap : public std::vector<uint32_t>
 {
     GranularMap();
 
@@ -107,7 +107,7 @@ struct GranularMap : public std::vector<uint8_t>
      */
     bool check(const Vector2& pos) const;
 
-    using std::vector<uint8_t>::operator[];
+    using std::vector<uint32_t>::operator[];
 };
 
 struct PhysicsBody;
@@ -300,13 +300,13 @@ void Terrain::forEachPos(T func, const Vector2& pos, int radius, bool edge)
 template<size_t BLOCK_DIMEN, size_t MAX_WIDTH>
 auto& GranularMap<BLOCK_DIMEN,MAX_WIDTH>::operator[](const Vector2& pos)
 {
-    return std::vector<uint8_t>::operator[](pointToIndex(pos));
+    return std::vector<uint32_t>::operator[](pointToIndex(pos));
 }
 
 template<size_t BLOCK_DIMEN, size_t MAX_WIDTH>
 auto GranularMap<BLOCK_DIMEN,MAX_WIDTH>::operator[](const Vector2& pos) const
 {
-    return std::vector<uint8_t>::operator[](pointToIndex(pos));
+    return std::vector<uint32_t>::operator[](pointToIndex(pos));
 }
 
 #endif // BLOCKS_H_INCLUDED

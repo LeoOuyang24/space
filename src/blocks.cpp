@@ -30,7 +30,7 @@ Vector2 roundPos(const Vector2& vec, int blockDimen)
 }
 
 template<size_t BLOCK_DIMEN, size_t MAX_WIDTH>
-GranularMap<BLOCK_DIMEN,MAX_WIDTH>::GranularMap() : std::vector<uint8_t>(pow(BLOCK_DIMEN*MAX_WIDTH,2),0)
+GranularMap<BLOCK_DIMEN,MAX_WIDTH>::GranularMap() : std::vector<uint32_t>(pow(BLOCK_DIMEN*MAX_WIDTH,2),0)
 {
 
 }
