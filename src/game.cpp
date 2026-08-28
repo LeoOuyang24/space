@@ -286,6 +286,10 @@ void Globals::addWorld(std::string_view path)
         }
     }
 
+    if (world.layers.size() == 0)
+    {
+        world.layers.push_back("");
+    }
     world.signals = getWorldsSet(1);//worlds.size() - 1);
     worlds.push_back(world);
 

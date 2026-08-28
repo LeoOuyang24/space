@@ -114,6 +114,8 @@ int main(void)
 
     Portal::PortalShader = LoadShader(0,TextFormat("shaders/fragments/portal.h",GLSL_VERSION));
 
+    //put some junk string in here to load a blank world
+    Globals::Game.addWorld("worlds/test_world.txt");
     Globals::Game.addWorld("worlds/world0/world0.txt");
     Globals::Game.addWorld("worlds/world1/world1.txt");
 
@@ -129,7 +131,7 @@ int main(void)
     SoundLibrary::loadBGM("music/world1.wav");
     SoundLibrary::toggleBGM(false);
 
-    Globals::Game.setCurWorldThreaded(1);
+    Globals::Game.setCurWorldThreaded(0);
 
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
