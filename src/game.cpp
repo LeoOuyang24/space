@@ -173,8 +173,6 @@ void Globals::render()
 
             terrain.render();
             
-            Globals::Game.getCurrentTerrain()->terrain.field.debugRender();
-
             Sequences::runRenders();
             if constexpr (DEBUG)
                 Debug::renderDefers();

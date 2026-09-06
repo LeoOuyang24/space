@@ -176,54 +176,30 @@ Vector2 PhysicsBody::planetGravity(Terrain& terrain)
         Vector2 grav = {0,0};
         int count = 0;
        // Vector2 down = {};
-        for (int i = 0; i < upTo; i ++)
+       
+       Shape shape = getShape();
+       for (int i = 0; i < getShapePoints(shape.type); i ++)
+       {
+            Vector2 point = getIthShapePoint(shape,i);
+
+            grav += Vector2Normalize(terrain.field.getFieldAtPos(point));
+       }
+
+        //if (count > 0)
         {
-            float angle =  2*M_PI/divide*i + (M_PI/2)-M_PI/(divide)*(landingDivide-1) + orient.rotation;
-            Vector2 endpoint = orient.pos + Vector2(cos(angle),sin(angle))*searchRad;
-            Vector2 pos = terrain.lineBlockIntersect(orient.pos, endpoint,false);
-                   Debug::addDeferRender([pos,&terrain,landingDivide,i](){
-
-                                  DrawCircle3D(Vector3(pos.x,pos.y,Globals::Game.getCurrentZ()),10,{0,1,0},0,i < landingDivide ? BLUE : RED);
-
-                                  });
-            if (!Vector2Equals(pos,endpoint) && !Vector2Equals(pos,orient.pos))
-            {
-
-                Vector2 force = Vector2Normalize(pos - orient.pos)/pow(Vector2Length(pos - orient.pos),2);
-                if (terrain.isBlockType(pos,ANTI,true))
-                {
-                    force *= -0.5;
-                }
-                else if (terrain.isBlockType(pos,LAVA,true))
-                {
-                    force *= 0.1;
-                }
-                else if (terrain.isBlockType(pos,WATER,true))
-                {
-                    force *= 0.1;
-                }
-                else if (terrain.isBlockType(pos,HOLE,true))
-                {
-                    force *= 1.2;
-                }
-                if (i < landingDivide)
-                {
-                   // force *= 1.1;
-                }
-                grav +=  force;
-
-                count ++;
-            }
-        }
-        if (count > 0)
-        {
-            Vector2 moveVec = forces.getForce(Forces::MOVE);
             terrainAngle += Vector2Normalize(grav);
 
-            Vector2 norm = Vector2Normalize(grav);
+            Vector2 norm = Vector2LengthSqr(grav) > GlobalTerrain::GRAVITY_CONSTANT*GlobalTerrain::GRAVITY_CONSTANT ? 
+                                Vector2Normalize(grav): 
+                                grav;
 
-            //std::cout << Vector2Length(grav) << "\n";
-            //forces.addForce(norm*GlobalTerrain::GRAVITY_CONSTANT,Forces::GRAVITY);
+
+            Vector2 moveVec = forces.getForce(Forces::MOVE);
+            if (!Vector2Equals(moveVec,{}))
+            {
+                //norm -= moveVec*.01f*Vector2DotProduct(norm,moveVec)/Vector2DotProduct(moveVec,moveVec);
+            }
+
             return norm*GlobalTerrain::GRAVITY_CONSTANT;
             //forces.addForce(grav*20,Forces::GRAVITY);
         }

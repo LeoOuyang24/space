@@ -18,9 +18,19 @@ struct GravityField
     /**
      * @brief Given a block position, updates the corresponding gravity field and all surrounding gravity fields
      * 
-     * @param pos 
+     * @param pos
+     * @param remove true if you want to remove a block instead (the logic is the exact same so I didn't bother making a new function) 
      */
-    void addBlock(const Vector2& pos);
+    void addBlock(const Vector2& pos, bool remove = false);
+
+
+    /**
+     * @brief Returns the gravity field at the given position
+     * 
+     * @param pos 
+     * @return Vector2 
+     */
+    Vector2 getFieldAtPos(const Vector2& pos);
 
     void debugRender();
 
@@ -32,18 +42,13 @@ private:
         Vector2 totalDir;
         size_t total = 0;
 
-        GravField operator+(const Vector2& pos)
-        {
-            totalDir += pos;
-            total += 1;
+        GravField operator+(const Vector2& pos);
 
-            return *this;
-        }
+        GravField operator-(const Vector2& pos);
 
-        void operator+=(const Vector2& pos)
-        {
-            *this = *this + pos;
-        }
+        void operator+=(const Vector2& pos);
+
+        void operator-=(const Vector2& pos);
     };
 
     int gravityRadius = 0; //max number of blocks away a field can be and still be updated by a block addition

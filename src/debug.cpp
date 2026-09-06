@@ -131,6 +131,9 @@ void Cheats::drawInterface()
     case ENDPOINT:
         modeString = "ENDPOINT";
         break;
+    case GRAVITY:
+        modeString = "GRAVITY";
+        break;
     default:
         modeString = "PLANETS";
         setMode(PLANETS);
@@ -155,6 +158,8 @@ void Cheats::drawInterface()
     }
 
     DrawText(gravText.c_str(),GetScreenDimen().x*.8,50,30,GREEN);
+
+
 }
 
 void Cheats::handleInput()
@@ -248,7 +253,10 @@ void Cheats::handleInput()
                       });
 
     }
-
+    else if (mode == GRAVITY)
+    {
+        Globals::Game.getCurrentTerrain()->field.debugRender();
+    }
 }
 
 std::list<DeferredCall> Debug::DeferRenders;

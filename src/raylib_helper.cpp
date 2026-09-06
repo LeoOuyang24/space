@@ -297,7 +297,6 @@ void DrawTextCodepoint3D(Font font, int codepoint, Vector3 position, float fontS
         rlSetTexture(0);
     }
 }
-#include <iostream>
 //also shamelessly copied, with alignments and return value added in
 // Draw a 2D text in 3D space
 Vector3 DrawText3D(Font font, const char *text, Vector3 position, float fontSize, float fontSpacing,

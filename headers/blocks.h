@@ -14,12 +14,6 @@
 #include "debug.h"
 #include "gravity.h"
 
-size_t pointToIndex(const Vector2& vec,int blockDimen, int maxWidth);
-
-Vector2 indexToPoint(size_t index,int blockDimen, int maxWidth);
-
-Vector2 roundPos(const Vector2& vec, int blockDimen);
-
 enum BlockType
 {
     AIR = 0,
@@ -47,17 +41,8 @@ struct TerrainMap
     constexpr static size_t PALETTE_SIZE = std::max(1.0,ceil(std::log2(static_cast<uint8_t>((BLOCK_TYPES)))));
 
     std::vector<bool> data;
-    GravityField field = GravityField(220/GravityField::FIELD_WIDTH);
 
-    void setVal(size_t index,BlockType val)
-    {
-        for (size_t i = 0; i < PALETTE_SIZE; i++)
-        {
-            data[index*PALETTE_SIZE + i] = (val >> i ) % 2;
-        }
-        field.addBlock(indexToPoint(index,Block::BLOCK_DIMEN,3000));
-
-    }
+    void setVal(size_t index,BlockType val);
     BlockType operator[] (size_t index) //index will be converted to a multiple of PALETTE SIZE. so index 3 = 3*PALETTE_SIZE for the 4th block
     {
         if (index >= size())
@@ -137,6 +122,8 @@ struct Terrain
     static constexpr float estimateFactor = 100.0f;
     
     GranularMap<static_cast<size_t>(Block::BLOCK_DIMEN*estimateFactor),static_cast<size_t>(MAX_WIDTH/estimateFactor)> terrainEstimate;
+    GravityField field = GravityField(440/GravityField::FIELD_WIDTH);
+
     RenderTexture blocksTexture;
     RenderTexture gravityTexture;
     Terrain();

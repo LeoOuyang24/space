@@ -37,7 +37,7 @@ struct ObjectLookup
 
 struct GlobalTerrain
 {
-    static constexpr float GRAVITY_CONSTANT = 0.25f;
+    static constexpr float GRAVITY_CONSTANT = .25;;
     struct LayerInfo //carries info of this layer for when it needs to be saved
     {
         std::string configPath = ""; //path to the layer config file.
