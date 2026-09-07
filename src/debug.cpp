@@ -170,7 +170,7 @@ void Cheats::handleInput()
         switch (mode)
         {
         case PLANETS:
-            Globals::Game.getCurrentTerrain()->generatePlanet(mousePos,10*Block::BLOCK_DIMEN,Color(100,255,100,255 ));
+            Globals::Game.getCurrentTerrain()->generatePlanet(mousePos,10*Terrain::BLOCK_DIMEN,Color(100,255,100,255 ));
             break;
         case OBJECTS:
             {
@@ -243,13 +243,13 @@ void Cheats::handleInput()
             Globals::Game.terrain.getTerrain(layer)->forEachPos([layer](const Vector2& pos){
                                 Terrain* terr = Globals::Game.terrain.getTerrain(layer);
                                 Vector2 rounded = roundPos(pos);
-                                DrawCube({rounded.x + Block::BLOCK_DIMEN/2.0,rounded.y + Block::BLOCK_DIMEN/2.0,Globals::Game.getCurrentZ()},
-                                         Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,0,
+                                DrawCube({rounded.x + Terrain::BLOCK_DIMEN/2.0,rounded.y + Terrain::BLOCK_DIMEN/2.0,Globals::Game.getCurrentZ()},
+                                         Terrain::BLOCK_DIMEN,Terrain::BLOCK_DIMEN,0,
                                          terr->blockExists(rounded,false,false) ? RED : BLUE);
                                 },
                                 screenToWorld(GetMousePosition(),
                                               Globals::Game.Camera.getCamera(),
-                                              Globals::Game.getCurrentZ()),2*Block::BLOCK_DIMEN);
+                                              Globals::Game.getCurrentZ()),2*Terrain::BLOCK_DIMEN);
                       });
 
     }

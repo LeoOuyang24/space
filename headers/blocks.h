@@ -29,8 +29,6 @@ enum BlockType
 
 struct Block
 {
-    constexpr static int BLOCK_DIMEN=3;
-
     Color color;
     BlockType type = SOLID;
 };
@@ -110,10 +108,12 @@ struct Shape;
 
 struct Terrain
 {
+    static constexpr int BLOCK_DIMEN=3;
     static constexpr int MAX_WIDTH = 3000; //maximum number of blocks in the width direction
     static constexpr int PIXEL_SIZE = 1;
-    static constexpr float PIXEL_RATIO = PIXEL_SIZE/static_cast<float>(Block::BLOCK_DIMEN); //multiply a world coordinate by this to convert it to texture coords 
-    static constexpr int MAX_TERRAIN_SIZE = MAX_WIDTH*Block::BLOCK_DIMEN; //distance in width direction in pixels
+    static constexpr float PIXEL_RATIO = PIXEL_SIZE/static_cast<float>(BLOCK_DIMEN); //multiply a world coordinate by this to convert it to texture coords 
+    static constexpr int MAX_TERRAIN_SIZE = MAX_WIDTH*BLOCK_DIMEN; //distance in width direction in pixels
+    static constexpr int GRAVITY_FIELD_SCALE_FACTOR = 10; //how scaled up/down the gravity field is. You can also think of this as how many X by X blocks each field big is
 
     static Shader TerrainOutline;
 
@@ -121,8 +121,8 @@ struct Terrain
 
     static constexpr float estimateFactor = 100.0f;
     
-    GranularMap<static_cast<size_t>(Block::BLOCK_DIMEN*estimateFactor),static_cast<size_t>(MAX_WIDTH/estimateFactor)> terrainEstimate;
-    GravityField field = GravityField(440/GravityField::FIELD_WIDTH);
+    GranularMap<static_cast<size_t>(BLOCK_DIMEN*estimateFactor),static_cast<size_t>(MAX_WIDTH/estimateFactor)> terrainEstimate;
+    GravityField field = GravityField(MAX_WIDTH/GRAVITY_FIELD_SCALE_FACTOR,BLOCK_DIMEN*GRAVITY_FIELD_SCALE_FACTOR,15);
 
     RenderTexture blocksTexture;
     RenderTexture gravityTexture;
@@ -250,21 +250,21 @@ private:
 
 };
 
-size_t pointToIndex(const Vector2& vec,int blockDimen = Block::BLOCK_DIMEN, int maxWidth = Terrain::MAX_WIDTH);
-Vector2 indexToPoint(size_t index,int blockDimen = Block::BLOCK_DIMEN, int maxWidth = Terrain::MAX_WIDTH);
-Vector2 roundPos(const Vector2& vec, int blockDimen = Block::BLOCK_DIMEN);
+size_t pointToIndex(const Vector2& vec,int blockDimen = Terrain::BLOCK_DIMEN, int maxWidth = Terrain::MAX_WIDTH);
+Vector2 indexToPoint(size_t index,int blockDimen = Terrain::BLOCK_DIMEN, int maxWidth = Terrain::MAX_WIDTH);
+Vector2 roundPos(const Vector2& vec, int blockDimen = Terrain::BLOCK_DIMEN);
 
 template<typename T>
 void Terrain::forEachPos(T func, const Vector2& pos, int radius, bool edge)
 {
-    int units = radius/Block::BLOCK_DIMEN;
+    int units = radius/Terrain::BLOCK_DIMEN;
     Vector2 center = roundPos(pos);
     for (int x = 0; x <= units; x++ )
     {
-        int height = sqrt(radius*radius - pow(x*Block::BLOCK_DIMEN,2))/Block::BLOCK_DIMEN;
+        int height = sqrt(radius*radius - pow(x*Terrain::BLOCK_DIMEN,2))/Terrain::BLOCK_DIMEN;
         //0 if we are processing all points
         //otherwise, start at the edge
-        int start =  edge*sqrt(radius*radius - pow(std::min(units,x+1)*Block::BLOCK_DIMEN,2))/Block::BLOCK_DIMEN;
+        int start =  edge*sqrt(radius*radius - pow(std::min(units,x+1)*Terrain::BLOCK_DIMEN,2))/Terrain::BLOCK_DIMEN;
         for (int y = start; y <= height; y++)
         {
             for (int i = 2*(x == 0); i < 4 - (x == 0 && y == 0); i += ((y == 0) + 1))
@@ -275,7 +275,7 @@ void Terrain::forEachPos(T func, const Vector2& pos, int radius, bool edge)
                 //if x == 0, only do the last two quadrants (botLeft, topLeft, basically only y matters)
                 //if y == 0, only do the 1st and 3rd quadrants (botRight, botLeft, basically only x matters)
                 //and if x and y == 0, only do one quadrant, (botLeft, arbitrary though), since that is the center
-                Vector2 point = center + Vector2(x*(1 - i/2*2), y*(1 - i%2*2)) * Block::BLOCK_DIMEN;
+                Vector2 point = center + Vector2(x*(1 - i/2*2), y*(1 - i%2*2)) * Terrain::BLOCK_DIMEN;
                 if constexpr (std::is_same<decltype(func(std::declval<const Vector2&>())),bool>::value)
                 {
                 // std::cout << "DONE\n";

@@ -122,7 +122,7 @@ int main(void)
 
     Terrain::TerrainOutline = LoadShader(0,TextFormat("shaders/fragments/terrain_outline.h",GLSL_VERSION));
     SetShaderValue(Terrain::TerrainOutline,GetShaderLocation(Terrain::TerrainOutline,"pixelSizes"),&Terrain::PIXEL_SIZE,SHADER_UNIFORM_VEC2);
-    SetShaderValue(Terrain::TerrainOutline,GetShaderLocation(Terrain::TerrainOutline,"outline_thickness"),&Block::BLOCK_DIMEN,SHADER_UNIFORM_VEC2);
+    SetShaderValue(Terrain::TerrainOutline,GetShaderLocation(Terrain::TerrainOutline,"outline_thickness"),&Terrain::BLOCK_DIMEN,SHADER_UNIFORM_VEC2);
 
     GlobalShaders::EllipseGradientShader = LoadShader(0,TextFormat("shaders/fragments/oval.h",GLSL_VERSION));
 

@@ -3,24 +3,24 @@
 #include "../headers/game.h"
 #include "../headers/blocks.h"
 
-GravityField::GravityField(int gravRad) : gravityRadius(gravRad)
+GravityField::GravityField(size_t width_, size_t fieldWidth_, int gravityRadius_) :  width(width_), fieldWidth(fieldWidth_), gravityRadius(gravityRadius_), fields(width*width)
 {
 
 }
 
 void GravityField::addBlock(const Vector2& pos, bool remove)
 {
-    int baseIndex = pointToIndex(pos,FIELD_WIDTH,WIDTH);
+    int baseIndex = pointToIndex(pos,fieldWidth,width);
 
     const float ratio = 0.5;//1.0f/gravityRadius;
 
-    Vector2 center = roundPos(pos,FIELD_WIDTH);
+    Vector2 center = roundPos(pos,fieldWidth);
 
     for (int i = -gravityRadius; i < gravityRadius; i ++)
     {
         for (int j = -gravityRadius; j < gravityRadius; j++)
         {
-            int index = baseIndex - j*WIDTH - i;
+            int index = baseIndex - j*width - i;
             if (index >= 0 && index < fields.size())
             {
                 //{i,j} is indicies and the actual force we want to apply, since "pos" is in the center of this for loop
@@ -40,7 +40,7 @@ void GravityField::addBlock(const Vector2& pos, bool remove)
 
 Vector2 GravityField::getFieldAtPos(const Vector2& pos)
 {
-    size_t index = pointToIndex(pos,FIELD_WIDTH,WIDTH);
+    size_t index = pointToIndex(pos,fieldWidth,width);
     if (index < fields.size())
     {
         if (fields[index].total) 
@@ -62,12 +62,12 @@ void GravityField::debugRender()
 
         if (fields[i].total)
         {
-            Vector3 center = toVector3(indexToPoint(i,FIELD_WIDTH,WIDTH) + Vector2(FIELD_WIDTH/2,FIELD_WIDTH/2));
+            Vector3 center = toVector3(indexToPoint(i,fieldWidth,width) + Vector2(fieldWidth/2,fieldWidth/2));
             if (!Debug::isPaused())
-            Debug::addDeferRender([center,dir=fields[i].totalDir/fields[i].total](){
+            Debug::addDeferRender([center,dir=fields[i].totalDir/fields[i].total,fieldWidth=fieldWidth](){
 
-                DrawCubeWires(center,FIELD_WIDTH,FIELD_WIDTH,0,BLUE);
-                DrawArrow3D(Vector2Normalize(dir)*FIELD_WIDTH/2,center,RED,1);
+                DrawCubeWires(center,fieldWidth,fieldWidth,0,BLUE);
+                DrawArrow3D(Vector2Normalize(dir)*fieldWidth/2,center,RED,1);
 
             });
         }

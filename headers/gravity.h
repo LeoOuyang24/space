@@ -9,11 +9,7 @@
 struct GravityField
 {
 
-    static constexpr size_t SCALE_FACTOR = 10;
-    static constexpr int WIDTH = 3000/SCALE_FACTOR; //entries per width
-    static constexpr int FIELD_WIDTH = 3*SCALE_FACTOR;
-
-    GravityField(int gravRad);
+    GravityField( size_t width_, size_t fieldWidth_, int gravityRadius_);
 
     /**
      * @brief Given a block position, updates the corresponding gravity field and all surrounding gravity fields
@@ -51,8 +47,10 @@ private:
         void operator-=(const Vector2& pos);
     };
 
-    int gravityRadius = 0; //max number of blocks away a field can be and still be updated by a block addition
-    std::vector<GravField> fields = std::vector<GravField>(WIDTH*WIDTH,GravField{});
+    const int gravityRadius; //max number of blocks away a field can be and still be updated by a block addition, is an int to prevent some overflow issues
+    const size_t width; //the number of fields in a row
+    const size_t fieldWidth;//the width of each gravityField
+    std::vector<GravField> fields;
 };
 
 #endif
