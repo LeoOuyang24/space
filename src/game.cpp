@@ -72,6 +72,12 @@ void StateLoader::worldTransition()
 }
 
 Globals Globals::Game;
+Frames Globals::frame = 0;
+
+Frames Globals::getCurrentFrame()
+{
+    return frame;
+}
 
 void Globals::init()
 {
@@ -133,9 +139,8 @@ void Globals::update()
                 Sequences::runPhysics();
                 
                 accum -= tick/speed;
-                frames ++;
+                frame ++;
             }
-            frames = 0;
 
             if (GetMouseWheelMove())
             {
@@ -146,7 +151,8 @@ void Globals::update()
                 //camera.target.z += move;
                 Camera.moveCamera(Camera.getCamera().position + Vector3(0,0,move));
             }
-            Camera.update();
+
+            Camera.update(); //TODO: This scales with computer speed rn
             if constexpr (Globals::DEBUG)
                 Debug::handleInput();
     }
@@ -166,7 +172,7 @@ void Globals::render()
                             Vector2(bg.width,bg.height),WHITE);
 
             terrain.render();
-
+            
             Sequences::runRenders();
             if constexpr (DEBUG)
                 Debug::renderDefers();
@@ -281,6 +287,10 @@ void Globals::addWorld(std::string_view path)
         }
     }
 
+    if (world.layers.size() == 0)
+    {
+        world.layers.push_back("");
+    }
     world.signals = getWorldsSet(1);//worlds.size() - 1);
     worlds.push_back(world);
 

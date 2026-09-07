@@ -114,6 +114,7 @@ int main(void)
 
     Portal::PortalShader = LoadShader(0,TextFormat("shaders/fragments/portal.h",GLSL_VERSION));
 
+    Globals::Game.addWorld("worlds/test_world.txt");
     Globals::Game.addWorld("worlds/world0/world0.txt");
     Globals::Game.addWorld("worlds/world1/world1.txt");
 

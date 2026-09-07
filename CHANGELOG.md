@@ -11,6 +11,12 @@
   * Add creeping to allow better aiming
 * Maybe change the controls to WASD
 
+
+## 9/7/2026 Gravity Refactor
+* Added a global frame counter (how did this not already exist?)
+* Made in-air decelleration frame time based
+* Refactored gravity to no longer rely on ray-casting, instead adding a block creates a gravity field around that block
+
 ## 8/12/2026 Granular Map
 * Added granular terrain estimate that drastically improves perforamnce on terrain ray casting
 

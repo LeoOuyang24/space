@@ -205,32 +205,34 @@ void GlobalTerrain::render()
     //will still be "larger" than size_t.
     //Alternatively, we can make both "limit" and "i" a size_t and then check if i > layers.size(), but that seems unintuitive
 
-
-    //render layers from back all the way to front, not including layers past the camera
-    for (int i = layers.size() - 1; i >= limit ;i--)
+    if (limit < layers.size())
     {
-        float z = Globals::Game.terrain.getZOfLayer(i);
-        if (i == limit)
+        //render layers from back all the way to front, not including layers past the camera
+        for (int i = layers.size() - 1; i >= limit ;i--)
         {
-            //if there are any objects that are past the current layer (at this point, just the player when portalling),
-            //render them before objects
-            for (auto it = layers[limit].objects.begin(); it != layers[limit].objects.end(); ++it)
+            float z = Globals::Game.terrain.getZOfLayer(i);
+            if (i == limit)
             {
-                if (PhysicsBody* obj = it->lock().get())
-                if (obj->getOrient().getZ() > z)
+                //if there are any objects that are past the current layer (at this point, just the player when portalling),
+                //render them before objects
+                for (auto it = layers[limit].objects.begin(); it != layers[limit].objects.end(); ++it)
                 {
-                    obj->render();
+                    if (PhysicsBody* obj = it->lock().get())
+                    if (obj->getOrient().getZ() > z)
+                    {
+                        obj->render();
+                    }
                 }
             }
+            layers[i].terrain.render(i,z);
         }
-        layers[i].terrain.render(i,z);
-    }
-    //render the rest of the objects
-    for (auto it = layers[limit].objects.begin(); it != layers[limit].objects.end(); ++it)
-    {
-        if (PhysicsBody* obj = it->lock().get()) //highly likely since update removes bad pointers and it always runs first
+        //render the rest of the objects
+        for (auto it = layers[limit].objects.begin(); it != layers[limit].objects.end(); ++it)
         {
-            obj->render();
+            if (PhysicsBody* obj = it->lock().get()) //highly likely since update removes bad pointers and it always runs first
+            {
+                obj->render();
+            }
         }
     }
 

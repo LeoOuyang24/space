@@ -49,6 +49,8 @@ struct Forces
 
 struct PhysicsBody : public std::enable_shared_from_this<PhysicsBody>
 {
+    static constexpr float BASE_GRAVITY_RADIUS = 220;
+
     Orient orient;
     size_t keyVal = 0; //a value that is sometimes used for object-object interactions
     Vector2 terrainAngle = {};
@@ -103,15 +105,21 @@ struct PhysicsBody : public std::enable_shared_from_this<PhysicsBody>
     make_setter(followGravity,bool);
     make_getter(onGround,bool);
     make_setter(onGround,bool);
+    make_getter(wasOnGround,bool);
+    make_setter(wasOnGround,bool);
     bool followGravity = true; //true if object follows gravity and can not be inside terrain
     virtual ~PhysicsBody()
     {
         
     }
+    Frames getFreeFallDuration() const//returns the amount of frames we've been in freeFall, ie haven't been affected by gravity
+    {
+        return Globals::getCurrentFrame() - lastGravityContact;
+    }
 protected:
-    void downGravity(Terrain&);
-    virtual void planetGravity(Terrain&);
-    void pointGravity(Terrain&);
+    Vector2 downGravity(Terrain&);
+    virtual Vector2 planetGravity(Terrain&);
+    Vector2 pointGravity(Terrain&);
 
     void adjustAngle(Terrain& terrain);
     void stayOnGround(Terrain& terrain);
@@ -120,7 +128,8 @@ protected:
     bool onGround = false;
     bool wasOnGround = false;
     bool tangible = true;
-    float gravRadius = 220;
+    float gravRadius = BASE_GRAVITY_RADIUS;
+    Frames lastGravityContact = 0; //last frame from which we were last affected by gravity.
 
 };
 

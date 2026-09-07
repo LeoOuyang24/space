@@ -29,8 +29,17 @@ Vector2 roundPos(const Vector2& vec, int blockDimen)
                    (floor(vec.y/blockDimen) )*blockDimen);
 }
 
+void TerrainMap::setVal(size_t index,BlockType val)
+{
+    for (size_t i = 0; i < PALETTE_SIZE; i++)
+    {
+        data[index*PALETTE_SIZE + i] = (val >> i ) % 2;
+    }    
+
+}
+
 template<size_t BLOCK_DIMEN, size_t MAX_WIDTH>
-GranularMap<BLOCK_DIMEN,MAX_WIDTH>::GranularMap() : std::vector<uint8_t>(pow(BLOCK_DIMEN*MAX_WIDTH,2),0)
+GranularMap<BLOCK_DIMEN,MAX_WIDTH>::GranularMap() : std::vector<uint32_t>(pow(BLOCK_DIMEN*MAX_WIDTH,2),0)
 {
 
 }
@@ -135,10 +144,21 @@ void Terrain::addBlock(const Vector2& pos, const Block& block, bool draw)
         color = block.color;
         break;
     }
+
+    //true if a non-air block is being replaced by air
+    bool trueRemove = (terrain[index] != AIR && block.type == AIR);
+
+    //true if an air block is being replaced by non-air
+    bool trueAdd = (terrain[index] == AIR && block.type != AIR);
+    
     //increment by 1 if this point was air and is now not air, or subtract by 1 if the point wasn't air and is now being removed
-    terrainEstimate[pos] += (terrain[index] == AIR && block.type != AIR) ?  1 : 
-                                (terrain[index] != AIR && block.type == AIR) ? -1 : 
-                                                                                0;
+    terrainEstimate[pos] += trueAdd ?  1 : 
+                                trueRemove ? -1 : 
+                                              0;
+    if (trueAdd || trueRemove)
+    {
+        field.addBlock(pos,trueRemove);
+    }
 
 
     terrain.setVal(index,block.type);

@@ -37,7 +37,7 @@ struct ObjectLookup
 
 struct GlobalTerrain
 {
-    static constexpr float GRAVITY_CONSTANT = 0.25f;
+    static constexpr float GRAVITY_CONSTANT = .25;;
     struct LayerInfo //carries info of this layer for when it needs to be saved
     {
         std::string configPath = ""; //path to the layer config file.
@@ -71,7 +71,8 @@ struct GlobalTerrain
     void loadTerrain(LayerType layer, const Image& img);
     void setLayerInfo(LayerType layer, const LayerInfo& info); //set a level's info.
     LayerType getLayerCount();
-    Terrain* getTerrain(LayerType layer); //null if index is not valid
+    //null if index is not valid
+    Terrain* getTerrain(LayerType layer);
     void update(LayerType layer);
     void render();
     void clear(); //clears out each layer's blocks and objects, but doesn't delete the layers to reuse them later

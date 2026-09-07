@@ -37,6 +37,7 @@ class Cheats : public DebugStruct
         OBJECTS, //spawn objects
         PLAYER, //move the player to mouse cursor
         ENDPOINT, //check for terrain intersection between the last place we right clicked and current mouse position
+        GRAVITY,
         SIZE //used to indicate size of enum
     };
     Mode mode = PLANETS;

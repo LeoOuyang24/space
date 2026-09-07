@@ -12,6 +12,7 @@
 #include <raymath.h>
 #include "resources_math.h"
 #include "debug.h"
+#include "gravity.h"
 
 enum BlockType
 {
@@ -41,13 +42,7 @@ struct TerrainMap
 
     std::vector<bool> data;
 
-    void setVal(size_t index,BlockType val)
-    {
-        for (size_t i = 0; i < PALETTE_SIZE; i++)
-        {
-            data[index*PALETTE_SIZE + i] = (val >> i ) % 2;
-        }
-    }
+    void setVal(size_t index,BlockType val);
     BlockType operator[] (size_t index) //index will be converted to a multiple of PALETTE SIZE. so index 3 = 3*PALETTE_SIZE for the 4th block
     {
         if (index >= size())
@@ -89,7 +84,7 @@ struct PossibleBlock
 //the only reason we are using u8s instead of bools is because of the remove case: when we remove blocks, we have to reset down to 0. If it turns out
 //that this is irrelevant, we can only just store bools instead
 template<size_t BLOCK_DIMEN, size_t MAX_WIDTH>
-struct GranularMap : public std::vector<uint8_t>
+struct GranularMap : public std::vector<uint32_t>
 {
     GranularMap();
 
@@ -107,7 +102,7 @@ struct GranularMap : public std::vector<uint8_t>
      */
     bool check(const Vector2& pos) const;
 
-    using std::vector<uint8_t>::operator[];
+    using std::vector<uint32_t>::operator[];
 };
 
 struct PhysicsBody;
@@ -127,6 +122,8 @@ struct Terrain
     static constexpr float estimateFactor = 100.0f;
     
     GranularMap<static_cast<size_t>(Block::BLOCK_DIMEN*estimateFactor),static_cast<size_t>(MAX_WIDTH/estimateFactor)> terrainEstimate;
+    GravityField field = GravityField(440/GravityField::FIELD_WIDTH);
+
     RenderTexture blocksTexture;
     RenderTexture gravityTexture;
     Terrain();
@@ -300,13 +297,13 @@ void Terrain::forEachPos(T func, const Vector2& pos, int radius, bool edge)
 template<size_t BLOCK_DIMEN, size_t MAX_WIDTH>
 auto& GranularMap<BLOCK_DIMEN,MAX_WIDTH>::operator[](const Vector2& pos)
 {
-    return std::vector<uint8_t>::operator[](pointToIndex(pos));
+    return std::vector<uint32_t>::operator[](pointToIndex(pos));
 }
 
 template<size_t BLOCK_DIMEN, size_t MAX_WIDTH>
 auto GranularMap<BLOCK_DIMEN,MAX_WIDTH>::operator[](const Vector2& pos) const
 {
-    return std::vector<uint8_t>::operator[](pointToIndex(pos));
+    return std::vector<uint32_t>::operator[](pointToIndex(pos));
 }
 
 #endif // BLOCKS_H_INCLUDED
