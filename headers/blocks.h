@@ -41,31 +41,10 @@ struct TerrainMap
     std::vector<bool> data;
 
     void setVal(size_t index,BlockType val);
-    BlockType operator[] (size_t index) //index will be converted to a multiple of PALETTE SIZE. so index 3 = 3*PALETTE_SIZE for the 4th block
-    {
-        if (index >= size())
-        {
-            return AIR;
-        }
-        uint8_t p = AIR;
-        for (size_t i = 0; i < PALETTE_SIZE; i ++)
-        {
-            p += data[index*PALETTE_SIZE + i] << i;
-        }
-        return static_cast<BlockType>(p);
-    }
-    size_t size() //number of blocks, not number of bits
-    {
-        return data.size()/PALETTE_SIZE;
-    }
-    void resize(size_t newSize)
-    {
-        data.resize(newSize);
-    }
-    void clear()
-    {
-        data.clear();
-    }
+    BlockType operator[] (size_t index) const; //index will be converted to a multiple of PALETTE SIZE. so index 3 = 3*PALETTE_SIZE for the 4th block
+    size_t size() const; //number of blocks, not number of bits
+    void resize(size_t newSize);
+    void clear();
 };
 
 
@@ -151,13 +130,13 @@ struct Terrain
 
      //returns the point that an object moving from "a" to "b" would stop at after hitting terrain, returns "b" if there is a clear path
      //isSolid = true if we wish to stop at a SOLID block. False, if we want to stop at any block that is not AIR
-    Vector2 lineBlockIntersect(const Vector2& a, const Vector2& b, bool isSolid = true);
+    Vector2 lineBlockIntersect(const Vector2& a, const Vector2& b, bool isSolid = true) const;
     //same as above, except we'll move "a" out of terrain first.
-    Vector2 lineTerrainIntersect(const Vector2& a, const Vector2& b, bool isSolid = true);
+    Vector2 lineTerrainIntersect(const Vector2& a, const Vector2& b, bool isSolid = true) const;
 
     Vector2 nearestPos(const Vector2& vec);
     Rectangle getBlockRect(const Vector2& vec); //returns the rectangle of a block at that position
-    Vector2 pointBoxEdgeIntersect(const Vector2& a, const Vector2& dir, int dimens); //returns point of intersection with block that "a" is in if we move in the "dir" direction
+    static Vector2 pointBoxEdgeIntersect(const Vector2& a, const Vector2& dir, int dimens); //returns point of intersection with block that "a" is in if we move in the "dir" direction
     //run a function ( (const Vector2&) -> void or bool) for each position within a distance
     //"edge" = true if we only care points along the edge
     //if the function returns true, terminate early
@@ -173,7 +152,7 @@ struct Terrain
      *
      * @returns true if position does not contain air
      */
-    bool blockExists(const Vector2& pos, bool checkPlanets = true, bool checkEdge = true); 
+    bool blockExists(const Vector2& pos, bool checkPlanets = true, bool checkEdge = true) const; 
     /**
      * @brief Given a position, returns whether that position is a certain type
      *
@@ -183,7 +162,7 @@ struct Terrain
      *
      * @returns true if position contains the provided type
      */
-    bool isBlockType(const Vector2& pos,BlockType type, bool checkPlanets = true, bool checkEdge = true); //true if block at position is "type".
+    bool isBlockType(const Vector2& pos,BlockType type, bool checkPlanets = true, bool checkEdge = true) const; //true if block at position is "type".
 
     /**
      * @brief returns true if the perimeter of a Shape collides with terrain. Always checks Planets
@@ -191,7 +170,7 @@ struct Terrain
      * @param shape 
      * @return true 
      */
-    bool blockExists(const Shape& shape);
+    bool blockExists(const Shape& shape) const;
     /**
      * @brief returns true if shape perimeter collides with a block of a certain type. Always checks Planets
      * 
@@ -199,7 +178,7 @@ struct Terrain
      * @param type 
      * @return true 
      */
-    bool isBlockType(const Shape& shape, BlockType type); 
+    bool isBlockType(const Shape& shape, BlockType type) const; 
 
     void addPlanet(PhysicsBody& planet, BlockType type);
 
@@ -231,8 +210,8 @@ private:
      * 
      * @returns true if "check" returns true on the block at "pos" or any neighboring points if its on an edge
      */
-    bool checkBlocks(const Vector2& pos, bool checkPlanets, CheckFunc check, bool checkEdge = true);
-    bool checkBlocks(const Shape& shape, bool checkPlanets, CheckFunc check); //same as above for a shape
+    bool checkBlocks(const Vector2& pos, bool checkPlanets, CheckFunc check, bool checkEdge = true) const;
+    bool checkBlocks(const Shape& shape, bool checkPlanets, CheckFunc check) const; //same as above for a shape
 
     /**
      * @brief Returns the point between "a" and "b" if "a" were to move to "b" and stop at terrain. "b" if there is no terrain in the way
@@ -242,9 +221,9 @@ private:
      * @param isSolid 
      * @return Vector2 
      */
-    Vector2 lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFunc check);
+    Vector2 lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFunc check) const;
     //same as above, except we'll move "a" out of terrain first.
-    Vector2 lineTerrainIntersect(const Vector2& a, const Vector2& b, CheckFunc check);
+    Vector2 lineTerrainIntersect(const Vector2& a, const Vector2& b, CheckFunc check) const;
 
     bool isDrawing = false; //true if BeginTextureMode has been called, allowing us to batch draw planets
 

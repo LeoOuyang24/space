@@ -11,6 +11,10 @@
   * Add creeping to allow better aiming
 * Maybe change the controls to WASD
 
+## UNRELEASED
+* Made some Terrain functions `const`
+  * This required me to remove lazy removal of invalid planet pointers
+
 
 ## 9/7/2026 Gravity Refactor
 * Added a global frame counter (how did this not already exist?)

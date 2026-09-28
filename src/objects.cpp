@@ -10,13 +10,35 @@ void PhysicsBody::setPos(const Vector2& pos)
 
 void PhysicsBody::setPos(const Vector3& pos)
 {
-    orient.pos = {pos.x,pos.y};
+    setPos(Vector2{pos.x,pos.y});
     orient.setZ(pos.z);
 }
 
 Forces& PhysicsBody::getForces()
 {
     return forces;
+}
+
+void PhysicsBody::update(Terrain& t)
+{
+    if (followGravity)
+    {
+        applyForces(t);
+        if (onGround)
+        {
+            adjustAngle(t);
+
+            //if there is a lot of force left, we bounce. Otherwise we stick with stayOnGround
+            if (Vector2LengthSqr(forces.getTotalForce()) < Forces::ON_GROUND_FORCE)
+            {
+                stayOnGround(t);
+            }
+            else
+            {
+                ejectFromGround(t);
+            }
+        }
+    }
 }
 
 Orient PhysicsBody::getOrient() const
@@ -110,7 +132,7 @@ void Forces::addFriction(float friction, Forces::ForceSource source)
 
 Vector2 Forces::getTotalForce()
 {
-    return Vector2LengthSqr(totalForce) > 400 ? Vector2Normalize(totalForce)*20 : totalForce;
+    return Vector2LengthSqr(totalForce) > MAX_FORCE_MAG*MAX_FORCE_MAG ? Vector2Normalize(totalForce)*MAX_FORCE_MAG : totalForce;
 }
 
 void PhysicsBody::applyForces(Terrain& terrain)
@@ -136,7 +158,7 @@ void PhysicsBody::applyForces(Terrain& terrain)
     if (orient.pos.x >= Terrain::MAX_TERRAIN_SIZE || orient.pos.x <= 0)
     {
         forces.addFriction({-1,1});
-        forces.addForce( Vector2{(orient.pos.x <= 0 ) * 2 - 1,0},Forces::BOUNCE);
+        forces.addForce( Vector2{(orient.pos.x <= 0 ) * 2 - 1,0},Forces::BOUNCE); //add a tiny nudge in case we somehow have a force that is 0,0 and thus we wouldn't move
     }
     else if (orient.pos.y >= Terrain::MAX_TERRAIN_SIZE || orient.pos.y <= 0)
     {
@@ -144,18 +166,32 @@ void PhysicsBody::applyForces(Terrain& terrain)
         forces.addForce( Vector2{0,(orient.pos.y <= 0 ) * 2 - 1},Forces::BOUNCE);
     }
     Vector2 total = forces.getTotalForce();
-    setPos(getPos() + total);
+    Vector2 oldPos = getPos();
 
-    set_wasOnGround(onGround);
-    set_onGround(isOnGround(terrain));
+    Shape shape = getShape();
+    float maxDist = Vector2LengthSqr(total);
 
-    forces.addFriction(onGround ? 0.5 : .99);
+    trajectory = Vector2Normalize(total)*sqrt(maxDist);
+    setPos(oldPos + trajectory);
+
+    set_wasOnGround(get_onGround());
+    set_onGround(terrain.blockExists(getShape()));
+
+    forces.addFriction(get_onGround() ? 0.5 : .99);
+
+    if (get_onGround() && !get_wasOnGround()) //apply normal force if we just landed. note that this is different for player object
+    {
+        forces.addFriction(Forces::getNormalForceMultiplier(getShape(),total,terrain));
+    }
 
     //last time we were contacted by gravity, rn if we have gravity or if on ground
     if (!(Vector2Equals(grav,{})) || (get_onGround()) )
     {
         lastGravityContact = Globals::getCurrentFrame();
     }
+
+    Debug::debugForces(*this);
+
 
 }
 
@@ -182,26 +218,12 @@ Vector2 PhysicsBody::planetGravity(Terrain& terrain)
        {
             Vector2 point = getIthShapePoint(shape,i);
 
-            grav += Vector2Normalize(terrain.field.getFieldAtPos(point));
+            grav += (terrain.field.getFieldAtPos(point));
        }
 
         //if (count > 0)
         {
-            terrainAngle += Vector2Normalize(grav);
-
-            Vector2 norm = Vector2LengthSqr(grav) > GlobalTerrain::GRAVITY_CONSTANT*GlobalTerrain::GRAVITY_CONSTANT ? 
-                                Vector2Normalize(grav): 
-                                grav;
-
-
-            Vector2 moveVec = forces.getForce(Forces::MOVE);
-            if (!Vector2Equals(moveVec,{}))
-            {
-                //norm -= moveVec*.01f*Vector2DotProduct(norm,moveVec)/Vector2DotProduct(moveVec,moveVec);
-            }
-
-            return norm*GlobalTerrain::GRAVITY_CONSTANT;
-            //forces.addForce(grav*20,Forces::GRAVITY);
+            return Vector2Normalize(grav)*GlobalTerrain::GRAVITY_CONSTANT;
         }
     }
     return {};
@@ -249,9 +271,24 @@ void PhysicsBody::stayOnGround(Terrain& terrain)
     Vector2 newPos = bruh - Vector2Normalize(norm)*(GetDimen(getShape()).y/2  - 1);
 
     setPos(newPos);
-
 }
 
+void PhysicsBody::ejectFromGround(Terrain& terrain)
+{
+    Shape shape = getShape();
+    float maxDist = 0;
+    Vector2 direction = Vector2Normalize(get_trajectory());
+    for (int i = 0; i < getShapePoints(shape.type); i ++)
+    {
+        Vector2 point = getIthShapePoint(shape,i);
+        if (terrain.blockExists(point))
+        {
+            Vector2 surface = terrain.lineTerrainIntersect(point,point + direction);
+            maxDist = std::max(maxDist,Vector2LengthSqr(surface - point));
+        }
+    }
+    setPos(getPos() - direction*(sqrt(maxDist) + 1));
+}
 
 void suggestButtonPress(const Shape& shape, std::string_view str)
 {

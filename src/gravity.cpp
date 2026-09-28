@@ -1,6 +1,7 @@
 #include "../headers/gravity.h"
 #include "../headers/raylib_helper.h"
 #include "../headers/game.h"
+#include "../headers/objects.h"
 #include "../headers/blocks.h"
 
 GravityField::GravityField(size_t width_, size_t fieldWidth_, int gravityRadius_) :  width(width_), fieldWidth(fieldWidth_), gravityRadius(gravityRadius_), fields(width*width)
@@ -12,9 +13,7 @@ void GravityField::addBlock(const Vector2& pos, bool remove)
 {
     int baseIndex = pointToIndex(pos,fieldWidth,width);
 
-    const float ratio = 0.5;//1.0f/gravityRadius;
-
-    Vector2 center = roundPos(pos,fieldWidth);
+    float ratio = 0.5;
 
     for (int i = -gravityRadius; i < gravityRadius; i ++)
     {
@@ -24,7 +23,8 @@ void GravityField::addBlock(const Vector2& pos, bool remove)
             if (index >= 0 && index < fields.size())
             {
                 //{i,j} is indicies and the actual force we want to apply, since "pos" is in the center of this for loop
-                Vector2 gravAmount = Vector2Normalize(Vector2{i,j})*(pow(ratio,std::max(abs(i),abs(j))))*GlobalTerrain::GRAVITY_CONSTANT;
+                float falloff = pow(ratio,std::max(abs(i),abs(j)));//(i == 0 && j == 0) ? 1 : 1.0f/Vector2Length({i,j});
+                Vector2 gravAmount = Vector2Normalize(Vector2{i,j})*(falloff)*GlobalTerrain::GRAVITY_CONSTANT;
                 if (remove)
                 {
                     fields[index] -= gravAmount;
@@ -57,19 +57,34 @@ Vector2 GravityField::getFieldAtPos(const Vector2& pos)
 
 void GravityField::debugRender()
 {
-    for (int i = 0; i < fields.size(); i ++)
+    if (!Debug::isPaused())
     {
-
-        if (fields[i].total)
+        const int renderHowMany = 50;
+        Vector2 pos = Globals::Game.getPlayer()->getPos();
+        int start = pointToIndex(pos - Vector2{renderHowMany/2*fieldWidth,renderHowMany/2*fieldWidth},fieldWidth,width);
+        for (int i = 0; i < renderHowMany; i ++)
         {
-            Vector3 center = toVector3(indexToPoint(i,fieldWidth,width) + Vector2(fieldWidth/2,fieldWidth/2));
-            if (!Debug::isPaused())
-            Debug::addDeferRender([center,dir=fields[i].totalDir/fields[i].total,fieldWidth=fieldWidth](){
+            for (int j = 0; j < renderHowMany; j ++)
+            {
+                int index = start + i + j*width;
+                if (index < fields.size() && index >= 0)
+                {
+                    if (fields[index].total)
+                    {
+                        Vector3 center = toVector3(indexToPoint(index,fieldWidth,width) + Vector2(fieldWidth/2,fieldWidth/2));
+                        Debug::addDeferRender([center,dir=fields[index].totalDir/fields[index].total,fieldWidth=fieldWidth](){
 
-                DrawCubeWires(center,fieldWidth,fieldWidth,0,BLUE);
-                DrawArrow3D(Vector2Normalize(dir)*fieldWidth/2,center,RED,1);
+                            //DrawCubeWires(center,fieldWidth,fieldWidth,0,BLUE);
+                            DrawArrow3D(Vector2Normalize(dir)*fieldWidth/2,center,RED,1);
 
-            });
+                        });
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
         }
     }
 }

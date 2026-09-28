@@ -35,7 +35,33 @@ void TerrainMap::setVal(size_t index,BlockType val)
     {
         data[index*PALETTE_SIZE + i] = (val >> i ) % 2;
     }    
+}
 
+BlockType TerrainMap::operator[] (size_t index) const //index will be converted to a multiple of PALETTE SIZE. so index 3 = 3*PALETTE_SIZE for the 4th block
+{
+    if (index >= size())
+    {
+        return AIR;
+    }
+    uint8_t p = AIR;
+    for (size_t i = 0; i < PALETTE_SIZE; i ++)
+    {
+        p += data[index*PALETTE_SIZE + i] << i;
+    }
+    return static_cast<BlockType>(p);
+}
+
+size_t TerrainMap::size() const //number of blocks, not number of bits
+{
+    return data.size()/PALETTE_SIZE;
+}
+void TerrainMap::resize(size_t newSize)
+{
+    data.resize(newSize);
+}
+void TerrainMap::clear()
+{
+    data.clear();
 }
 
 template<size_t BLOCK_DIMEN, size_t MAX_WIDTH>
@@ -240,7 +266,7 @@ Vector2 Terrain::pointBoxEdgeIntersect(const Vector2& a, const Vector2& dir,int 
     }
 }
 
-Vector2 Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, bool isSolid)
+Vector2 Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, bool isSolid) const
 {
     if (isSolid)
     {
@@ -252,7 +278,7 @@ Vector2 Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, bool i
     }
 }
 
-Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, bool isSolid)
+Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, bool isSolid) const
 {
     if (isSolid)
     {
@@ -273,9 +299,7 @@ void Terrain::generatePlanet(const Vector2& center, int radius, const Color& col
                },center,radius);
 
     endDrawBlocks();
-
 }
-
 
 void Terrain::generatePlanets()
 {
@@ -323,27 +347,27 @@ void Terrain::generateRightTriangle(const Vector2& corner, float height, const C
     endDrawBlocks();
 }
 
-bool Terrain::blockExists(const Vector2& pos, bool checkPlanets, bool checkEdge)
+bool Terrain::blockExists(const Vector2& pos, bool checkPlanets, bool checkEdge) const
 {
     return checkBlocks(pos,checkPlanets,blockExistsCheck, checkEdge);
 }
 
-bool Terrain::isBlockType(const Vector2& pos, BlockType type, bool checkPlanets, bool checkEdge)
+bool Terrain::isBlockType(const Vector2& pos, BlockType type, bool checkPlanets, bool checkEdge) const
 {
     return checkBlocks(pos,checkPlanets,isBlockTypeCheck(type), checkEdge);
 }
 
-bool Terrain::blockExists(const Shape& shape)
+bool Terrain::blockExists(const Shape& shape) const
 {
     return checkBlocks(shape,true,blockExistsCheck);
 }
 
-bool Terrain::isBlockType(const Shape& shape, BlockType type)
+bool Terrain::isBlockType(const Shape& shape, BlockType type) const
 {
     return checkBlocks(shape,true,isBlockTypeCheck(type));
 }
 
-bool Terrain::checkBlocks(const Vector2& pos, bool checkPlanets, std::function<bool(BlockType)> check, bool checkEdge)
+bool Terrain::checkBlocks(const Vector2& pos, bool checkPlanets, std::function<bool(BlockType)> check, bool checkEdge) const
 {
     if (checkPlanets)
     {
@@ -352,10 +376,6 @@ bool Terrain::checkBlocks(const Vector2& pos, bool checkPlanets, std::function<b
             if (it->ptr.lock() && it->ptr.lock()->isTangible() && check(it->type)  && CheckCollisionPointShape(pos,it->ptr.lock()->getShape()))
             {
                 return true;
-            }
-            else if (!it->ptr.lock())
-            {
-               it = planets.erase(it);
             }
             else
             {
@@ -385,7 +405,7 @@ bool Terrain::checkBlocks(const Vector2& pos, bool checkPlanets, std::function<b
     return answer;    
 }
 
-bool Terrain::checkBlocks(const Shape& shape, bool checkPlanets, std::function<bool(BlockType)> check)
+bool Terrain::checkBlocks(const Shape& shape, bool checkPlanets, std::function<bool(BlockType)> check) const
 {
     switch (shape.type)
     {
@@ -421,7 +441,7 @@ bool Terrain::checkBlocks(const Shape& shape, bool checkPlanets, std::function<b
     return false;
 }
 
-Vector2 Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, CheckFunc check)
+Vector2 Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, CheckFunc check) const
 {
 
     Vector2 newA = a;
@@ -442,7 +462,7 @@ Vector2 Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, CheckF
     return lineBlockIntersect(newA,b,check);
 }
 
-Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFunc check)
+Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFunc check) const
 {
 
     if (pointToIndex(a) == pointToIndex(b)) //if a and b are in teh same box, it comes down to whether or not there's empty space there
@@ -494,7 +514,7 @@ Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFun
     }
 
     Vector2 answer = past ? b : current;
-    for (EntityPlanet& terr : planets) //calculate the answer completely separately, by only accounting for planets
+    for (const EntityPlanet& terr : planets) //calculate the answer completely separately, by only accounting for planets
         {
             if (terr.ptr.lock() && terr.ptr.lock()->isTangible() && check(terr.type))
             {

@@ -15,37 +15,7 @@
 #include "colliders.h"
 #include "game.h"
 #include "sequencer.h"
-
-
-struct Forces
-{
-    enum ForceSource : uint8_t
-    {
-        GRAVITY = 0,
-        JUMP,
-        MOVE,
-        ENEMY, //misc for any forces applied by enemies
-        BOUNCE, //forces from when going out of bounds
-        SWINGING,
-        BOOSTING, //from boosting, player specific
-        FORCE_SOURCE_SIZE //number of force sources, should always be the last member
-    };
-
-    std::array<Vector2,FORCE_SOURCE_SIZE> forces{}; //mapping force source to a force
-    Vector2 totalForce = {0,0}; //total forces
-
-    void setForce(const Vector2& force, Forces::ForceSource source);
-    void addForce( Vector2 force, ForceSource source);
-    void addFriction(const Vector2& friction);
-    void addFriction(float friction);
-    void addFriction(float friction, ForceSource source);
-    Vector2 getTotalForce();
-
-    Vector2 getForce(ForceSource source) const //read-only, get force from a source
-    {
-        return (source >= forces.size()) ? Vector2{0,0} : forces[source];
-    }
-};
+#include "physics.h"
 
 struct PhysicsBody : public std::enable_shared_from_this<PhysicsBody>
 {
@@ -60,7 +30,7 @@ struct PhysicsBody : public std::enable_shared_from_this<PhysicsBody>
 
     virtual Shape getShape() const = 0;
     virtual void render() = 0;
-    virtual void update(Terrain&) = 0;
+    virtual void update(Terrain&);
     virtual Vector2 getPos() const = 0;
     virtual constexpr std::string_view getName() const = 0;
     Orient getOrient() const;
@@ -99,14 +69,13 @@ struct PhysicsBody : public std::enable_shared_from_this<PhysicsBody>
 
     }
 
-    void applyForces(Terrain& t);
-
     make_getter(followGravity,bool);
     make_setter(followGravity,bool);
     make_getter(onGround,bool);
     make_setter(onGround,bool);
     make_getter(wasOnGround,bool);
     make_setter(wasOnGround,bool);
+    make_getter(trajectory,Vector2);
     bool followGravity = true; //true if object follows gravity and can not be inside terrain
     virtual ~PhysicsBody()
     {
@@ -121,8 +90,10 @@ protected:
     virtual Vector2 planetGravity(Terrain&);
     Vector2 pointGravity(Terrain&);
 
-    void adjustAngle(Terrain& terrain);
+    void applyForces(Terrain& t);
+    virtual void adjustAngle(Terrain& terrain);
     void stayOnGround(Terrain& terrain);
+    void ejectFromGround(Terrain& terrain);
 
     bool dead = false;
     bool onGround = false;
@@ -130,6 +101,7 @@ protected:
     bool tangible = true;
     float gravRadius = BASE_GRAVITY_RADIUS;
     Frames lastGravityContact = 0; //last frame from which we were last affected by gravity.
+    Vector2 trajectory = {}; //the amount of movement since last frame, usually the same as last frame's total force
 
 };
 
@@ -226,7 +198,6 @@ struct Object : public PhysicsBody
             return EMPTY_SERIAL;
         }   
     }
-
     Vector2 getPos() const
     {
         return orient.pos;
@@ -238,18 +209,6 @@ struct Object : public PhysicsBody
     virtual void render()
     {
         renderer.render(getShape(),tint);
-    }
-    virtual void update(Terrain& t)
-    {
-        if (followGravity)
-        {
-            applyForces(t);
-            if (onGround)
-            {
-                adjustAngle(t);
-                stayOnGround(t);
-            }
-        }
     }
     Forces& getForces()
     {
@@ -265,8 +224,6 @@ protected:
             if (!wasOnGround) //just landed
             {
                 orient.rotation = collider.getLandingAngle(*this,terrain);
-                
-               // freeFall = false;
             }
             else //otherwise adjust angle based on terrain angle
             {

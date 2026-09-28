@@ -125,7 +125,7 @@ void GlobalTerrain::loadTerrain(LayerType layer, const Image& img)
             }
             if (color.a > 0)
             {
-                terr->addBlock(point,{color,type},false);
+                terr->addBlock(point,{color,SOLID},false);
             }
         }
     }
