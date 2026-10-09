@@ -17,7 +17,7 @@ struct GravityField
      * @param pos
      * @param remove true if you want to remove a block instead (the logic is the exact same so I didn't bother making a new function) 
      */
-    void addBlock(const Vector2& pos, bool remove = false);
+    void addBlock(const Vector2& pos, bool remove = false, float magnitude = 1.0f);
 
 
     /**
@@ -37,6 +37,7 @@ private:
     {
         Vector2 totalDir;
         size_t total = 0;
+        float distance = 10000;
 
         GravField operator+(const Vector2& pos);
 

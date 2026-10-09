@@ -223,7 +223,7 @@ Vector2 PhysicsBody::planetGravity(Terrain& terrain)
 
         //if (count > 0)
         {
-            return Vector2Normalize(grav)*GlobalTerrain::GRAVITY_CONSTANT;
+            return Vector2Normalize(grav)*std::max(Vector2Length(grav),(float)GlobalTerrain::GRAVITY_CONSTANT);//Vector2Normalize(grav)*GlobalTerrain::GRAVITY_CONSTANT;
         }
     }
     return {};
@@ -283,7 +283,7 @@ void PhysicsBody::ejectFromGround(Terrain& terrain)
         Vector2 point = getIthShapePoint(shape,i);
         if (terrain.blockExists(point))
         {
-            Vector2 surface = terrain.lineTerrainIntersect(point,point + direction);
+            Vector2 surface = terrain.lineTerrainIntersect(point,point + direction,false);
             maxDist = std::max(maxDist,Vector2LengthSqr(surface - point));
         }
     }

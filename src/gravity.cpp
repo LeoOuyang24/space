@@ -9,7 +9,7 @@ GravityField::GravityField(size_t width_, size_t fieldWidth_, int gravityRadius_
 
 }
 
-void GravityField::addBlock(const Vector2& pos, bool remove)
+void GravityField::addBlock(const Vector2& pos, bool remove, float magnitude)
 {
     int baseIndex = pointToIndex(pos,fieldWidth,width);
 
@@ -24,7 +24,7 @@ void GravityField::addBlock(const Vector2& pos, bool remove)
             {
                 //{i,j} is indicies and the actual force we want to apply, since "pos" is in the center of this for loop
                 float falloff = pow(ratio,std::max(abs(i),abs(j)));//(i == 0 && j == 0) ? 1 : 1.0f/Vector2Length({i,j});
-                Vector2 gravAmount = Vector2Normalize(Vector2{i,j})*(falloff)*GlobalTerrain::GRAVITY_CONSTANT;
+                Vector2 gravAmount = Vector2Normalize(Vector2{i,j})*(falloff)*GlobalTerrain::GRAVITY_CONSTANT*magnitude;
                 if (remove)
                 {
                     fields[index] -= gravAmount;

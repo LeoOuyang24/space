@@ -134,7 +134,7 @@ void Player::update(Terrain& terrain)
             }
         }
 
-        if (terrain.isBlockType(orient.pos,LAVA) && state != PORTALLING)
+        if (terrain.isBlockType(getShape(),LAVA) && state != PORTALLING)
         {
             setDead(true);
         }

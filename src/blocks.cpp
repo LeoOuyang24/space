@@ -151,6 +151,7 @@ void Terrain::addBlock(const Vector2& pos, const Block& block, bool draw)
     //std::cout << pos << "  " << index << " "<< terrain.size()<< "\n";
 
     Color color;
+    float magnitude = 1;
     switch (block.type)
     {
     case AIR:
@@ -158,9 +159,11 @@ void Terrain::addBlock(const Vector2& pos, const Block& block, bool draw)
         break;
     case LAVA:
         color = {255,0,0,255};
+        magnitude = 0.5;
         break;
     case ANTI:
         color = WHITE;
+        magnitude = -1;
         break;
     case WATER:
         color = BLUE;
@@ -183,7 +186,7 @@ void Terrain::addBlock(const Vector2& pos, const Block& block, bool draw)
                                               0;
     if (trueAdd || trueRemove)
     {
-        field.addBlock(pos,trueRemove);
+        field.addBlock(pos,trueRemove,magnitude);
     }
 
 
