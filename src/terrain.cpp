@@ -101,7 +101,7 @@ void GlobalTerrain::loadTerrain(LayerType layer, const Image& img)
         for (int j = 0; j < std::min(img.height,Terrain::MAX_WIDTH); j += 1)
         {
 
-            Vector2 point = {i*Block::BLOCK_DIMEN,j*Block::BLOCK_DIMEN};
+            Vector2 point = {i*Terrain::BLOCK_DIMEN,j*Terrain::BLOCK_DIMEN};
 
             Color color = GetImageColor(img,i,j);
 

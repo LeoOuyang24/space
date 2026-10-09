@@ -170,7 +170,7 @@ void Cheats::handleInput()
         switch (mode)
         {
         case PLANETS:
-            Globals::Game.getCurrentTerrain()->generatePlanet(mousePos,10*Block::BLOCK_DIMEN,Color(100,255,100,255 ));
+            Globals::Game.getCurrentTerrain()->generatePlanet(mousePos,10*Terrain::BLOCK_DIMEN,Color(100,255,100,255 ));
             break;
         case OBJECTS:
             {
@@ -209,7 +209,14 @@ void Cheats::handleInput()
     }
     else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
     {
-        Globals::Game.getCurrentTerrain()->remove(mousePos,50);
+        switch (mode)
+        {
+            case PLANETS:
+                Globals::Game.getCurrentTerrain()->remove(mousePos,50);
+                break;
+            default:
+                break;
+        }
     }
     else if (IsKeyPressed(KEY_ONE))
     {
@@ -243,13 +250,13 @@ void Cheats::handleInput()
             Globals::Game.terrain.getTerrain(layer)->forEachPos([layer](const Vector2& pos){
                                 Terrain* terr = Globals::Game.terrain.getTerrain(layer);
                                 Vector2 rounded = roundPos(pos);
-                                DrawCube({rounded.x + Block::BLOCK_DIMEN/2.0,rounded.y + Block::BLOCK_DIMEN/2.0,Globals::Game.getCurrentZ()},
-                                         Block::BLOCK_DIMEN,Block::BLOCK_DIMEN,0,
+                                DrawCube({rounded.x + Terrain::BLOCK_DIMEN/2.0,rounded.y + Terrain::BLOCK_DIMEN/2.0,Globals::Game.getCurrentZ()},
+                                         Terrain::BLOCK_DIMEN,Terrain::BLOCK_DIMEN,0,
                                          terr->blockExists(rounded,false,false) ? RED : BLUE);
                                 },
                                 screenToWorld(GetMousePosition(),
                                               Globals::Game.Camera.getCamera(),
-                                              Globals::Game.getCurrentZ()),2*Block::BLOCK_DIMEN);
+                                              Globals::Game.getCurrentZ()),2*Terrain::BLOCK_DIMEN);
                       });
 
     }
@@ -371,11 +378,14 @@ void Debug::debugForces(PhysicsBody& body) //draws forces on an object
     Vector2 mov = pos + forces.getForce(Forces::MOVE)*30;
     Vector2 jump = pos + forces.getForce(Forces::JUMP)*30;
     Vector2 boos = pos + forces.getForce(Forces::BOOSTING)*30;
+    Vector2 thrown = pos + forces.getForce(Forces::THROW)*30;
 
-    Debug::addDeferRender([pos,grav,mov,jump,boos](){
+    Debug::addDeferRender([pos,grav,mov,jump,boos,thrown](){
         DrawLine3D(toVector3(pos),toVector3(grav),RED,5);
         DrawLine3D(toVector3(pos),toVector3(mov),BLUE,5);
         DrawLine3D(toVector3(pos),toVector3(jump),GREEN,5);
         DrawLine3D(toVector3(pos),toVector3(boos),PURPLE,5);
+        DrawLine3D(toVector3(pos),toVector3(thrown),YELLOW,5);
+
                         });   
 }

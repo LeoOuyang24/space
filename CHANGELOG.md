@@ -11,6 +11,10 @@
   * Add creeping to allow better aiming
 * Maybe change the controls to WASD
 
+## 10/9/2026 Been Too Damn Long Update
+* Made some Terrain functions `const`
+  * This required me to remove lazy removal of invalid planet pointers
+* Objects now will not stick to terrain if they have a certain amount of total force on them. This creates a "bouncing" behavior if an object collides with terrain very hard. 
 
 ## 9/7/2026 Gravity Refactor
 * Added a global frame counter (how did this not already exist?)

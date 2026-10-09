@@ -109,7 +109,7 @@ void Player::update(Terrain& terrain)
 
         if (onGround)
         {
-            forces.setForce({0,0},Forces::GRAVITY);
+            forces.setForce({0,0},Forces::GRAVITY); //player specifically should not bounce at all
             forces.setForce({0,0},Forces::JUMP);
             Object::adjustAngle(terrain);
             Object::stayOnGround(terrain);
@@ -134,7 +134,7 @@ void Player::update(Terrain& terrain)
             }
         }
 
-        if (terrain.isBlockType(orient.pos,LAVA) && state != PORTALLING)
+        if (terrain.isBlockType(getShape(),LAVA) && state != PORTALLING)
         {
             setDead(true);
         }
@@ -210,7 +210,7 @@ void Player::handleControls()
 
                 if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
                 {
-                    power = std::min(power + 2,100.0f);
+                    power = std::min(power + 2,PLAYER_MAX_POWER);
 
                 }
                 else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && power > 0)
@@ -219,7 +219,7 @@ void Player::handleControls()
                     body->set_onGround(false);
                     body->set_followGravity(true);
                     body->getForces().addFriction(0);
-                    body->getForces().addForce(Vector2Normalize(mousePos - orient.pos)*(10 + power/10.0f),Forces::MOVE);
+                    body->getForces().addForce(Vector2Normalize(mousePos - orient.pos)*(10 + power/10.0f),Forces::THROW);
                     holding.reset();
                     power = 0;
                 }

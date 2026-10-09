@@ -14,7 +14,7 @@
 
 size_t pointToIndex(const Vector2& vec,int blockDimen, int maxWidth)
 {
-    //std::cout <<static_cast<int>(vec.y)/Block::BLOCK_DIMEN*MAX_WIDTH + static_cast<int>(vec.x)/Block::BLOCK_DIMEN << "\n";
+    //std::cout <<static_cast<int>(vec.y)/Terrain::BLOCK_DIMEN*MAX_WIDTH + static_cast<int>(vec.x)/Terrain::BLOCK_DIMEN << "\n";
     return static_cast<int>(vec.y)/blockDimen*maxWidth + static_cast<int>(vec.x)/blockDimen;
 }
 
@@ -35,7 +35,33 @@ void TerrainMap::setVal(size_t index,BlockType val)
     {
         data[index*PALETTE_SIZE + i] = (val >> i ) % 2;
     }    
+}
 
+BlockType TerrainMap::operator[] (size_t index) const //index will be converted to a multiple of PALETTE SIZE. so index 3 = 3*PALETTE_SIZE for the 4th block
+{
+    if (index >= size())
+    {
+        return AIR;
+    }
+    uint8_t p = AIR;
+    for (size_t i = 0; i < PALETTE_SIZE; i ++)
+    {
+        p += data[index*PALETTE_SIZE + i] << i;
+    }
+    return static_cast<BlockType>(p);
+}
+
+size_t TerrainMap::size() const //number of blocks, not number of bits
+{
+    return data.size()/PALETTE_SIZE;
+}
+void TerrainMap::resize(size_t newSize)
+{
+    data.resize(newSize);
+}
+void TerrainMap::clear()
+{
+    data.clear();
 }
 
 template<size_t BLOCK_DIMEN, size_t MAX_WIDTH>
@@ -82,10 +108,10 @@ Shader Terrain::TerrainOutline;
 
 Vector2 Terrain::nearestPos(const Vector2& vec)
 {
-    float remainX = fmod(vec.x,Block::BLOCK_DIMEN);
-    float remainY = fmod(vec.y,Block::BLOCK_DIMEN);
-    return Vector2(vec.x - remainX + (remainX >= Block::BLOCK_DIMEN/2)*Block::BLOCK_DIMEN,
-                    vec.y - remainY + (remainY >= Block::BLOCK_DIMEN/2)*Block::BLOCK_DIMEN);
+    float remainX = fmod(vec.x,Terrain::BLOCK_DIMEN);
+    float remainY = fmod(vec.y,Terrain::BLOCK_DIMEN);
+    return Vector2(vec.x - remainX + (remainX >= Terrain::BLOCK_DIMEN/2)*Terrain::BLOCK_DIMEN,
+                    vec.y - remainY + (remainY >= Terrain::BLOCK_DIMEN/2)*Terrain::BLOCK_DIMEN);
 }
 
 
@@ -107,7 +133,7 @@ void Terrain::cleanUp()
 Rectangle Terrain::getBlockRect(const Vector2& pos)
 {
     Vector2 rounded = roundPos(pos);
-    return {rounded.x,rounded.y,Block::BLOCK_DIMEN,Block::BLOCK_DIMEN};
+    return {rounded.x,rounded.y,Terrain::BLOCK_DIMEN,Terrain::BLOCK_DIMEN};
 }
 void Terrain::addBlock(const Vector2& pos, const Block& block, bool draw)
 {
@@ -125,6 +151,7 @@ void Terrain::addBlock(const Vector2& pos, const Block& block, bool draw)
     //std::cout << pos << "  " << index << " "<< terrain.size()<< "\n";
 
     Color color;
+    float magnitude = 1;
     switch (block.type)
     {
     case AIR:
@@ -132,9 +159,11 @@ void Terrain::addBlock(const Vector2& pos, const Block& block, bool draw)
         break;
     case LAVA:
         color = {255,0,0,255};
+        magnitude = 0.5;
         break;
     case ANTI:
         color = WHITE;
+        magnitude = -1;
         break;
     case WATER:
         color = BLUE;
@@ -157,7 +186,7 @@ void Terrain::addBlock(const Vector2& pos, const Block& block, bool draw)
                                               0;
     if (trueAdd || trueRemove)
     {
-        field.addBlock(pos,trueRemove);
+        field.addBlock(pos,trueRemove,magnitude);
     }
 
 
@@ -188,7 +217,7 @@ void Terrain::remove(const Vector2& pos, int radius)
 
                 addBlock(pos,{WHITE,BlockType::AIR},true);
 
-               },pos,radius+Block::BLOCK_DIMEN*2*(PIXEL_RATIO));
+               },pos,radius+Terrain::BLOCK_DIMEN*2*(PIXEL_RATIO));
         rlSetBlendMode(BLEND_ALPHA);
     endDrawBlocks();
    // std::cout << GetTime() - time << "\n";
@@ -240,7 +269,7 @@ Vector2 Terrain::pointBoxEdgeIntersect(const Vector2& a, const Vector2& dir,int 
     }
 }
 
-Vector2 Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, bool isSolid)
+Vector2 Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, bool isSolid) const
 {
     if (isSolid)
     {
@@ -252,7 +281,7 @@ Vector2 Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, bool i
     }
 }
 
-Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, bool isSolid)
+Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, bool isSolid) const
 {
     if (isSolid)
     {
@@ -273,9 +302,7 @@ void Terrain::generatePlanet(const Vector2& center, int radius, const Color& col
                },center,radius);
 
     endDrawBlocks();
-
 }
-
 
 void Terrain::generatePlanets()
 {
@@ -298,9 +325,9 @@ void Terrain::generateRect(const Rectangle& rect, const Color& color)
     Vector2 origin = roundPos({rect.x,rect.y});
 
     drawBlocks();
-    for (int i = origin.x; i <= rect.x + rect.width; i += Block::BLOCK_DIMEN)
+    for (int i = origin.x; i <= rect.x + rect.width; i += Terrain::BLOCK_DIMEN)
     {
-        for (int j = origin.y; j <= rect.y + rect.height; j+= Block::BLOCK_DIMEN)
+        for (int j = origin.y; j <= rect.y + rect.height; j+= Terrain::BLOCK_DIMEN)
         {
             addBlock({i,j},{color});
         }
@@ -310,7 +337,7 @@ void Terrain::generateRect(const Rectangle& rect, const Color& color)
 
 void Terrain::generateRightTriangle(const Vector2& corner, float height, const Color& color)
 {
-    int modHeight = height/Block::BLOCK_DIMEN;
+    int modHeight = height/Terrain::BLOCK_DIMEN;
 
     drawBlocks();
     for (int i = 0; i <= modHeight; i += 1)
@@ -323,27 +350,27 @@ void Terrain::generateRightTriangle(const Vector2& corner, float height, const C
     endDrawBlocks();
 }
 
-bool Terrain::blockExists(const Vector2& pos, bool checkPlanets, bool checkEdge)
+bool Terrain::blockExists(const Vector2& pos, bool checkPlanets, bool checkEdge) const
 {
     return checkBlocks(pos,checkPlanets,blockExistsCheck, checkEdge);
 }
 
-bool Terrain::isBlockType(const Vector2& pos, BlockType type, bool checkPlanets, bool checkEdge)
+bool Terrain::isBlockType(const Vector2& pos, BlockType type, bool checkPlanets, bool checkEdge) const
 {
     return checkBlocks(pos,checkPlanets,isBlockTypeCheck(type), checkEdge);
 }
 
-bool Terrain::blockExists(const Shape& shape)
+bool Terrain::blockExists(const Shape& shape) const
 {
     return checkBlocks(shape,true,blockExistsCheck);
 }
 
-bool Terrain::isBlockType(const Shape& shape, BlockType type)
+bool Terrain::isBlockType(const Shape& shape, BlockType type) const
 {
     return checkBlocks(shape,true,isBlockTypeCheck(type));
 }
 
-bool Terrain::checkBlocks(const Vector2& pos, bool checkPlanets, std::function<bool(BlockType)> check, bool checkEdge)
+bool Terrain::checkBlocks(const Vector2& pos, bool checkPlanets, std::function<bool(BlockType)> check, bool checkEdge) const
 {
     if (checkPlanets)
     {
@@ -352,10 +379,6 @@ bool Terrain::checkBlocks(const Vector2& pos, bool checkPlanets, std::function<b
             if (it->ptr.lock() && it->ptr.lock()->isTangible() && check(it->type)  && CheckCollisionPointShape(pos,it->ptr.lock()->getShape()))
             {
                 return true;
-            }
-            else if (!it->ptr.lock())
-            {
-               it = planets.erase(it);
             }
             else
             {
@@ -372,11 +395,11 @@ bool Terrain::checkBlocks(const Vector2& pos, bool checkPlanets, std::function<b
     bool answer = check(terrain[index]);
     if ( !answer && checkEdge)
     {
-        if ( static_cast<int>(pos.x) % Block::BLOCK_DIMEN == 0)
+        if ( static_cast<int>(pos.x) % Terrain::BLOCK_DIMEN == 0)
         {
             answer = (pos.x > 0 && check(terrain[index - 1]));
         }
-        if (!answer && static_cast<int>(pos.y) % Block::BLOCK_DIMEN == 0)
+        if (!answer && static_cast<int>(pos.y) % Terrain::BLOCK_DIMEN == 0)
         {
             answer = (pos.y > 0 && check(terrain[index - MAX_WIDTH]));
         }
@@ -385,7 +408,7 @@ bool Terrain::checkBlocks(const Vector2& pos, bool checkPlanets, std::function<b
     return answer;    
 }
 
-bool Terrain::checkBlocks(const Shape& shape, bool checkPlanets, std::function<bool(BlockType)> check)
+bool Terrain::checkBlocks(const Shape& shape, bool checkPlanets, std::function<bool(BlockType)> check) const
 {
     switch (shape.type)
     {
@@ -421,7 +444,7 @@ bool Terrain::checkBlocks(const Shape& shape, bool checkPlanets, std::function<b
     return false;
 }
 
-Vector2 Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, CheckFunc check)
+Vector2 Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, CheckFunc check) const
 {
 
     Vector2 newA = a;
@@ -436,13 +459,13 @@ Vector2 Terrain::lineTerrainIntersect(const Vector2& a, const Vector2& b, CheckF
         while (checkBlocks(newA,true,check))//(check(terrain[pointToIndex(newA)])) //move "A" backwards until we encounter non-solid block
         {
             oldA = newA;
-            newA -= dir*Block::BLOCK_DIMEN;
+            newA -= dir*Terrain::BLOCK_DIMEN;
         }
     }
     return lineBlockIntersect(newA,b,check);
 }
 
-Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFunc check)
+Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFunc check) const
 {
 
     if (pointToIndex(a) == pointToIndex(b)) //if a and b are in teh same box, it comes down to whether or not there's empty space there
@@ -458,17 +481,17 @@ Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFun
     int i = 0;
     while (!terrainEstimate.check(current) && !past)
     {
-        current = pointBoxEdgeIntersect(current,dir,Block::BLOCK_DIMEN*estimateFactor);
+        current = pointBoxEdgeIntersect(current,dir,Terrain::BLOCK_DIMEN*estimateFactor);
         past = abs(current.y - a.y) > abs(b.y - a.y) || abs(current.x - a.x) > abs(b.x - a.x);
         if (Debug::isDebugOn())
         {
             Debug::addDeferRender([current,this](){
 
                 DrawCircle3D(toVector3(current),2,{},0,WHITE);
-                Vector2 topLeft = indexToPoint(pointToIndex(current,Block::BLOCK_DIMEN*estimateFactor,MAX_WIDTH/estimateFactor),Block::BLOCK_DIMEN*estimateFactor,MAX_WIDTH/estimateFactor);
-                DrawCubeWires(toVector3(topLeft + Vector2(Block::BLOCK_DIMEN*estimateFactor/2,Block::BLOCK_DIMEN*estimateFactor/2)),
-                                Block::BLOCK_DIMEN*estimateFactor,
-                                Block::BLOCK_DIMEN*estimateFactor,
+                Vector2 topLeft = indexToPoint(pointToIndex(current,Terrain::BLOCK_DIMEN*estimateFactor,MAX_WIDTH/estimateFactor),Terrain::BLOCK_DIMEN*estimateFactor,MAX_WIDTH/estimateFactor);
+                DrawCubeWires(toVector3(topLeft + Vector2(Terrain::BLOCK_DIMEN*estimateFactor/2,Terrain::BLOCK_DIMEN*estimateFactor/2)),
+                                Terrain::BLOCK_DIMEN*estimateFactor,
+                                Terrain::BLOCK_DIMEN*estimateFactor,
                                 0,
                                 RED);
 
@@ -478,7 +501,7 @@ Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFun
     }
     while (!checkBlocks(current,false,check) && !past)
     {
-        current = pointBoxEdgeIntersect(current,dir,Block::BLOCK_DIMEN);
+        current = pointBoxEdgeIntersect(current,dir,Terrain::BLOCK_DIMEN);
         past = abs(current.y - a.y) > abs(b.y - a.y) || abs(current.x - a.x) > abs(b.x - a.x);
         i++;
         /*if (Debug::isDebugOn())
@@ -494,7 +517,7 @@ Vector2 Terrain::lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFun
     }
 
     Vector2 answer = past ? b : current;
-    for (EntityPlanet& terr : planets) //calculate the answer completely separately, by only accounting for planets
+    for (const EntityPlanet& terr : planets) //calculate the answer completely separately, by only accounting for planets
         {
             if (terr.ptr.lock() && terr.ptr.lock()->isTangible() && check(terr.type))
             {
@@ -529,7 +552,7 @@ void Terrain::render(int i, int z)
         planet.ptr.lock()->render();
     }*/
 
-   float ratio =  Block::BLOCK_DIMEN/PIXEL_SIZE;
+   float ratio =  Terrain::BLOCK_DIMEN/PIXEL_SIZE;
    DrawBillboardPro(Globals::Game.Camera.getCamera(),blocksTexture.texture,Rectangle(0,0,blocksTexture.texture.width,blocksTexture.texture.height)
                     ,Vector3(blocksTexture.texture.width*ratio/2,blocksTexture.texture.height*ratio/2,z),Vector3(0,-1,0),
                     Vector2(blocksTexture.texture.width*ratio,blocksTexture.texture.height*ratio),Vector2(blocksTexture.texture.width/2,blocksTexture.texture.height/2)*ratio,

@@ -68,7 +68,7 @@ struct Player : public Object<PlayerCollider,PlayerRenderer,Player>
 
     static constexpr Frames PLAYER_AIR_ACCEL_TIME = 3*Globals::FPS; //frames during which player is still allowed to move while in the air, default 3 seconds
 
-    static constexpr float PLAYER_MAX_POWER = 100;
+    static constexpr float PLAYER_MAX_POWER = 500;
 
     enum State
     {

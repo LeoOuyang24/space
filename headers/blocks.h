@@ -29,8 +29,6 @@ enum BlockType
 
 struct Block
 {
-    constexpr static int BLOCK_DIMEN=3;
-
     Color color;
     BlockType type = SOLID;
 };
@@ -43,31 +41,10 @@ struct TerrainMap
     std::vector<bool> data;
 
     void setVal(size_t index,BlockType val);
-    BlockType operator[] (size_t index) //index will be converted to a multiple of PALETTE SIZE. so index 3 = 3*PALETTE_SIZE for the 4th block
-    {
-        if (index >= size())
-        {
-            return AIR;
-        }
-        uint8_t p = AIR;
-        for (size_t i = 0; i < PALETTE_SIZE; i ++)
-        {
-            p += data[index*PALETTE_SIZE + i] << i;
-        }
-        return static_cast<BlockType>(p);
-    }
-    size_t size() //number of blocks, not number of bits
-    {
-        return data.size()/PALETTE_SIZE;
-    }
-    void resize(size_t newSize)
-    {
-        data.resize(newSize);
-    }
-    void clear()
-    {
-        data.clear();
-    }
+    BlockType operator[] (size_t index) const; //index will be converted to a multiple of PALETTE SIZE. so index 3 = 3*PALETTE_SIZE for the 4th block
+    size_t size() const; //number of blocks, not number of bits
+    void resize(size_t newSize);
+    void clear();
 };
 
 
@@ -110,10 +87,12 @@ struct Shape;
 
 struct Terrain
 {
+    static constexpr int BLOCK_DIMEN=3;
     static constexpr int MAX_WIDTH = 3000; //maximum number of blocks in the width direction
     static constexpr int PIXEL_SIZE = 1;
-    static constexpr float PIXEL_RATIO = PIXEL_SIZE/static_cast<float>(Block::BLOCK_DIMEN); //multiply a world coordinate by this to convert it to texture coords 
-    static constexpr int MAX_TERRAIN_SIZE = MAX_WIDTH*Block::BLOCK_DIMEN; //distance in width direction in pixels
+    static constexpr float PIXEL_RATIO = PIXEL_SIZE/static_cast<float>(BLOCK_DIMEN); //multiply a world coordinate by this to convert it to texture coords 
+    static constexpr int MAX_TERRAIN_SIZE = MAX_WIDTH*BLOCK_DIMEN; //distance in width direction in pixels
+    static constexpr int GRAVITY_FIELD_SCALE_FACTOR = 10; //how scaled up/down the gravity field is. You can also think of this as how many X by X blocks each field big is
 
     static Shader TerrainOutline;
 
@@ -121,8 +100,8 @@ struct Terrain
 
     static constexpr float estimateFactor = 100.0f;
     
-    GranularMap<static_cast<size_t>(Block::BLOCK_DIMEN*estimateFactor),static_cast<size_t>(MAX_WIDTH/estimateFactor)> terrainEstimate;
-    GravityField field = GravityField(440/GravityField::FIELD_WIDTH);
+    GranularMap<static_cast<size_t>(BLOCK_DIMEN*estimateFactor),static_cast<size_t>(MAX_WIDTH/estimateFactor)> terrainEstimate;
+    GravityField field = GravityField(MAX_WIDTH/GRAVITY_FIELD_SCALE_FACTOR,BLOCK_DIMEN*GRAVITY_FIELD_SCALE_FACTOR,15);
 
     RenderTexture blocksTexture;
     RenderTexture gravityTexture;
@@ -151,13 +130,13 @@ struct Terrain
 
      //returns the point that an object moving from "a" to "b" would stop at after hitting terrain, returns "b" if there is a clear path
      //isSolid = true if we wish to stop at a SOLID block. False, if we want to stop at any block that is not AIR
-    Vector2 lineBlockIntersect(const Vector2& a, const Vector2& b, bool isSolid = true);
+    Vector2 lineBlockIntersect(const Vector2& a, const Vector2& b, bool isSolid = true) const;
     //same as above, except we'll move "a" out of terrain first.
-    Vector2 lineTerrainIntersect(const Vector2& a, const Vector2& b, bool isSolid = true);
+    Vector2 lineTerrainIntersect(const Vector2& a, const Vector2& b, bool isSolid = true) const;
 
     Vector2 nearestPos(const Vector2& vec);
     Rectangle getBlockRect(const Vector2& vec); //returns the rectangle of a block at that position
-    Vector2 pointBoxEdgeIntersect(const Vector2& a, const Vector2& dir, int dimens); //returns point of intersection with block that "a" is in if we move in the "dir" direction
+    static Vector2 pointBoxEdgeIntersect(const Vector2& a, const Vector2& dir, int dimens); //returns point of intersection with block that "a" is in if we move in the "dir" direction
     //run a function ( (const Vector2&) -> void or bool) for each position within a distance
     //"edge" = true if we only care points along the edge
     //if the function returns true, terminate early
@@ -173,7 +152,7 @@ struct Terrain
      *
      * @returns true if position does not contain air
      */
-    bool blockExists(const Vector2& pos, bool checkPlanets = true, bool checkEdge = true); 
+    bool blockExists(const Vector2& pos, bool checkPlanets = true, bool checkEdge = true) const; 
     /**
      * @brief Given a position, returns whether that position is a certain type
      *
@@ -183,7 +162,7 @@ struct Terrain
      *
      * @returns true if position contains the provided type
      */
-    bool isBlockType(const Vector2& pos,BlockType type, bool checkPlanets = true, bool checkEdge = true); //true if block at position is "type".
+    bool isBlockType(const Vector2& pos,BlockType type, bool checkPlanets = true, bool checkEdge = true) const; //true if block at position is "type".
 
     /**
      * @brief returns true if the perimeter of a Shape collides with terrain. Always checks Planets
@@ -191,7 +170,7 @@ struct Terrain
      * @param shape 
      * @return true 
      */
-    bool blockExists(const Shape& shape);
+    bool blockExists(const Shape& shape) const;
     /**
      * @brief returns true if shape perimeter collides with a block of a certain type. Always checks Planets
      * 
@@ -199,7 +178,7 @@ struct Terrain
      * @param type 
      * @return true 
      */
-    bool isBlockType(const Shape& shape, BlockType type); 
+    bool isBlockType(const Shape& shape, BlockType type) const; 
 
     void addPlanet(PhysicsBody& planet, BlockType type);
 
@@ -231,8 +210,8 @@ private:
      * 
      * @returns true if "check" returns true on the block at "pos" or any neighboring points if its on an edge
      */
-    bool checkBlocks(const Vector2& pos, bool checkPlanets, CheckFunc check, bool checkEdge = true);
-    bool checkBlocks(const Shape& shape, bool checkPlanets, CheckFunc check); //same as above for a shape
+    bool checkBlocks(const Vector2& pos, bool checkPlanets, CheckFunc check, bool checkEdge = true) const;
+    bool checkBlocks(const Shape& shape, bool checkPlanets, CheckFunc check) const; //same as above for a shape
 
     /**
      * @brief Returns the point between "a" and "b" if "a" were to move to "b" and stop at terrain. "b" if there is no terrain in the way
@@ -242,29 +221,29 @@ private:
      * @param isSolid 
      * @return Vector2 
      */
-    Vector2 lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFunc check);
+    Vector2 lineBlockIntersect(const Vector2& a, const Vector2& b, CheckFunc check) const;
     //same as above, except we'll move "a" out of terrain first.
-    Vector2 lineTerrainIntersect(const Vector2& a, const Vector2& b, CheckFunc check);
+    Vector2 lineTerrainIntersect(const Vector2& a, const Vector2& b, CheckFunc check) const;
 
     bool isDrawing = false; //true if BeginTextureMode has been called, allowing us to batch draw planets
 
 };
 
-size_t pointToIndex(const Vector2& vec,int blockDimen = Block::BLOCK_DIMEN, int maxWidth = Terrain::MAX_WIDTH);
-Vector2 indexToPoint(size_t index,int blockDimen = Block::BLOCK_DIMEN, int maxWidth = Terrain::MAX_WIDTH);
-Vector2 roundPos(const Vector2& vec, int blockDimen = Block::BLOCK_DIMEN);
+size_t pointToIndex(const Vector2& vec,int blockDimen = Terrain::BLOCK_DIMEN, int maxWidth = Terrain::MAX_WIDTH);
+Vector2 indexToPoint(size_t index,int blockDimen = Terrain::BLOCK_DIMEN, int maxWidth = Terrain::MAX_WIDTH);
+Vector2 roundPos(const Vector2& vec, int blockDimen = Terrain::BLOCK_DIMEN);
 
 template<typename T>
 void Terrain::forEachPos(T func, const Vector2& pos, int radius, bool edge)
 {
-    int units = radius/Block::BLOCK_DIMEN;
+    int units = radius/Terrain::BLOCK_DIMEN;
     Vector2 center = roundPos(pos);
     for (int x = 0; x <= units; x++ )
     {
-        int height = sqrt(radius*radius - pow(x*Block::BLOCK_DIMEN,2))/Block::BLOCK_DIMEN;
+        int height = sqrt(radius*radius - pow(x*Terrain::BLOCK_DIMEN,2))/Terrain::BLOCK_DIMEN;
         //0 if we are processing all points
         //otherwise, start at the edge
-        int start =  edge*sqrt(radius*radius - pow(std::min(units,x+1)*Block::BLOCK_DIMEN,2))/Block::BLOCK_DIMEN;
+        int start =  edge*sqrt(radius*radius - pow(std::min(units,x+1)*Terrain::BLOCK_DIMEN,2))/Terrain::BLOCK_DIMEN;
         for (int y = start; y <= height; y++)
         {
             for (int i = 2*(x == 0); i < 4 - (x == 0 && y == 0); i += ((y == 0) + 1))
@@ -275,7 +254,7 @@ void Terrain::forEachPos(T func, const Vector2& pos, int radius, bool edge)
                 //if x == 0, only do the last two quadrants (botLeft, topLeft, basically only y matters)
                 //if y == 0, only do the 1st and 3rd quadrants (botRight, botLeft, basically only x matters)
                 //and if x and y == 0, only do one quadrant, (botLeft, arbitrary though), since that is the center
-                Vector2 point = center + Vector2(x*(1 - i/2*2), y*(1 - i%2*2)) * Block::BLOCK_DIMEN;
+                Vector2 point = center + Vector2(x*(1 - i/2*2), y*(1 - i%2*2)) * Terrain::BLOCK_DIMEN;
                 if constexpr (std::is_same<decltype(func(std::declval<const Vector2&>())),bool>::value)
                 {
                 // std::cout << "DONE\n";
